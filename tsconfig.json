@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "moduleResolution": "node",
+    "module": "CommonJS",
+    "target": "es2015",
+    "lib": ["es2015"],
+    "outDir": "dist/cjs",
+    "strict": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "sourceMap": true,
+    "stripInternal": true,
+    "importHelpers": true,
+    "plugins": [
+      {
+        "name": "typescript-tslint-plugin",
+        "alwaysShowRuleFailuresAsWarnings": false
+      }
+    ]
+  },
+  "include": ["./src"],
+  "compileOnSave": false
+}
