@@ -7,6 +7,7 @@ export interface Value {
   getValue(): any; //interface{}
   getKind(): string;
   getLoc(): Location | undefined;
+  isKind(node: any): boolean;
 }
 
 export class Variable extends AbstractNode implements Value {

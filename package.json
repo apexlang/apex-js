@@ -41,6 +41,7 @@
     "build:cjs": "tsc --declaration --declarationMap --declarationDir dist/types ",
     "build:umd": "rollup --config config/rollup.config.js",
     "build:umd:min": "cd dist && uglifyjs --compress --mangle --source-map --comments --output standalone.min.js -- standalone.js",
+    "watch": "tsc -w  --declaration --declarationMap --declarationDir dist/types",
     "clean": "shx rm -rf dist",
     "docs": "typedoc --theme minimal --exclude \"**/src/**/__tests__/*.*\" --out docs src/",
     "test": "jest -c ./config/jest.config.js --passWithNoTests",

@@ -7,6 +7,7 @@ export interface Type {
   getKind(): string;
   getLoc(): Location | undefined;
   string(): string;
+  isKind(node: any): boolean;
 }
 
 export class Named extends AbstractNode implements Type {
