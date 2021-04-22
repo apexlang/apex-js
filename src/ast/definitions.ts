@@ -8,6 +8,7 @@ import { kinds } from "./kinds";
 export interface Definition {
   getKind(): string;
   getLoc(): Location | undefined;
+  isKind(node: any): boolean;
 }
 
 export class AnnotationDefinition extends AbstractNode implements Definition {
