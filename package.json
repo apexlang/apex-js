@@ -13,7 +13,13 @@
     "url": "https://www.github.com/wapc/widl-js"
   },
   "author": "Phil Kedy",
-  "license": "MIT",
+  "license": "Apache-2.0",
+  "licenses": [
+    {
+      "type": "Apache-2.0",
+      "url": "http://www.apache.org/licenses/LICENSE-2.0"
+    }
+  ],
   "engines": {
     "node": ">=8.5"
   },
@@ -64,7 +70,8 @@
     "@rollup/plugin-commonjs": "^17.1.0",
     "@rollup/plugin-node-resolve": "^11.2.0",
     "@types/jest": "23.3.10",
-    "@typescript-eslint/eslint-plugin": "^4.18.0",
+    "@typescript-eslint/eslint-plugin": "^4.22.0",
+    "@typescript-eslint/parser": "^4.22.0",
     "eslint": "^7.22.0",
     "jest": "26.6.3",
     "jest-watch-typeahead": "^0.6.1",
