@@ -1,13 +1,12 @@
 import { TokenKind } from "./token_kind";
 import { Lexer, getTokenDesc, getTokenKindDesc } from "./lexer";
-import { syntaxError, WidlError } from "./error";
+import { importError, syntaxError, WidlError } from "./error";
 import autoBind from "./auto-bind";
 import {
   Location,
   Token,
   Name,
   Document,
-  Definition,
   OperationDefinition,
   FieldDefinition,
   ObjectField,
@@ -17,28 +16,32 @@ import {
   EnumValue,
   EnumValueDefinition,
   FloatValue,
-  InputValueDefinition,
+  ParameterDefinition,
   IntValue,
   ListValue,
-  MapValue,
   ObjectValue,
   StringValue,
-  NamespaceDefinition,
   Type,
-  List,
+  ListType,
+  MapType,
   Annotation,
   Named,
   Node,
-  ObjectDefinition,
+  NamespaceDefinition,
+  ImportDefinition,
+  TypeDefinition,
   InterfaceDefinition,
   RoleDefinition,
   UnionDefinition,
   EnumDefinition,
-  AnnotationDefinition,
-  Map,
+  DirectiveDefinition,
   Optional,
   Source,
-} from "./ast/index";
+  DirectiveRequire,
+  Definition,
+  ImportName,
+  Kind,
+} from "./ast";
 
 type parseFunction = () => Node;
 /**
@@ -56,11 +59,20 @@ export type ParseOptions = {
 };
 
 /**
+ * Resolver returns the contents of an import.
+ */
+export type Resolver = (location: string, from: string) => string;
+
+/**
  * Given a WIDL source, parses it into a Document.
  * Throws WidlError if a syntax error is encountered.
  */
-export function parse(source: string, options?: ParseOptions): Document {
-  const parser = new Parser(source, options);
+export function parse(
+  source: string,
+  resolver?: Resolver,
+  options?: ParseOptions
+): Document {
+  const parser = new Parser(source, resolver, options);
   return parser.parseDocument();
 }
 
@@ -75,20 +87,26 @@ export function parse(source: string, options?: ParseOptions): Document {
  * Consider providing the results to the utility function: valueFromAST().
  */
 export function parseValue(source: string, options?: ParseOptions): Value {
-  const parser = new Parser(source, options);
+  const parser = new Parser(source, undefined, options);
   parser.expectToken(TokenKind.SOF);
   const value = parser.parseValueLiteral(false);
   parser.expectToken(TokenKind.EOF);
   return value;
 }
 
+interface NamedDefinition {
+  name: Name;
+}
+
 class Parser {
+  _resolver: Resolver | undefined;
   _options: ParseOptions;
   _lexer: Lexer;
 
-  constructor(source: string, options?: ParseOptions) {
+  constructor(source: string, resolver?: Resolver, options?: ParseOptions) {
     let src = new Source("widl");
     src.setBody(source);
+    this._resolver = resolver;
     this._lexer = new Lexer(src);
     this._options = options || {
       noLocation: false,
@@ -102,7 +120,17 @@ class Parser {
    */
   parseName(): Name {
     const token = this.expectToken(TokenKind.NAME);
-    return new Name(this.loc(token), (token.value as any) as string);
+    return new Name(this.loc(token), token.value);
+  }
+
+  parseImportName(): ImportName {
+    const start = this._lexer.token;
+    const name = this.parseName();
+    let alias: Name | undefined;
+    if (this.expectOptionalKeyword("as")) {
+      alias = this.parseName();
+    }
+    return new ImportName(this.loc(start), name, alias);
   }
 
   // Implements the parsing rules in the Document section.
@@ -112,8 +140,114 @@ class Parser {
    */
   parseDocument(): Document {
     const start = this._lexer.token;
-    const def = this.many(TokenKind.SOF, this.parseDefinition, TokenKind.EOF);
-    return new Document(this.loc(start), def);
+    //const def = this.many(TokenKind.SOF, this.parseDefinition, TokenKind.EOF);
+    this.expectToken(TokenKind.SOF);
+    const defs = [];
+    do {
+      const def = this.parseDefinition();
+      // Handle resolving imports
+      if (this._resolver != undefined && def.isKind(Kind.ImportDefinition)) {
+        const imp = def as ImportDefinition;
+        let importSource = "";
+        try {
+          importSource = this._resolver!(imp.from.value, "");
+        } catch (e) {
+          throw importError(imp.from, `could not load ${imp.from.value}: ` + e);
+        }
+        const importDoc = parse(importSource, this._resolver, this._options);
+        if (imp.all) {
+          importDoc.definitions.map((def) => defs.push(def));
+        } else {
+          const allDefs = new Map<string, Definition>();
+          importDoc.definitions.map((def) => {
+            switch (true) {
+              case def.isKind(Kind.TypeDefinition):
+                const type = def as TypeDefinition;
+                allDefs.set(type.name.value, type);
+                break;
+              case def.isKind(Kind.EnumDefinition):
+                const enumDef = def as EnumDefinition;
+                allDefs.set(enumDef.name.value, enumDef);
+                break;
+              case def.isKind(Kind.UnionDefinition):
+                const unionDef = def as UnionDefinition;
+                allDefs.set(unionDef.name.value, unionDef);
+                break;
+              case def.isKind(Kind.DirectiveDefinition):
+                const directive = def as DirectiveDefinition;
+                allDefs.set(directive.name.value, directive);
+                break;
+            }
+          });
+
+          imp.names.map((n) => {
+            const def = allDefs.get(n.name.value);
+            if (def == undefined) {
+              throw importError(
+                n,
+                `could not find "${n.name.value}" in "${imp.from.value}"`
+              );
+            }
+            const name = n.alias || n.name;
+            switch (true) {
+              case def.isKind(Kind.TypeDefinition):
+                const type = def as TypeDefinition;
+                defs.push(
+                  new TypeDefinition(
+                    name.loc,
+                    name,
+                    type.description,
+                    type.interfaces,
+                    type.annotations,
+                    type.fields
+                  )
+                );
+                break;
+              case def.isKind(Kind.EnumDefinition):
+                const enumDef = def as EnumDefinition;
+                defs.push(
+                  new EnumDefinition(
+                    name.loc,
+                    name,
+                    enumDef.description,
+                    enumDef.annotations,
+                    enumDef.values
+                  )
+                );
+                break;
+              case def.isKind(Kind.UnionDefinition):
+                const unionDef = def as UnionDefinition;
+                defs.push(
+                  new UnionDefinition(
+                    name.loc,
+                    name,
+                    unionDef.description,
+                    unionDef.annotations,
+                    unionDef.types
+                  )
+                );
+                break;
+              case def.isKind(Kind.DirectiveDefinition):
+                const directive = def as DirectiveDefinition;
+                defs.push(
+                  new DirectiveDefinition(
+                    name.loc,
+                    name,
+                    directive.description,
+                    directive.parameters,
+                    directive.locations,
+                    directive.requires
+                  )
+                );
+                break;
+            }
+          });
+        }
+      } else {
+        defs.push(def);
+      }
+    } while (!this.expectOptionalToken(TokenKind.EOF));
+    return new Document(this.loc(start), defs);
   }
 
   /**
@@ -129,17 +263,20 @@ class Parser {
   parseDefinition(): Definition {
     if (this.peek(TokenKind.NAME)) {
       switch (this._lexer.token.value) {
+        case "namespace":
+          return this.parseNamespaceDefinition();
+        case "import":
+          return this.parseImportDefinition();
+        case "directive":
+          return this.parseDirectiveDefinition();
         case "interface":
-          return this.parseInterfaceTypeDefinition();
+          return this.parseInterfaceDefinition();
         case "role":
           return this.parseRoleTypeDefinition();
-        case "scalar":
         case "type":
         case "union":
         case "enum":
           return this.parseTypeSystemDefinition();
-        case "namespace":
-          return this.parseNamespaceDefinition();
       }
     } else if (this.peek(TokenKind.BRACE_L)) {
       return this.parseOperationDefinition();
@@ -161,18 +298,18 @@ class Parser {
     const start = this._lexer.token;
     const description = this.parseDescription();
     const name = this.parseName();
-    const [definitions, isUnary] = this.parseArgumentDefs(true);
+    const [parameters, isUnary] = this.parseParameterDefinitions(true);
     this.expectToken(TokenKind.COLON);
     const type = this.parseType();
-    const directives = this.parseAnnotations();
+    const annotations = this.parseAnnotations();
 
     return new OperationDefinition(
       this.loc(start),
       name,
       description,
-      definitions,
+      parameters,
       type,
-      directives,
+      annotations,
       isUnary
     );
   }
@@ -188,14 +325,14 @@ class Parser {
     var keyType: Type | undefined;
     var valueType: Type | undefined;
     var ttype: Type | undefined;
-    // [ String! ]!
+    // [ String? ]?
     switch (start.kind) {
       case TokenKind.BRACKET_L:
         this._lexer.advance();
         ttype = this.parseType();
       case TokenKind.BRACKET_R:
         this._lexer.advance();
-        ttype = new List(this.loc(start), ttype!);
+        ttype = new ListType(this.loc(start), ttype!);
         break;
       case TokenKind.BRACE_L:
         this._lexer.advance();
@@ -204,7 +341,7 @@ class Parser {
         valueType = this.parseType();
       case TokenKind.BRACE_R:
         this._lexer.advance();
-        ttype = new Map(this.loc(start), keyType!, valueType!);
+        ttype = new MapType(this.loc(start), keyType!, valueType!);
         break;
       case TokenKind.NAME:
         ttype = this.parseNamed();
@@ -232,9 +369,15 @@ class Parser {
    */
   parseArgument(): Argument {
     const start = this._lexer.token;
-    const name = this.parseName();
 
-    this.expectToken(TokenKind.COLON);
+    var name: Name;
+    if (!this.peek(TokenKind.NAME)) {
+      name = new Name(undefined, "value");
+    } else {
+      name = this.parseName();
+      this.expectToken(TokenKind.COLON);
+    }
+
     return new Argument(this.loc(start), name, this.parseValueLiteral(false));
   }
 
@@ -267,10 +410,10 @@ class Parser {
         return this.parseObject(isConst);
       case TokenKind.INT:
         this._lexer.advance();
-        return new IntValue(this.loc(token), (token.value as any) as string);
+        return new IntValue(this.loc(token), parseInt(token.value));
       case TokenKind.FLOAT:
         this._lexer.advance();
-        return new FloatValue(this.loc(token), (token.value as any) as string);
+        return new FloatValue(this.loc(token), parseFloat(token.value));
       case TokenKind.STRING:
       case TokenKind.BLOCK_STRING:
         return this.parseStringLiteral();
@@ -284,10 +427,7 @@ class Parser {
           case "null":
           // TODO
           default:
-            return new EnumValue(
-              this.loc(token),
-              (token.value as any) as string
-            );
+            return new EnumValue(this.loc(token), token.value);
         }
     }
     throw this.unexpected();
@@ -304,7 +444,7 @@ class Parser {
   parseStringLiteral(): StringValue {
     const token = this._lexer.token;
     this._lexer.advance();
-    return new StringValue(this.loc(token), token.value as string); // TODO
+    return new StringValue(this.loc(token), token.value);
   }
 
   /**
@@ -318,15 +458,6 @@ class Parser {
     return new ListValue(
       this.loc(start),
       this.any(TokenKind.BRACKET_L, item, TokenKind.BRACKET_R)
-    );
-  }
-
-  parseMap(isConst: boolean): MapValue {
-    const start = this._lexer.token;
-    const item = () => this.parseValueLiteral(isConst);
-    return new MapValue(
-      this.loc(start),
-      this.any(TokenKind.BRACE_L, item, TokenKind.BRACE_R)
     );
   }
 
@@ -349,19 +480,29 @@ class Parser {
    */
   parseObjectField(isConst: boolean): ObjectField {
     const start = this._lexer.token;
-    const name = this.parseName();
+    if (
+      start.kind == TokenKind.NS ||
+      start.kind == TokenKind.NAME ||
+      start.kind == TokenKind.STRING
+    ) {
+      this._lexer.advance();
+    } else {
+      throw this.unexpected();
+    }
+
+    const name = new Name(this.loc(start), start.value);
     this.expectToken(TokenKind.COLON);
     return new ObjectField(
       this.loc(start),
-      this.parseValueLiteral(isConst),
-      name
+      name,
+      this.parseValueLiteral(isConst)
     );
   }
 
   parseAnnotations(): Array<Annotation> {
     let directives = Array<Annotation>();
     while (this.peek(TokenKind.AT)) {
-      this._lexer.advance(); // TODO cleanup
+      this._lexer.advance();
       directives.push(this.parseAnnotation());
     }
     return directives;
@@ -416,19 +557,11 @@ class Parser {
         case String.fromCharCode(TokenKind.NAME):
           return this.parseTypeSystemDefinition();
         case "type":
-          return this.parseObjectTypeDefinition();
-        case "interface":
-          return this.parseInterfaceTypeDefinition();
-        case "role":
-          return this.parseRoleTypeDefinition();
+          return this.parseTypeDefinition();
         case "union":
-          return this.parseUnionTypeDefinition();
+          return this.parseUnionDefinition();
         case "enum":
-          return this.parseEnumTypeDefinition();
-        case "namespace":
-          return this.parseNamespaceDefinition();
-        case "directive":
-          return this.parseAnnotationDefinition();
+          return this.parseEnumDefinition();
       }
     }
 
@@ -451,13 +584,58 @@ class Parser {
       throw this.unexpected();
     }
 
-    const name = new Name(this.loc(start), (start.value as any) as string);
-    const directives = this.parseAnnotations();
+    const name = new Name(this.loc(start), start.value);
+    const annotations = this.parseAnnotations();
     return new NamespaceDefinition(
       this.loc(start),
       description,
       name,
-      directives
+      annotations
+    );
+  }
+
+  parseImportDefinition(): Node {
+    let start = this._lexer.token;
+    const description = this.parseDescription();
+    this.expectKeyword("import");
+    let all = false;
+    let names: ImportName[] = [];
+
+    if (this.peek(TokenKind.STAR)) {
+      this._lexer.advance();
+      all = true;
+    } else if (this.peek(TokenKind.BRACE_L)) {
+      names = this.many(
+        TokenKind.BRACE_L,
+        this.parseImportName,
+        TokenKind.BRACE_R
+      );
+    } else {
+      throw this.unexpected();
+    }
+
+    this.expectKeyword("from");
+
+    start = this._lexer.token;
+    if (
+      start.kind == TokenKind.NS ||
+      start.kind == TokenKind.NAME ||
+      start.kind == TokenKind.STRING
+    ) {
+      this._lexer.advance();
+    } else {
+      throw this.unexpected();
+    }
+
+    const from = new Name(this.loc(start), start.value);
+    const annotations = this.parseAnnotations();
+    return new ImportDefinition(
+      this.loc(start),
+      description,
+      all,
+      names,
+      from,
+      annotations
     );
   }
 
@@ -476,29 +654,29 @@ class Parser {
   }
 
   /**
-   * ObjectTypeDefinition :
+   * TypeDefinition :
    *   Description?
-   *   type Name ImplementsInterfaces? Directives[Const]? FieldsDefinition?
+   *   type Name ImplementsInterfaces? Annotations[Const]? FieldsDefinition?
    */
-  parseObjectTypeDefinition(): Node {
+  parseTypeDefinition(): Node {
     const start = this._lexer.token;
     const description = this.parseDescription();
     this.expectKeyword("type");
     const name = this.parseName();
     const interfaces = this.parseImplementsInterfaces();
-    const directives = this.parseAnnotations();
+    const annotations = this.parseAnnotations();
     const iFields = this.reverse(
       TokenKind.BRACE_L,
       this.parseFieldDefinition,
       TokenKind.BRACE_R,
       false
     );
-    return new ObjectDefinition(
+    return new TypeDefinition(
       this.loc(start),
       name,
       description,
       interfaces,
-      directives,
+      annotations,
       iFields as Array<FieldDefinition>
     );
   }
@@ -522,7 +700,7 @@ class Parser {
 
   /**
    * FieldDefinition :
-   *   - Description? Name ArgumentsDefinition? : Type Directives[Const]?
+   *   - Description? Name ArgumentsDefinition? : Type Annotations[Const]?
    */
   parseFieldDefinition(): FieldDefinition {
     const start = this._lexer.token;
@@ -534,7 +712,7 @@ class Parser {
     if (this.expectOptionalToken(TokenKind.EQUALS)) {
       defVal = this.parseValueLiteral(true);
     }
-    const directives = this.parseAnnotations();
+    const annotations = this.parseAnnotations();
 
     return new FieldDefinition(
       this.loc(start),
@@ -542,29 +720,31 @@ class Parser {
       description,
       type,
       defVal,
-      directives
+      annotations
     );
   }
 
   /**
-   * ArgumentsDefinition : ( InputValueDefinition+ )
+   * ParameterDefinition : ( InputValueDefinition+ )
    */
-  parseArgumentDefs(unary: boolean): [Array<InputValueDefinition>, boolean] {
+  parseParameterDefinitions(
+    unary: boolean
+  ): [Array<ParameterDefinition>, boolean] {
     if (this.peek(TokenKind.PAREN_L)) {
       // arguments operation
       const inputValDefs = this.reverse(
         TokenKind.PAREN_L,
-        this.parseInputValueDef,
+        this.parseParameterDefinition,
         TokenKind.PAREN_R,
         true
       );
-      return [inputValDefs as Array<InputValueDefinition>, false];
+      return [inputValDefs as Array<ParameterDefinition>, false];
     } else if (unary && this.peek(TokenKind.BRACE_L)) {
       // unary
       this._lexer.advance();
-      const inputValueDef = this.parseInputValueDef();
+      const inputValueDef = this.parseParameterDefinition();
       this.expectToken(TokenKind.BRACE_R);
-      const arr = new Array<InputValueDefinition>();
+      const arr = new Array<ParameterDefinition>();
       arr.push(inputValueDef);
       return [arr, true];
     }
@@ -575,10 +755,10 @@ class Parser {
   }
 
   /**
-   * InputValueDefinition :
-   *   - Description? Name : Type DefaultValue? Directives[Const]?
+   * ParameterDefinition :
+   *   - Description? Name : Type DefaultValue? Annotations[Const]?
    */
-  parseInputValueDef(): InputValueDefinition {
+  parseParameterDefinition(): ParameterDefinition {
     const start = this._lexer.token;
     const description = this.parseDescription();
     const name = this.parseName();
@@ -588,14 +768,14 @@ class Parser {
     if (this.expectOptionalToken(TokenKind.EQUALS)) {
       defaultValue = this.parseConstValue();
     }
-    const directives = this.parseAnnotations();
-    return new InputValueDefinition(
+    const annotations = this.parseAnnotations();
+    return new ParameterDefinition(
       this.loc(start),
       name,
       description,
       type,
       defaultValue,
-      directives
+      annotations
     );
   }
 
@@ -622,13 +802,13 @@ class Parser {
 
   /**
    * InterfaceTypeDefinition :
-   *   - Description? interface Name Directives[Const]? FieldsDefinition?
+   *   - Description? interface Name Annotations[Const]? FieldsDefinition?
    */
-  parseInterfaceTypeDefinition(): Node {
+  parseInterfaceDefinition(): Node {
     const start = this._lexer.token;
     const description = this.parseDescription();
     this.expectKeyword("interface"); // TODO
-    const directives = this.parseAnnotations();
+    const annotations = this.parseAnnotations();
     const iOperations = this.reverse(
       TokenKind.BRACE_L,
       this.parseOperationDefinition,
@@ -639,20 +819,20 @@ class Parser {
       this.loc(start),
       description,
       iOperations as OperationDefinition[],
-      directives
+      annotations
     );
   }
 
   /**
    * InterfaceTypeDefinition :
-   *   - Description? interface Name Directives[Const]? FieldsDefinition?
+   *   - Description? interface Name Annotations[Const]? FieldsDefinition?
    */
   parseRoleTypeDefinition(): Node {
     const start = this._lexer.token;
     const description = this.parseDescription();
     this.expectKeyword("role");
     const name = this.parseName();
-    const directives = this.parseAnnotations();
+    const annotations = this.parseAnnotations();
     const iOperations = this.reverse(
       TokenKind.BRACE_L,
       this.parseOperationDefinition,
@@ -664,27 +844,27 @@ class Parser {
       name,
       description,
       iOperations as OperationDefinition[],
-      directives
+      annotations
     );
   }
 
   /**
    * UnionTypeDefinition :
-   *   - Description? union Name Directives[Const]? UnionMemberTypes?
+   *   - Description? union Name Annotations[Const]? UnionMemberTypes?
    */
-  parseUnionTypeDefinition(): Node {
+  parseUnionDefinition(): Node {
     const start = this._lexer.token;
     const description = this.parseDescription();
     this.expectKeyword("union");
     const name = this.parseName();
-    const directives = this.parseAnnotations();
+    const annotations = this.parseAnnotations();
     this.expectToken(TokenKind.EQUALS);
     const types = this.parseUnionMembers();
     return new UnionDefinition(
       this.loc(start),
       name,
       description,
-      directives,
+      annotations,
       types
     );
   }
@@ -704,33 +884,33 @@ class Parser {
   }
 
   /**
-   * EnumTypeDefinition :
-   *   - Description? enum Name Directives[Const]? EnumValuesDefinition?
+   * EnumDefinition :
+   *   - Description? enum Name Annotations[Const]? EnumValuesDefinition?
    */
-  parseEnumTypeDefinition(): Node {
+  parseEnumDefinition(): Node {
     const start = this._lexer.token;
     const description = this.parseDescription();
     this.expectKeyword("enum");
     const name = this.parseName();
-    const directives = this.parseAnnotations();
+    const annotations = this.parseAnnotations();
     const iEnumValueDefs = this.reverse(
       TokenKind.BRACE_L,
       this.parseEnumValueDefinition,
       TokenKind.BRACE_R,
       false
-    ) as Array<EnumDefinition>;
+    ) as Array<EnumValueDefinition>;
 
     return new EnumDefinition(
       this.loc(start),
       name,
       description,
-      directives,
+      annotations,
       iEnumValueDefs
     );
   }
 
   /**
-   * EnumValueDefinition : Description? EnumValue Directives[Const]?
+   * EnumValueDefinition : Description? EnumValue Annotations[Const]?
    *
    * EnumValue : Name
    */
@@ -738,46 +918,61 @@ class Parser {
     const start = this._lexer.token;
     const description = this.parseDescription();
     const name = this.parseName();
-    const directives = this.parseAnnotations();
+    this.expectToken(TokenKind.EQUALS);
+
+    const token = this.expectToken(TokenKind.INT);
+    const index = new IntValue(this.loc(token), parseInt(token.value));
+    let display: StringValue | undefined;
+    if (this.peek(TokenKind.STRING)) {
+      display = this.parseStringLiteral();
+    }
+
+    const annotations = this.parseAnnotations();
     return new EnumValueDefinition(
       this.loc(start),
       name,
       description,
-      directives
+      index,
+      display,
+      annotations
     );
   }
 
-  parseAnnotationDefinition(): AnnotationDefinition {
+  parseDirectiveDefinition(): DirectiveDefinition {
     const start = this._lexer.token;
     const description = this.parseDescription();
-    this.expectKeyword("directive"); // TODO
+    this.expectKeyword("directive");
     this.expectToken(TokenKind.AT);
     const name = this.parseName();
-    const [args, _] = this.parseArgumentDefs(false);
+    const [args, _] = this.parseParameterDefinitions(false);
     this.expectKeyword("on");
-    const locs = this.parseAnnotationLocations();
+    const locs = this.parseDirectiveLocations();
+    const reqs: DirectiveRequire[] = [];
 
-    return new AnnotationDefinition(
+    if (this.expectOptionalKeyword("require")) {
+      do {
+        const req = this.parseDirectiveRequire();
+        reqs.push(req);
+      } while (this.peek(TokenKind.AT));
+    }
+
+    return new DirectiveDefinition(
       this.loc(start),
       name,
       description,
       args,
-      locs
+      locs,
+      reqs
     );
   }
 
-  /**
-   * AnnotationLocations :
-   *   - Name
-   *   - AnnotationLocations | Name
-   */
-  parseAnnotationLocations(): Array<Name> {
-    var locations = [];
-    do {
-      let name = this.parseName();
-      locations.push(name);
-    } while (this.expectOptionalToken(TokenKind.PIPE));
-    return locations as Array<Name>;
+  parseDirectiveRequire(): DirectiveRequire {
+    const start = this._lexer.token;
+    this.expectToken(TokenKind.AT);
+    const name = this.parseName();
+    this.expectKeyword("on");
+    const locations = this.parseDirectiveLocations();
+    return new DirectiveRequire(this.loc(start), name, locations);
   }
 
   /**
@@ -792,7 +987,7 @@ class Parser {
     do {
       locations.push(this.parseDirectiveLocation());
     } while (this.expectOptionalToken(TokenKind.PIPE));
-    return locations;
+    return locations as Array<Name>;
   }
 
   /*

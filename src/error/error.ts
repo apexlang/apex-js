@@ -1,4 +1,4 @@
-import { Node, Source } from "./ast";
+import { Node, Source } from "../ast";
 
 export class WidlError extends Error {
   nodes: Array<Node> | Node | undefined;
@@ -31,6 +31,36 @@ export function syntaxError(
     undefined,
     source,
     [position],
+    undefined
+  );
+}
+
+export function importError(node: Node, description: string): WidlError {
+  const loc = node.getLoc();
+  var source: Source | undefined;
+  if (loc != undefined) {
+    source = loc.source;
+  }
+  return new WidlError(
+    `Import Error: ${description}`,
+    node,
+    source,
+    undefined,
+    undefined
+  );
+}
+
+export function validationError(node: Node, description: string): WidlError {
+  const loc = node.getLoc();
+  var source: Source | undefined;
+  if (loc != undefined) {
+    source = loc.source;
+  }
+  return new WidlError(
+    `Validation Error: ${description}`,
+    node,
+    source,
+    undefined,
     undefined
   );
 }

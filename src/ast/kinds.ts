@@ -1,59 +1,40 @@
-export const kinds = {
-  // Name
-  Name: "Name",
-
-  // Document
-  Document: "Document",
-  OperationDefinition: "OperationDefinition",
-  VariableDefinition: "VariableDefinition",
-  Variable: "Variable",
-  SelectionSet: "SelectionSet",
-  Field: "Field",
-  Argument: "Argument",
-
-  // // Fragments
-  // FragmentSpread    :"FragmentSpread"
-  // InlineFragment    :"InlineFragment"
-  // FragmentDefinition:"FragmentDefinition"
+export enum Kind {
+  // Nodes
+  Document = "Document",
+  Name = "Name",
+  Annotation = "Annotation",
+  Argument = "Argument",
+  DirectiveRequire = "DirectiveRequire",
+  ImportName = "ImportName",
 
   // Values
-  IntValue: "IntValue",
-  FloatValue: "FloatValue",
-  StringValue: "StringValue",
-  BooleanValue: "BooleanValue",
-  EnumValue: "EnumValue",
-  ListValue: "ListValue",
-  MapValue: "MapValue",
-  ObjectValue: "ObjectValue",
-  ObjectField: "ObjectField",
-
-  // Annotations
-  Annotation: "Annotation",
+  IntValue = "IntValue",
+  FloatValue = "FloatValue",
+  StringValue = "StringValue",
+  BooleanValue = "BooleanValue",
+  EnumValue = "EnumValue",
+  ListValue = "ListValue",
+  MapValue = "MapValue",
+  ObjectValue = "ObjectValue",
+  ObjectField = "ObjectField",
 
   // Types
-  Named: "Named", // previously NamedType
-  List: "List", // previously ListType
-  Map: "Map",
-  Optional: "Optional",
+  Named = "Named",
+  ListType = "ListType",
+  MapType = "MapType",
+  Optional = "Optional",
 
-  // Type System Definitions
-  SchemaDefinition: "SchemaDefinition",
-  OperationTypeDefinition: "OperationTypeDefinition",
-
-  // Types Definitions
-  InputValueDefinition: "InputValueDefinition",
-
-  // Types Extensions
-  NamespaceDefinition: "NamespaceDefinition",
-  ScalarDefinition: "ScalarDefinition", // previously ScalarTypeDefinition
-  ObjectDefinition: "ObjectDefinition", // previously ObjectTypeDefinition
-  FieldDefinition: "FieldDefinition",
-  InterfaceDefinition: "InterfaceDefinition", // previously InterfaceTypeDefinition
-  RoleDefinition: "RoleDefinition",
-  UnionDefinition: "UnionDefinition", // previously UnionTypeDefinition
-  EnumDefinition: "EnumDefinition", // previously EnumTypeDefinition
-  EnumValueDefinition: "EnumValueDefinition",
-
-  // Annotation Definitions
-  AnnotationDefinition: "AnnotationDefinition",
-};
+  // Definitions
+  NamespaceDefinition = "NamespaceDefinition",
+  ImportDefinition = "ImportDefinition",
+  InterfaceDefinition = "InterfaceDefinition",
+  RoleDefinition = "RoleDefinition",
+  OperationDefinition = "OperationDefinition",
+  ParameterDefinition = "ParameterDefinition",
+  TypeDefinition = "TypeDefinition",
+  FieldDefinition = "FieldDefinition",
+  UnionDefinition = "UnionDefinition",
+  EnumDefinition = "EnumDefinition",
+  EnumValueDefinition = "EnumValueDefinition",
+  DirectiveDefinition = "DirectiveDefinition",
+}

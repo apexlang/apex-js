@@ -1,37 +1,19 @@
-import { AbstractNode } from "./node";
-import { Name } from "./name";
-import { kinds } from "./kinds";
+import { AbstractNode, Name, Node } from "./nodes";
+import { Kind } from "./kinds";
 import { Location } from "./location";
 
-export interface Value {
-  getValue(): any; //interface{}
-  getKind(): string;
+export interface Value extends Node {
+  getValue(): any;
+  getKind(): Kind;
+  isKind(kind: Kind): boolean;
   getLoc(): Location | undefined;
-  isKind(node: any): boolean;
-}
-
-export class Variable extends AbstractNode implements Value {
-  name: Name;
-
-  constructor(loc: Location | undefined, name: Name) {
-    super(kinds.Variable, loc);
-    this.name = name;
-  }
-
-  getValue(): any {
-    return this.GetName();
-  }
-
-  GetName(): any {
-    return this.name;
-  }
 }
 
 export class IntValue extends AbstractNode implements Value {
-  value: string;
+  value: number;
 
-  constructor(loc: Location | undefined, value: string) {
-    super(kinds.IntValue, loc);
+  constructor(loc: Location | undefined, value: number) {
+    super(Kind.IntValue, loc);
     this.value = value;
   }
 
@@ -41,10 +23,10 @@ export class IntValue extends AbstractNode implements Value {
 }
 
 export class FloatValue extends AbstractNode implements Value {
-  value: string;
+  value: number;
 
-  constructor(loc: Location | undefined, value: string) {
-    super(kinds.FloatValue, loc);
+  constructor(loc: Location | undefined, value: number) {
+    super(Kind.FloatValue, loc);
     this.value = value;
   }
 
@@ -57,7 +39,7 @@ export class StringValue extends AbstractNode implements Value {
   value: string;
 
   constructor(loc: Location | undefined, value: string) {
-    super(kinds.StringValue, loc);
+    super(Kind.StringValue, loc);
     this.value = value;
   }
 
@@ -70,7 +52,7 @@ export class BooleanValue extends AbstractNode implements Value {
   value: boolean;
 
   constructor(loc: Location | undefined, value: boolean) {
-    super(kinds.BooleanValue, loc);
+    super(Kind.BooleanValue, loc);
     this.value = value;
   }
 
@@ -83,7 +65,7 @@ export class EnumValue extends AbstractNode implements Value {
   value: string;
 
   constructor(loc: Location | undefined, value: string) {
-    super(kinds.EnumValue, loc);
+    super(Kind.EnumValue, loc);
     this.value = value;
   }
 
@@ -96,25 +78,12 @@ export class ListValue extends AbstractNode implements Value {
   value: Value[];
 
   constructor(loc: Location | undefined, value: Value[]) {
-    super(kinds.ListValue, loc);
+    super(Kind.ListValue, loc);
     this.value = value || null;
   }
 
   getValue(): any {
-    return this.value;
-  }
-}
-
-export class MapValue extends AbstractNode implements Value {
-  value: Value[];
-
-  constructor(loc: Location | undefined, value: Value[]) {
-    super(kinds.MapValue, loc);
-    this.value = value || null;
-  }
-
-  getValue(): any {
-    return this.value;
+    return this.value.map((item) => item.getValue());
   }
 }
 
@@ -122,26 +91,39 @@ export class ObjectValue extends AbstractNode implements Value {
   fields: ObjectField[];
 
   constructor(loc: Location | undefined, fields: ObjectField[]) {
-    super(kinds.ObjectValue, loc);
+    super(Kind.ObjectValue, loc);
     this.fields = fields || null;
   }
 
+  get(key: string): Value | undefined {
+    for (let field of this.fields) {
+      if (field.name.value == key) {
+        return field.value;
+      }
+    }
+    return undefined;
+  }
+
   getValue(): any {
-    return this.fields;
+    let obj: { [k: string]: any } = {};
+    this.fields.map((field) => {
+      obj[field.name.value] = field.value.getValue();
+    });
+    return obj;
   }
 }
 
 export class ObjectField extends AbstractNode implements Value {
-  value: Value;
   name: Name;
+  value: Value;
 
-  constructor(loc: Location | undefined, value: Value, name: Name) {
-    super(kinds.ObjectField, loc);
-    this.value = value || null;
+  constructor(loc: Location | undefined, name: Name, value: Value) {
+    super(Kind.ObjectField, loc);
     this.name = name || null;
+    this.value = value || null;
   }
 
   getValue(): any {
-    return this.value;
+    return this.value.getValue();
   }
 }

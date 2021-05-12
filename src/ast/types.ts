@@ -1,21 +1,17 @@
-import { Name } from "./name";
-import { AbstractNode } from "./node";
-import { kinds } from "./kinds";
+import { AbstractNode, Name, Node } from "./nodes";
+import { Kind } from "./kinds";
 import { Location } from "./location";
 
-export interface Type {
-  getKind(): string;
-  getLoc(): Location | undefined;
+export interface Type extends Node {
   string(): string;
-  isKind(node: any): boolean;
 }
 
 export class Named extends AbstractNode implements Type {
-  Name: Name;
+  name: Name;
 
   constructor(loc: Location | undefined, name: Name) {
-    super(kinds.Named, loc);
-    this.Name = name;
+    super(Kind.Named, loc);
+    this.name = name;
   }
 
   public string(): string {
@@ -23,11 +19,11 @@ export class Named extends AbstractNode implements Type {
   }
 }
 
-export class List extends AbstractNode implements Type {
+export class ListType extends AbstractNode implements Type {
   type: Type;
 
   constructor(loc: Location | undefined, type: Type) {
-    super(kinds.List, loc);
+    super(Kind.ListType, loc);
     this.type = type || null;
   }
 
@@ -36,12 +32,12 @@ export class List extends AbstractNode implements Type {
   }
 }
 
-export class Map extends AbstractNode implements Type {
+export class MapType extends AbstractNode implements Type {
   keyType: Type;
   valueType: Type;
 
   constructor(loc: Location | undefined, keyType: Type, valueType: Type) {
-    super(kinds.Map, loc);
+    super(Kind.MapType, loc);
     this.keyType = keyType || null;
     this.valueType = valueType || null;
   }
@@ -55,7 +51,7 @@ export class Optional extends AbstractNode implements Type {
   type: Type;
 
   constructor(loc: Location | undefined, type: Type) {
-    super(kinds.Optional, loc);
+    super(Kind.Optional, loc);
     this.type = type || null;
   }
 

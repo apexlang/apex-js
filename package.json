@@ -30,7 +30,9 @@
   "browser-min": "./dist/standalone.min.js",
   "exports": {
     ".": "./dist/cjs/index.js",
-    "./ast": "./dist/cjs/ast/index.js"
+    "./ast": "./dist/cjs/ast/index.js",
+    "./error": "./dist/cjs/error/index.js",
+    "./rules": "./dist/cjs/rules/rules.js"
   },
   "files": [
     "dist",
@@ -56,7 +58,7 @@
     "test:ci": "npm t -- --ci",
     "style": "npm run format -- --list-different && npm run lint",
     "style:fix": "npm run format:fix && npm run lint:fix",
-    "format": "prettier \"**/*.{ts,tsx,js,jsx,css,scss,sass,less,md}\"",
+    "format": "prettier \"src/**/*.{ts,tsx,js,jsx,css,scss,sass,less,md}\"",
     "format:fix": "npm run format -- --write",
     "lint": "eslint -c ./config/.eslintrc.json src --ext .ts",
     "lint:fix": "npm run lint -- --fix",

@@ -1,19 +1,22 @@
 import {
   NamespaceDefinition,
-  ObjectDefinition,
+  TypeDefinition,
   InterfaceDefinition,
   RoleDefinition,
   EnumDefinition,
   UnionDefinition,
-  InputValueDefinition,
+  ParameterDefinition,
   FieldDefinition,
   OperationDefinition,
   EnumValueDefinition,
-} from "./type_definitions";
+  DirectiveDefinition,
+  ImportDefinition,
+} from "./definitions";
 import { Document } from "./document";
-import { Name } from "./name";
-import { AnnotationDefinition } from "./definitions";
+import { Annotation, Name } from "./nodes";
 import autoBind from "../auto-bind";
+import { WidlError } from "../error/error";
+import { Kind } from "./kinds";
 
 export class Writer {
   private code: string = "";
@@ -31,12 +34,12 @@ export type ObjectMap<T = any> = { [key: string]: T };
 
 interface NamedParameters {
   role?: RoleDefinition;
-  object?: ObjectDefinition;
+  type?: TypeDefinition;
   operations?: OperationDefinition[];
   operation?: OperationDefinition;
-  argumentsDef?: InputValueDefinition[];
-  argument?: InputValueDefinition;
-  argumentIndex?: number;
+  parameters?: ParameterDefinition[];
+  parameter?: ParameterDefinition;
+  parameterIndex?: number;
   fields?: FieldDefinition[];
   field?: FieldDefinition;
   fieldIndex?: number;
@@ -44,9 +47,21 @@ interface NamedParameters {
   enumValues?: EnumValueDefinition[];
   enumValue?: EnumValueDefinition;
   union?: UnionDefinition;
-  input?: InputValueDefinition;
-  annotations?: AnnotationDefinition[];
-  annotation?: AnnotationDefinition;
+  directive?: DirectiveDefinition;
+  importDef?: ImportDefinition;
+  annotation?: Annotation;
+}
+
+class ErrorHolder {
+  errors: WidlError[];
+
+  constructor() {
+    this.errors = new Array<WidlError>();
+  }
+
+  reportError(error: WidlError): void {
+    this.errors.push(error);
+  }
 }
 
 export class Context {
@@ -55,21 +70,26 @@ export class Context {
 
   // Top-level definitions
   namespace: NamespaceDefinition;
+  imports: ImportDefinition[];
+  directives: DirectiveDefinition[];
+  directiveMap: Map<string, DirectiveDefinition>;
   interface: InterfaceDefinition;
   roles: RoleDefinition[];
-  objects: ObjectDefinition[];
+  types: TypeDefinition[];
   enums: EnumDefinition[];
   unions: UnionDefinition[];
-  inputs: InputValueDefinition[];
+  allTypes: Map<string, TypeDefinition | EnumDefinition | UnionDefinition>;
 
   // Drill-down definitions
+  importDef?: ImportDefinition;
+  directive?: DirectiveDefinition;
   role?: RoleDefinition;
-  object?: ObjectDefinition;
+  type?: TypeDefinition;
   operations?: OperationDefinition[];
   operation?: OperationDefinition;
-  argumentsDef?: InputValueDefinition[];
-  argument?: InputValueDefinition;
-  argumentIndex?: number;
+  parameters?: ParameterDefinition[];
+  parameter?: ParameterDefinition;
+  parameterIndex?: number;
   fields?: FieldDefinition[];
   field?: FieldDefinition;
   fieldIndex?: number;
@@ -77,9 +97,11 @@ export class Context {
   enumValues?: EnumValueDefinition[];
   enumValue?: EnumValueDefinition;
   union?: UnionDefinition;
-  input?: InputValueDefinition;
-  annotations?: AnnotationDefinition[];
-  annotation?: AnnotationDefinition;
+
+  annotations?: Annotation[];
+  annotation?: Annotation;
+
+  private errors: ErrorHolder;
 
   constructor(config: ObjectMap, document?: Document, other?: Context) {
     this.config = config || {};
@@ -87,41 +109,58 @@ export class Context {
     if (other != undefined) {
       this.document = other.document;
       this.namespace = other.namespace;
+      this.imports = other.imports;
+      this.directives = other.directives;
+      this.directiveMap = other.directiveMap;
       this.interface = other.interface;
       this.roles = other.roles;
       this.enums = other.enums;
-      this.objects = other.objects;
+      this.types = other.types;
       this.unions = other.unions;
-      this.inputs = other.inputs;
+      this.annotations = other.annotations;
+      this.annotation = other.annotation;
+      this.allTypes = other.allTypes;
+
+      this.errors = other.errors;
     } else {
       this.namespace = new NamespaceDefinition(
         undefined,
         undefined,
         new Name(undefined, "")
       );
+      this.directives = new Array<DirectiveDefinition>();
+      this.directiveMap = new Map<string, DirectiveDefinition>();
+      this.imports = new Array<ImportDefinition>();
       this.interface = new InterfaceDefinition();
       this.roles = new Array<RoleDefinition>();
       this.enums = new Array<EnumDefinition>();
-      this.objects = new Array<ObjectDefinition>();
+      this.types = new Array<TypeDefinition>();
       this.unions = new Array<UnionDefinition>();
-      this.inputs = new Array<InputValueDefinition>();
+      this.annotations = new Array<Annotation>();
+      this.allTypes = new Map<
+        string,
+        TypeDefinition | EnumDefinition | UnionDefinition
+      >();
+
+      this.errors = new ErrorHolder();
     }
 
-    if (document != undefined) {
+    if (this.document == undefined && document != undefined) {
       this.document = document!;
       this.parseDocument();
     }
+
     autoBind(this);
   }
 
   clone({
     role,
-    object,
+    type,
     operations,
     operation,
-    argumentsDef,
-    argument,
-    argumentIndex,
+    parameters,
+    parameter,
+    parameterIndex,
     fields,
     field,
     fieldIndex,
@@ -129,19 +168,21 @@ export class Context {
     enumValues,
     enumValue,
     union,
-    input,
-    annotations,
+    directive,
+    importDef,
     annotation,
   }: NamedParameters): Context {
     var context = new Context(this.config, undefined, this);
 
+    context.importDef = importDef || this.importDef;
+    context.directive = directive || this.directive;
     context.role = role || this.role;
-    context.object = object || this.object;
+    context.type = type || this.type;
     context.operations = operations || this.operations;
     context.operation = operation || this.operation;
-    context.argumentsDef = argumentsDef || this.argumentsDef;
-    context.argument = argument || this.argument;
-    context.argumentIndex = argumentIndex || this.argumentIndex;
+    context.parameters = parameters || this.parameters;
+    context.parameter = parameter || this.parameter;
+    context.parameterIndex = parameterIndex || this.parameterIndex;
     context.fields = fields || this.fields;
     context.field = field || this.field;
     context.fieldIndex = fieldIndex || this.fieldIndex;
@@ -149,8 +190,6 @@ export class Context {
     context.enumValues = enumValues || this.enumValues;
     context.enumValue = enumValue || this.enumValue;
     context.union = union || this.union;
-    context.input = input || this.input;
-    context.annotations = annotations || this.annotations;
     context.annotation = annotation || this.annotation;
 
     return context;
@@ -159,35 +198,68 @@ export class Context {
   private parseDocument(): void {
     this.document!.definitions.forEach((value) => {
       switch (true) {
-        case value instanceof NamespaceDefinition:
+        case value.isKind(Kind.NamespaceDefinition):
           this.namespace = value as NamespaceDefinition;
           break;
-        case value instanceof InterfaceDefinition:
+        case value.isKind(Kind.DirectiveDefinition):
+          const directive = value as DirectiveDefinition;
+          this.directives.push(directive);
+          this.directiveMap.set(directive.name.value, directive);
+          break;
+        case value.isKind(Kind.ImportDefinition):
+          this.imports.push(value as ImportDefinition);
+          break;
+        case value.isKind(Kind.InterfaceDefinition):
           this.interface = value as InterfaceDefinition;
           break;
-        case value instanceof RoleDefinition:
-          this.roles.push(value as RoleDefinition);
+        case value.isKind(Kind.RoleDefinition):
+          const role = value as RoleDefinition;
+          this.roles.push(role);
           break;
-        case value instanceof ObjectDefinition:
-          this.objects.push(value as ObjectDefinition);
+        case value.isKind(Kind.TypeDefinition):
+          const type = value as TypeDefinition;
+          this.types.push(type);
+          this.allTypes.set(type.name.value, type);
           break;
-        case value instanceof EnumDefinition:
-          this.enums.push(value as EnumDefinition);
+        case value.isKind(Kind.EnumDefinition):
+          const enumDef = value as EnumDefinition;
+          this.enums.push(enumDef);
+          this.allTypes.set(enumDef.name.value, enumDef);
           break;
-        case value instanceof UnionDefinition:
-          this.unions.push(value as UnionDefinition);
-          break;
-        case value instanceof InputValueDefinition:
-          this.inputs.push(value as InputValueDefinition);
+        case value.isKind(Kind.UnionDefinition):
+          const union = value as UnionDefinition;
+          this.unions.push(union);
+          this.allTypes.set(union.name.value, union);
           break;
       }
     });
+  }
+
+  reportError(error: WidlError): void {
+    this.errors.reportError(error);
+  }
+
+  getErrors(): WidlError[] {
+    return this.errors.errors;
   }
 }
 
 export interface Visitor {
   visitDocumentBefore(context: Context): void;
   visitNamespace(context: Context): void;
+
+  visitImportsBefore(context: Context): void;
+  visitImport(context: Context): void;
+  visitImportsAfter(context: Context): void;
+
+  visitDirectivesBefore(context: Context): void;
+  visitDirectiveBefore(context: Context): void;
+  visitDirective(context: Context): void;
+  visitDirectiveParametersBefore(context: Context): void;
+  visitDirectiveParameter(context: Context): void;
+  visitDirectiveParametersAfter(context: Context): void;
+  visitDirectiveAfter(context: Context): void;
+  visitDirectivesAfter(context: Context): void;
 
   visitAllOperationsBefore(context: Context): void;
   visitInterfaceBefore(context: Context): void;
@@ -198,9 +270,9 @@ export interface Visitor {
   visitOperationsBefore(context: Context): void;
   visitOperationBefore(context: Context): void;
   visitOperation(context: Context): void;
-  visitArgumentsBefore(context: Context): void;
-  visitArgument(context: Context): void;
-  visitArgumentsAfter(context: Context): void;
+  visitParametersBefore(context: Context): void;
+  visitParameter(context: Context): void;
+  visitParametersAfter(context: Context): void;
   visitOperationAfter(context: Context): void;
   visitOperationsAfter(context: Context): void;
   visitInterfaceAfter(context: Context): void;
@@ -208,14 +280,14 @@ export interface Visitor {
   visitRolesAfter(context: Context): void;
   visitAllOperationsAfter(context: Context): void;
 
-  visitObjectsBefore(context: Context): void;
-  visitObjectBefore(context: Context): void;
-  visitObject(context: Context): void;
-  visitObjectFieldsBefore(context: Context): void;
-  visitObjectField(context: Context): void;
-  visitObjectFieldsAfter(context: Context): void;
-  visitObjectAfter(context: Context): void;
-  visitObjectsAfter(context: Context): void;
+  visitTypesBefore(context: Context): void;
+  visitTypeBefore(context: Context): void;
+  visitType(context: Context): void;
+  visitTypeFieldsBefore(context: Context): void;
+  visitTypeField(context: Context): void;
+  visitTypeFieldsAfter(context: Context): void;
+  visitTypeAfter(context: Context): void;
+  visitTypesAfter(context: Context): void;
 
   visitEnumsBefore(context: Context): void;
   visitEnum(context: Context): void;
@@ -224,10 +296,20 @@ export interface Visitor {
   visitEnumValuesAfter(context: Context): void;
   visitEnumsAfter(context: Context): void;
 
-  visitDocumentAfter(_context: Context): void;
+  visitUnionsBefore(context: Context): void;
+  visitUnion(context: Context): void;
+  visitUnionsAfter(context: Context): void;
 
-  //visitUnion(context: Context): void;
-  //visitInput(context: Context): void;
+  visitAnnotationsBefore(context: Context): void;
+  visitAnnotationBefore(context: Context): void;
+  visitAnnotation(context: Context): void;
+  visitAnnotationArgumentsBefore(context: Context): void;
+  visitAnnotationArgument(context: Context): void;
+  visitAnnotationArgumentsAfter(context: Context): void;
+  visitAnnotationAfter(context: Context): void;
+  visitAnnotationsAfter(context: Context): void;
+
+  visitDocumentAfter(_context: Context): void;
 }
 
 export type Callbacks = Map<string, Map<string, VisitorCallback>>;
@@ -266,6 +348,75 @@ export abstract class AbstractVisitor implements Visitor {
   }
   public triggerNamespace(context: Context): void {
     this.triggerCallbacks(context, "Namespace");
+  }
+  public visitImportsBefore(context: Context): void {
+    this.triggerImportsBefore(context);
+  }
+  public triggerImportsBefore(context: Context): void {
+    this.triggerCallbacks(context, "ImportsBefore");
+  }
+  public visitImport(context: Context): void {
+    this.triggerImport(context);
+  }
+  public triggerImport(context: Context): void {
+    this.triggerCallbacks(context, "Import");
+  }
+  public visitImportsAfter(context: Context): void {
+    this.triggerImportsAfter(context);
+  }
+  public triggerImportsAfter(context: Context): void {
+    this.triggerCallbacks(context, "ImportsAfter");
+  }
+
+  public visitDirectivesBefore(context: Context): void {
+    this.triggerDirectivesBefore(context);
+  }
+  public triggerDirectivesBefore(context: Context): void {
+    this.triggerCallbacks(context, "DirectivesBefore");
+  }
+  public visitDirectiveBefore(context: Context): void {
+    this.triggerDirectiveBefore(context);
+  }
+  public triggerDirectiveBefore(context: Context): void {
+    this.triggerCallbacks(context, "DirectiveBefore");
+  }
+  public visitDirective(context: Context): void {
+    this.triggerDirective(context);
+  }
+  public triggerDirective(context: Context): void {
+    this.triggerCallbacks(context, "Directive");
+  }
+
+  public visitDirectiveParametersBefore(context: Context): void {
+    this.triggerDirectiveParametersBefore(context);
+  }
+  public triggerDirectiveParametersBefore(context: Context): void {
+    this.triggerCallbacks(context, "DirectiveParametersBefore");
+  }
+  public visitDirectiveParameter(context: Context): void {
+    this.triggerDirectiveParameter(context);
+  }
+  public triggerDirectiveParameter(context: Context): void {
+    this.triggerCallbacks(context, "DirectiveParameter");
+  }
+  public visitDirectiveParametersAfter(context: Context): void {
+    this.triggerDirectiveParametersAfter(context);
+  }
+  public triggerDirectiveParametersAfter(context: Context): void {
+    this.triggerCallbacks(context, "DirectiveParametersAfter");
+  }
+
+  public visitDirectiveAfter(context: Context): void {
+    this.triggerDirectiveBefore(context);
+  }
+  public triggerDirectiveAfter(context: Context): void {
+    this.triggerCallbacks(context, "DirectiveAfter");
+  }
+  public visitDirectivesAfter(context: Context): void {
+    this.triggerDirectivesAfter(context);
+  }
+  public triggerDirectivesAfter(context: Context): void {
+    this.triggerCallbacks(context, "DirectivesAfter");
   }
 
   public visitAllOperationsBefore(context: Context): void {
@@ -322,23 +473,23 @@ export abstract class AbstractVisitor implements Visitor {
   public triggerOperation(context: Context): void {
     this.triggerCallbacks(context, "Operation");
   }
-  public visitArgumentsBefore(context: Context): void {
-    this.triggerArgumentsBefore(context);
+  public visitParametersBefore(context: Context): void {
+    this.triggerParametersBefore(context);
   }
-  public triggerArgumentsBefore(context: Context): void {
-    this.triggerCallbacks(context, "ArgumentsBefore");
+  public triggerParametersBefore(context: Context): void {
+    this.triggerCallbacks(context, "ParametersBefore");
   }
-  public visitArgument(context: Context): void {
-    this.triggerArgument(context);
+  public visitParameter(context: Context): void {
+    this.triggerParameter(context);
   }
-  public triggerArgument(context: Context): void {
-    this.triggerCallbacks(context, "Argument");
+  public triggerParameter(context: Context): void {
+    this.triggerCallbacks(context, "Parameter");
   }
-  public visitArgumentsAfter(context: Context): void {
-    this.triggerArgumentsAfter(context);
+  public visitParametersAfter(context: Context): void {
+    this.triggerParametersAfter(context);
   }
-  public triggerArgumentsAfter(context: Context): void {
-    this.triggerCallbacks(context, "ArgumentsAfter");
+  public triggerParametersAfter(context: Context): void {
+    this.triggerCallbacks(context, "ParametersAfter");
   }
   public visitOperationAfter(context: Context): void {
     this.triggerOperationAfter(context);
@@ -377,53 +528,53 @@ export abstract class AbstractVisitor implements Visitor {
     this.triggerCallbacks(context, "AllOperationsAfter");
   }
 
-  public visitObjectsBefore(context: Context): void {
-    this.triggerObjectsBefore(context);
+  public visitTypesBefore(context: Context): void {
+    this.triggerTypesBefore(context);
   }
-  public triggerObjectsBefore(context: Context): void {
-    this.triggerCallbacks(context, "ObjectsBefore");
+  public triggerTypesBefore(context: Context): void {
+    this.triggerCallbacks(context, "TypesBefore");
   }
-  public visitObjectBefore(context: Context): void {
-    this.triggerObjectBefore(context);
+  public visitTypeBefore(context: Context): void {
+    this.triggerTypeBefore(context);
   }
-  public triggerObjectBefore(context: Context): void {
-    this.triggerCallbacks(context, "ObjectBefore");
+  public triggerTypeBefore(context: Context): void {
+    this.triggerCallbacks(context, "TypeBefore");
   }
-  public visitObject(context: Context): void {
-    this.triggerObject(context);
+  public visitType(context: Context): void {
+    this.triggerType(context);
   }
-  public triggerObject(context: Context): void {
-    this.triggerCallbacks(context, "Object");
+  public triggerType(context: Context): void {
+    this.triggerCallbacks(context, "Type");
   }
-  public visitObjectFieldsBefore(context: Context): void {
-    this.triggerObjectFieldsBefore(context);
+  public visitTypeFieldsBefore(context: Context): void {
+    this.triggerTypeFieldsBefore(context);
   }
-  public triggerObjectFieldsBefore(context: Context): void {
-    this.triggerCallbacks(context, "ObjectFieldsBefore");
+  public triggerTypeFieldsBefore(context: Context): void {
+    this.triggerCallbacks(context, "TypeFieldsBefore");
   }
-  public visitObjectField(context: Context): void {
-    this.triggerObjectField(context);
+  public visitTypeField(context: Context): void {
+    this.triggerTypeField(context);
   }
-  public triggerObjectField(context: Context): void {
-    this.triggerCallbacks(context, "ObjectField");
+  public triggerTypeField(context: Context): void {
+    this.triggerCallbacks(context, "TypeField");
   }
-  public visitObjectFieldsAfter(context: Context): void {
-    this.triggerObjectFieldsAfter(context);
+  public visitTypeFieldsAfter(context: Context): void {
+    this.triggerTypeFieldsAfter(context);
   }
-  public triggerObjectFieldsAfter(context: Context): void {
-    this.triggerCallbacks(context, "ObjectFieldsAfter");
+  public triggerTypeFieldsAfter(context: Context): void {
+    this.triggerCallbacks(context, "TypeFieldsAfter");
   }
-  public visitObjectAfter(context: Context): void {
-    this.triggerObjectAfter(context);
+  public visitTypeAfter(context: Context): void {
+    this.triggerTypeAfter(context);
   }
-  public triggerObjectAfter(context: Context): void {
-    this.triggerCallbacks(context, "ObjectAfter");
+  public triggerTypeAfter(context: Context): void {
+    this.triggerCallbacks(context, "TypeAfter");
   }
-  public visitObjectsAfter(context: Context): void {
-    this.triggerObjectsAfter(context);
+  public visitTypesAfter(context: Context): void {
+    this.triggerTypesAfter(context);
   }
-  public triggerObjectsAfter(context: Context): void {
-    this.triggerCallbacks(context, "ObjectsAfter");
+  public triggerTypesAfter(context: Context): void {
+    this.triggerCallbacks(context, "TypesAfter");
   }
 
   public visitEnumsBefore(context: Context): void {
@@ -463,15 +614,81 @@ export abstract class AbstractVisitor implements Visitor {
     this.triggerCallbacks(context, "EnumsAfter");
   }
 
+  public visitUnionsBefore(context: Context): void {
+    this.triggerUnionsBefore(context);
+  }
+  public triggerUnionsBefore(context: Context): void {
+    this.triggerCallbacks(context, "UnionsBefore");
+  }
+  public visitUnion(context: Context): void {
+    this.triggerCallbacks(context, "Union");
+  }
+  public triggerUnion(context: Context): void {
+    this.triggerCallbacks(context, "Union");
+  }
+  public visitUnionsAfter(context: Context): void {
+    this.triggerUnionsAfter(context);
+  }
+  public triggerUnionsAfter(context: Context): void {
+    this.triggerCallbacks(context, "UnionsAfter");
+  }
+
+  public visitAnnotationsBefore(context: Context): void {
+    this.triggerAnnotationsBefore(context);
+  }
+  public triggerAnnotationsBefore(context: Context): void {
+    this.triggerCallbacks(context, "AnnotationsBefore");
+  }
+  public visitAnnotationBefore(context: Context): void {
+    this.triggerAnnotationBefore(context);
+  }
+  public triggerAnnotationBefore(context: Context): void {
+    this.triggerCallbacks(context, "AnnotationBefore");
+  }
+  public visitAnnotation(context: Context): void {
+    this.triggerAnnotation(context);
+  }
+  public triggerAnnotation(context: Context): void {
+    this.triggerCallbacks(context, "Annotation");
+  }
+
+  public visitAnnotationArgumentsBefore(context: Context): void {
+    this.triggerAnnotationArgumentsBefore(context);
+  }
+  public triggerAnnotationArgumentsBefore(context: Context): void {
+    this.triggerCallbacks(context, "AnnotationArgumentsBefore");
+  }
+  public visitAnnotationArgument(context: Context): void {
+    this.triggerAnnotationArgument(context);
+  }
+  public triggerAnnotationArgument(context: Context): void {
+    this.triggerCallbacks(context, "AnnotationArgument");
+  }
+  public visitAnnotationArgumentsAfter(context: Context): void {
+    this.triggerAnnotationArgumentsAfter(context);
+  }
+  public triggerAnnotationArgumentsAfter(context: Context): void {
+    this.triggerCallbacks(context, "AnnotationArgumentsAfter");
+  }
+  public visitAnnotationAfter(context: Context): void {
+    this.triggerAnnotationAfter(context);
+  }
+  public triggerAnnotationAfter(context: Context): void {
+    this.triggerCallbacks(context, "AnnotationAfter");
+  }
+  public visitAnnotationsAfter(context: Context): void {
+    this.triggerAnnotationsAfter(context);
+  }
+  public triggerAnnotationsAfter(context: Context): void {
+    this.triggerCallbacks(context, "AnnotationsAfter");
+  }
+
   public visitDocumentAfter(context: Context): void {
     this.triggerDocumentAfter(context);
   }
   public triggerDocumentAfter(context: Context): void {
     this.triggerCallbacks(context, "DocumentAfter");
   }
-
-  //public visitUnion(context: Context): void {}
-  //public visitInput(context: Context): void {}
 }
 
 export class BaseVisitor extends AbstractVisitor {
@@ -484,5 +701,293 @@ export class BaseVisitor extends AbstractVisitor {
 
   protected write(code: string): void {
     this.writer.write(code);
+  }
+}
+
+export class MultiVisitor extends AbstractVisitor {
+  private visitors: Visitor[];
+
+  constructor(...visitors: Visitor[]) {
+    super();
+    this.visitors = new Array<Visitor>();
+    this.visitors.push(...visitors);
+  }
+
+  addVisitors(...visitors: Visitor[]): void {
+    this.visitors.push(...visitors);
+  }
+
+  public visitDocumentBefore(context: Context): void {
+    this.visitors.map((visitor) => {
+      visitor.visitDocumentBefore(context);
+    });
+  }
+  public visitNamespace(context: Context): void {
+    this.visitors.map((visitor) => {
+      visitor.visitNamespace(context);
+    });
+  }
+  public visitImportsBefore(context: Context): void {
+    this.visitors.map((visitor) => {
+      visitor.visitImportsBefore(context);
+    });
+  }
+  public visitImport(context: Context): void {
+    this.visitors.map((visitor) => {
+      visitor.visitImport(context);
+    });
+  }
+  public visitImportsAfter(context: Context): void {
+    this.visitors.map((visitor) => {
+      visitor.visitImportsAfter(context);
+    });
+  }
+
+  public visitDirectivesBefore(context: Context): void {
+    this.visitors.map((visitor) => {
+      visitor.visitDirectivesBefore(context);
+    });
+  }
+  public visitDirective(context: Context): void {
+    this.visitors.map((visitor) => {
+      visitor.visitDirective(context);
+    });
+  }
+  public visitDirectiveParametersBefore(context: Context): void {
+    this.visitors.map((visitor) => {
+      visitor.visitDirectiveParametersBefore(context);
+    });
+  }
+  public visitDirectiveParameter(context: Context): void {
+    this.visitors.map((visitor) => {
+      visitor.visitDirectiveParameter(context);
+    });
+  }
+  public visitDirectiveParametersAfter(context: Context): void {
+    this.visitors.map((visitor) => {
+      visitor.visitDirectiveParametersAfter(context);
+    });
+  }
+  public visitDirectivesAfter(context: Context): void {
+    this.visitors.map((visitor) => {
+      visitor.visitDirectivesAfter(context);
+    });
+  }
+
+  public visitAllOperationsBefore(context: Context): void {
+    this.visitors.map((visitor) => {
+      visitor.visitAllOperationsBefore(context);
+    });
+  }
+  public visitInterfaceBefore(context: Context): void {
+    this.visitors.map((visitor) => {
+      visitor.visitInterfaceBefore(context);
+    });
+  }
+  public visitInterface(context: Context): void {
+    this.visitors.map((visitor) => {
+      visitor.visitInterface(context);
+    });
+  }
+  public visitRolesBefore(context: Context): void {
+    this.visitors.map((visitor) => {
+      visitor.visitRolesBefore(context);
+    });
+  }
+  public visitRoleBefore(context: Context): void {
+    this.visitors.map((visitor) => {
+      visitor.visitRoleBefore(context);
+    });
+  }
+  public visitRole(context: Context): void {
+    this.visitors.map((visitor) => {
+      visitor.visitRole(context);
+    });
+  }
+  public visitOperationsBefore(context: Context): void {
+    this.visitors.map((visitor) => {
+      visitor.visitOperationsBefore(context);
+    });
+  }
+  public visitOperationBefore(context: Context): void {
+    this.visitors.map((visitor) => {
+      visitor.visitOperationBefore(context);
+    });
+  }
+  public visitOperation(context: Context): void {
+    this.visitors.map((visitor) => {
+      visitor.visitOperation(context);
+    });
+  }
+  public visitParametersBefore(context: Context): void {
+    this.visitors.map((visitor) => {
+      visitor.visitParametersBefore(context);
+    });
+  }
+  public visitParameter(context: Context): void {
+    this.visitors.map((visitor) => {
+      visitor.visitParameter(context);
+    });
+  }
+  public visitParametersAfter(context: Context): void {
+    this.visitors.map((visitor) => {
+      visitor.visitParametersAfter(context);
+    });
+  }
+  public visitOperationAfter(context: Context): void {
+    this.visitors.map((visitor) => {
+      visitor.visitOperationAfter(context);
+    });
+  }
+  public visitOperationsAfter(context: Context): void {
+    this.visitors.map((visitor) => {
+      visitor.visitOperationsAfter(context);
+    });
+  }
+  public visitInterfaceAfter(context: Context): void {
+    this.visitors.map((visitor) => {
+      visitor.visitInterfaceAfter(context);
+    });
+  }
+  public visitRoleAfter(context: Context): void {
+    this.visitors.map((visitor) => {
+      visitor.visitRoleAfter(context);
+    });
+  }
+  public visitRolesAfter(context: Context): void {
+    this.visitors.map((visitor) => {
+      visitor.visitRolesAfter(context);
+    });
+  }
+  public visitAllOperationsAfter(context: Context): void {
+    this.visitors.map((visitor) => {
+      visitor.visitAllOperationsAfter(context);
+    });
+  }
+
+  public visitTypesBefore(context: Context): void {
+    this.visitors.map((visitor) => {
+      visitor.visitTypesBefore(context);
+    });
+  }
+  public visitTypeBefore(context: Context): void {
+    this.visitors.map((visitor) => {
+      visitor.visitTypeBefore(context);
+    });
+  }
+  public visitType(context: Context): void {
+    this.visitors.map((visitor) => {
+      visitor.visitType(context);
+    });
+  }
+  public visitTypeFieldsBefore(context: Context): void {
+    this.visitors.map((visitor) => {
+      visitor.visitTypeFieldsBefore(context);
+    });
+  }
+  public visitTypeField(context: Context): void {
+    this.visitors.map((visitor) => {
+      visitor.visitTypeField(context);
+    });
+  }
+  public visitTypeFieldsAfter(context: Context): void {
+    this.visitors.map((visitor) => {
+      visitor.visitTypeFieldsAfter(context);
+    });
+  }
+  public visitTypeAfter(context: Context): void {
+    this.visitors.map((visitor) => {
+      visitor.visitTypeAfter(context);
+    });
+  }
+  public visitTypesAfter(context: Context): void {
+    this.visitors.map((visitor) => {
+      visitor.visitTypesAfter(context);
+    });
+  }
+
+  public visitEnumsBefore(context: Context): void {
+    this.visitors.map((visitor) => {
+      visitor.visitEnumsAfter(context);
+    });
+  }
+  public visitEnum(context: Context): void {
+    this.visitors.map((visitor) => {
+      visitor.visitEnum(context);
+    });
+  }
+  public visitEnumValuesBefore(context: Context): void {
+    this.visitors.map((visitor) => {
+      visitor.visitEnumValuesBefore(context);
+    });
+  }
+  public visitEnumValue(context: Context): void {
+    this.visitors.map((visitor) => {
+      visitor.visitEnumValue(context);
+    });
+  }
+  public visitEnumValuesAfter(context: Context): void {
+    this.visitors.map((visitor) => {
+      visitor.visitEnumValuesAfter(context);
+    });
+  }
+  public visitEnumsAfter(context: Context): void {
+    this.visitors.map((visitor) => {
+      visitor.visitEnumsAfter(context);
+    });
+  }
+
+  public visitUnionsBefore(context: Context): void {
+    this.visitors.map((visitor) => {
+      visitor.visitUnionsBefore(context);
+    });
+  }
+  public visitUnion(context: Context): void {
+    this.visitors.map((visitor) => {
+      visitor.visitUnion(context);
+    });
+  }
+
+  public visitUnionsAfter(context: Context): void {
+    this.visitors.map((visitor) => {
+      visitor.visitUnionsAfter(context);
+    });
+  }
+
+  public visitAnnotationsBefore(context: Context): void {
+    this.visitors.map((visitor) => {
+      visitor.visitAnnotationsBefore(context);
+    });
+  }
+  public visitAnnotation(context: Context): void {
+    this.visitors.map((visitor) => {
+      visitor.visitAnnotation(context);
+    });
+  }
+  public visitAnnotationArgumentsBefore(context: Context): void {
+    this.visitors.map((visitor) => {
+      visitor.visitAnnotationArgumentsBefore(context);
+    });
+  }
+  public visitAnnotationArgument(context: Context): void {
+    this.visitors.map((visitor) => {
+      visitor.visitAnnotationArgument(context);
+    });
+  }
+  public visitAnnotationArgumentsAfter(context: Context): void {
+    this.visitors.map((visitor) => {
+      visitor.visitAnnotationArgumentsAfter(context);
+    });
+  }
+  public visitAnnotationsAfter(context: Context): void {
+    this.visitors.map((visitor) => {
+      visitor.visitAnnotationsAfter(context);
+    });
+  }
+
+  public visitDocumentAfter(context: Context): void {
+    this.visitors.map((visitor) => {
+      visitor.visitDocumentAfter(context);
+    });
   }
 }
