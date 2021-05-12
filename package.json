@@ -1,6 +1,6 @@
 {
   "name": "@wapc/widl",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "waPC Interface Definition Language",
   "keywords": [
     "webassembly",
