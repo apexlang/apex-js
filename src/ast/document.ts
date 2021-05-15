@@ -42,7 +42,9 @@ export class Document extends AbstractNode {
 
     visitor.visitTypesBefore(context);
     context.types.map((type) => {
-      type.accept(context.clone({ type: type }), visitor);
+      if (!type.annotation("novisit")) {
+        type.accept(context.clone({ type: type }), visitor);
+      }
     });
     visitor.visitTypesAfter(context);
 
@@ -54,7 +56,9 @@ export class Document extends AbstractNode {
 
     visitor.visitEnumsBefore(context);
     context.enums.map((enumDef) => {
-      enumDef.accept(context.clone({ enumDef: enumDef }), visitor);
+      if (!enumDef.annotation("novisit")) {
+        enumDef.accept(context.clone({ enumDef: enumDef }), visitor);
+      }
     });
     visitor.visitEnumsAfter(context);
 

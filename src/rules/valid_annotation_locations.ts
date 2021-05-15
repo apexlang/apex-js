@@ -181,7 +181,7 @@ export class ValidAnnotationLocations extends AbstractVisitor {
         context.reportError(
           validationError(
             annotation,
-            `annotation "${annotation.name.value}" requires "${dir.name.value}" to exist on relative ${locations}`
+            `annotation "${annotation.name.value}" requires "${req.directive.value}" to exist on relative ${locations}`
           )
         );
       }

@@ -21,7 +21,7 @@ export interface ValidationRule {
 }
 
 export const CommonRules: Array<ValidationRule> = [
-  CamelCaseDirectiveNames,
+  //CamelCaseDirectiveNames,
   PascalCaseTypeNames,
   UniqueDirectiveNames,
   UniqueObjectNames,

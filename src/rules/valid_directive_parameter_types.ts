@@ -21,13 +21,13 @@ export class ValidDirectiveParameterTypes extends AbstractVisitor {
   }
 
   private check(context: Context, dir: DirectiveDefinition, type: Type) {
-    switch (true) {
-      case type.isKind(Kind.Optional):
+    switch (type.getKind()) {
+      case Kind.Optional:
         const optional = type as Optional;
         this.check(context, dir, optional.type);
         break;
 
-      case type.isKind(Kind.Named):
+      case Kind.Named:
         const named = type as Named;
         const typeDef = context.allTypes.get(named.name.value);
         if (typeDef == undefined) {
@@ -44,12 +44,12 @@ export class ValidDirectiveParameterTypes extends AbstractVisitor {
         }
         break;
 
-      case type.isKind(Kind.ListType):
+      case Kind.ListType:
         const listType = type as ListType;
         this.check(context, dir, listType.type);
         break;
 
-      case type.isKind(Kind.MapType):
+      case Kind.MapType:
         const mapType = type as MapType;
         this.check(context, dir, mapType.valueType);
         break;

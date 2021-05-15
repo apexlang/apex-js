@@ -197,36 +197,36 @@ export class Context {
 
   private parseDocument(): void {
     this.document!.definitions.forEach((value) => {
-      switch (true) {
-        case value.isKind(Kind.NamespaceDefinition):
+      switch (value.getKind()) {
+        case Kind.NamespaceDefinition:
           this.namespace = value as NamespaceDefinition;
           break;
-        case value.isKind(Kind.DirectiveDefinition):
+        case Kind.DirectiveDefinition:
           const directive = value as DirectiveDefinition;
           this.directives.push(directive);
           this.directiveMap.set(directive.name.value, directive);
           break;
-        case value.isKind(Kind.ImportDefinition):
+        case Kind.ImportDefinition:
           this.imports.push(value as ImportDefinition);
           break;
-        case value.isKind(Kind.InterfaceDefinition):
+        case Kind.InterfaceDefinition:
           this.interface = value as InterfaceDefinition;
           break;
-        case value.isKind(Kind.RoleDefinition):
+        case Kind.RoleDefinition:
           const role = value as RoleDefinition;
           this.roles.push(role);
           break;
-        case value.isKind(Kind.TypeDefinition):
+        case Kind.TypeDefinition:
           const type = value as TypeDefinition;
           this.types.push(type);
           this.allTypes.set(type.name.value, type);
           break;
-        case value.isKind(Kind.EnumDefinition):
+        case Kind.EnumDefinition:
           const enumDef = value as EnumDefinition;
           this.enums.push(enumDef);
           this.allTypes.set(enumDef.name.value, enumDef);
           break;
-        case value.isKind(Kind.UnionDefinition):
+        case Kind.UnionDefinition:
           const union = value as UnionDefinition;
           this.unions.push(union);
           this.allTypes.set(union.name.value, union);

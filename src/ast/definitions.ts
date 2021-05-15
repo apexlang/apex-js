@@ -49,8 +49,11 @@ export class NamespaceDefinition extends AbstractNode {
     this.annotations = annotations || [];
   }
 
-  directive(name: string): Annotation | undefined {
-    return getAnnotation(name, this.annotations);
+  annotation(
+    name: string,
+    callback?: (annotation: Annotation) => void
+  ): Annotation | undefined {
+    return getAnnotation(name, this.annotations, callback);
   }
 
   public accept(context: Context, visitor: Visitor): void {
@@ -82,8 +85,11 @@ export class ImportDefinition extends AbstractNode {
     this.annotations = annotations || [];
   }
 
-  directive(name: string): Annotation | undefined {
-    return getAnnotation(name, this.annotations);
+  annotation(
+    name: string,
+    callback?: (annotation: Annotation) => void
+  ): Annotation | undefined {
+    return getAnnotation(name, this.annotations, callback);
   }
 
   public accept(context: Context, visitor: Visitor): void {
@@ -115,8 +121,11 @@ export class TypeDefinition extends AbstractNode {
     this.fields = fields;
   }
 
-  annotation(name: string): Annotation | undefined {
-    return getAnnotation(name, this.annotations);
+  annotation(
+    name: string,
+    callback?: (annotation: Annotation) => void
+  ): Annotation | undefined {
+    return getAnnotation(name, this.annotations, callback);
   }
 
   public accept(context: Context, visitor: Visitor): void {
@@ -183,8 +192,11 @@ export class OperationDefinition extends AbstractNode {
     return mp;
   }
 
-  annotaton(name: string): Annotation | undefined {
-    return getAnnotation(name, this.annotations);
+  annotation(
+    name: string,
+    callback?: (annotation: Annotation) => void
+  ): Annotation | undefined {
+    return getAnnotation(name, this.annotations, callback);
   }
 
   public accept(context: Context, visitor: Visitor): void {
@@ -230,8 +242,11 @@ export abstract class ValuedDefinition extends AbstractNode {
     this.annotations = annotations;
   }
 
-  directive(name: string): Annotation | undefined {
-    return getAnnotation(name, this.annotations);
+  annotation(
+    name: string,
+    callback?: (annotation: Annotation) => void
+  ): Annotation | undefined {
+    return getAnnotation(name, this.annotations, callback);
   }
 }
 
@@ -300,8 +315,11 @@ export class InterfaceDefinition extends AbstractNode implements Definition {
     this.annotations = annotations || [];
   }
 
-  directive(name: string): Annotation | undefined {
-    return getAnnotation(name, this.annotations);
+  annotation(
+    name: string,
+    callback?: (annotation: Annotation) => void
+  ): Annotation | undefined {
+    return getAnnotation(name, this.annotations, callback);
   }
 
   public accept(context: Context, visitor: Visitor): void {
@@ -340,8 +358,11 @@ export class RoleDefinition extends AbstractNode implements Definition {
     this.annotations = annotations || [];
   }
 
-  directive(name: string): Annotation | undefined {
-    return getAnnotation(name, this.annotations);
+  annotation(
+    name: string,
+    callback?: (annotation: Annotation) => void
+  ): Annotation | undefined {
+    return getAnnotation(name, this.annotations, callback);
   }
 
   public accept(context: Context, visitor: Visitor): void {
@@ -380,8 +401,11 @@ export class UnionDefinition extends AbstractNode implements Definition {
     this.types = types;
   }
 
-  directive(name: string): Annotation | undefined {
-    return getAnnotation(name, this.annotations);
+  annotation(
+    name: string,
+    callback?: (annotation: Annotation) => void
+  ): Annotation | undefined {
+    return getAnnotation(name, this.annotations, callback);
   }
 
   public accept(context: Context, visitor: Visitor): void {
@@ -410,8 +434,11 @@ export class EnumDefinition extends AbstractNode implements Definition {
     this.values = values;
   }
 
-  directive(name: string): Annotation | undefined {
-    return getAnnotation(name, this.annotations);
+  annotation(
+    name: string,
+    callback?: (annotation: Annotation) => void
+  ): Annotation | undefined {
+    return getAnnotation(name, this.annotations, callback);
   }
 
   public accept(context: Context, visitor: Visitor): void {
@@ -452,8 +479,11 @@ export class EnumValueDefinition extends AbstractNode implements Definition {
     this.annotations = annotations;
   }
 
-  directive(name: string): Annotation | undefined {
-    return getAnnotation(name, this.annotations);
+  annotation(
+    name: string,
+    callback?: (annotation: Annotation) => void
+  ): Annotation | undefined {
+    return getAnnotation(name, this.annotations, callback);
   }
 
   public accept(context: Context, visitor: Visitor): void {
@@ -533,13 +563,17 @@ function visitAnnotations(
 
 function getAnnotation(
   name: string,
-  annotations?: Annotation[]
+  annotations?: Annotation[],
+  callback?: (annotation: Annotation) => void
 ): Annotation | undefined {
   if (annotations == undefined) {
     return undefined;
   }
   for (let a of annotations!) {
     if (a.name.value === name) {
+      if (callback != undefined) {
+        callback(a);
+      }
       return a;
     }
   }

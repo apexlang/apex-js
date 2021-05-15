@@ -79,13 +79,13 @@ export class ValidAnnotationArguments extends AbstractVisitor {
     value: Value,
     annotation: Annotation
   ) {
-    switch (true) {
-      case type.isKind(Kind.Optional):
+    switch (type.getKind()) {
+      case Kind.Optional:
         const optional = type as Optional;
         this.check(context, optional.type, value, annotation);
         break;
 
-      case type.isKind(Kind.Named):
+      case Kind.Named:
         const named = type as Named;
         if (named.name.value == "string") {
           if (!value.isKind(Kind.StringValue)) {
@@ -206,16 +206,16 @@ export class ValidAnnotationArguments extends AbstractVisitor {
               // Validate types
               this.check(context, f.type, field.value, annotation);
             }
-            for (let field of type.fields) {
+            fields.forEach((field, name) => {
               if (!field.type.isKind(Kind.Optional)) {
                 context.reportError(
                   validationError(
                     obj,
-                    `missing required field "${field.name.value}" in annotation "${annotation.name.value}"`
+                    `missing required field "${field.name.value}" for type "${type.name.value}" in annotation "${annotation.name.value}"`
                   )
                 );
               }
-            }
+            });
           } else {
             context.reportError(
               validationError(
@@ -229,7 +229,7 @@ export class ValidAnnotationArguments extends AbstractVisitor {
         }
         break;
 
-      case type.isKind(Kind.ListType):
+      case Kind.ListType:
         const list = type as ListType;
         if (!value.isKind(Kind.ListValue)) {
           context.reportError(
@@ -248,7 +248,7 @@ export class ValidAnnotationArguments extends AbstractVisitor {
         }
         break;
 
-      case type.isKind(Kind.MapType):
+      case Kind.MapType:
         const map = type as MapType;
         if (!value.isKind(Kind.ObjectValue)) {
           context.reportError(

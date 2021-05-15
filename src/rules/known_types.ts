@@ -34,6 +34,13 @@ export class KnownTypes extends AbstractVisitor {
   }
   visitOperationAfter(context: Context): void {
     const oper = context.operation!;
+    // "void" is a special case for operations without a return.
+    if (
+      oper.type.isKind(Kind.Named) &&
+      (oper.type as Named).name.value == "void"
+    ) {
+      return;
+    }
     this.checkType(
       context,
       `return`,
@@ -80,8 +87,8 @@ export class KnownTypes extends AbstractVisitor {
     parentName: string,
     t: Type
   ) {
-    switch (true) {
-      case t.isKind(Kind.Named):
+    switch (t.getKind()) {
+      case Kind.Named:
         const named = t as Named;
         const name = named.name.value;
         var first = name.charAt(0);
@@ -109,18 +116,18 @@ export class KnownTypes extends AbstractVisitor {
         }
         break;
 
-      case t.isKind(Kind.Optional):
+      case Kind.Optional:
         const optional = t as Optional;
         this.checkType(context, forName, parentName, optional.type);
         break;
 
-      case t.isKind(Kind.MapType):
+      case Kind.MapType:
         const map = t as MapType;
         this.checkType(context, forName, parentName, map.keyType);
         this.checkType(context, forName, parentName, map.valueType);
         break;
 
-      case t.isKind(Kind.ListType):
+      case Kind.ListType:
         const list = t as ListType;
         this.checkType(context, forName, parentName, list.type);
         break;
