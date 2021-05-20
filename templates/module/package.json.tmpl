@@ -1,0 +1,83 @@
+{
+  "name": "{{.module}}",
+  "version": "{{.version}}",
+  "description": "{{.description}}",
+  "keywords": [
+    "widl",
+    "codegen"
+  ],
+  "engines": {
+    "node": ">=8.5"
+  },
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
+  "types": "./dist/types/index.d.ts",
+  "browser": "./dist/standalone.js",
+  "browser-min": "./dist/standalone.min.js",
+  "exports": {
+    ".": "./dist/cjs/index.js",
+    "./assemblyscript": "./dist/cjs/assemblyscript/index.js",
+    "./go": "./dist/cjs/go/index.js",
+    "./rust": "./dist/cjs/rust/index.js",
+    "./tinygo": "./dist/cjs/tinygo/index.js",
+    "./utils": "./dist/cjs/utils/index.js"
+  },
+  "files": [
+    "templates",
+    "dist",
+    "README.md",
+    "test",
+    "src",
+    "docs"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "prebuild": "npm run clean",
+    "build": "npm run build:esm && npm run build:cjs && npm run build:umd && npm run build:umd:min",
+    "build:esm": "tsc --module es2015 --outDir dist/esm",
+    "build:cjs": "tsc --declaration --declarationMap --declarationDir dist/types ",
+    "build:umd": "rollup --config config/rollup.config.js",
+    "build:umd:min": "cd dist && uglifyjs --compress --mangle --source-map --comments --output standalone.min.js -- standalone.js",
+    "watch": "tsc -w",
+    "clean": "shx rm -rf dist",
+    "docs": "typedoc --theme minimal --exclude \"**/src/**/__tests__/*.*\" --out docs src/",
+    "test": "jest -c ./config/jest.config.js --passWithNoTests",
+    "test:watch": "npm t -- --watch",
+    "test:coverage": "npm t -- --coverage",
+    "test:ci": "npm t -- --ci",
+    "style": "npm run format -- --list-different && npm run lint",
+    "style:fix": "npm run format:fix && npm run lint:fix",
+    "format": "prettier \"src/**/*.{ts,tsx,js,jsx,css,scss,sass,less,md}\"",
+    "format:fix": "npm run format -- --write",
+    "lint": "eslint -c ./config/.eslintrc.json src --ext .ts",
+    "lint:fix": "npm run lint -- --fix",
+    "prerelease": "npm run build",
+    "release": "standard-version",
+    "release:github": "git push --no-verify --follow-tags origin master",
+    "release:npm": "npm publish --access public",
+    "release:preflight": "npm pack --dry-run"
+  },
+  "dependencies": {
+    "@wapc/widl": "^0.0.6"
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^17.1.0",
+    "@rollup/plugin-node-resolve": "^11.2.0",
+    "@types/jest": "23.3.10",
+    "@typescript-eslint/eslint-plugin": "^4.22.0",
+    "@typescript-eslint/parser": "^4.22.0",
+    "eslint": "^7.22.0",
+    "jest": "26.6.3",
+    "jest-watch-typeahead": "^0.6.1",
+    "prettier": "^2.2.1",
+    "rollup": "2.41.3",
+    "shx": "0.3.3",
+    "standard-version": "4.4.0",
+    "ts-jest": "26.5.3",
+    "tslib": "^2.1.0",
+    "typedoc": "0.20.32",
+    "typescript": "4.1.3",
+    "uglify-js": "^3.13.1",
+    "webpack-config-utils": "2.3.1"
+  }
+}
