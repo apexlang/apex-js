@@ -30,6 +30,12 @@ export class Document extends AbstractNode {
     });
     visitor.visitDirectivesAfter(context);
 
+    visitor.visitAliasesBefore(context);
+    context.aliases.map((alias) => {
+      alias.accept(context.clone({ alias: alias }), visitor);
+    });
+    visitor.visitAliasesAfter(context);
+
     visitor.visitAllOperationsBefore(context);
     context.interface.accept(context, visitor);
 

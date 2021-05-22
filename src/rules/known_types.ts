@@ -29,8 +29,9 @@ const builtInTypeNames = new Set([
 ]);
 
 export class KnownTypes extends AbstractVisitor {
-  visitOperationBefore(context: Context): void {
-    const oper = context.operation!;
+  visitAlias(context: Context): void {
+    const alias = context.alias!;
+    this.checkType(context, `alias`, alias.name.value, alias.type);
   }
   visitOperationAfter(context: Context): void {
     const oper = context.operation!;

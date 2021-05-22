@@ -1,5 +1,5 @@
 import { Visitor } from "../ast";
-import { CamelCaseDirectiveNames } from "./camel_case_directive_names";
+//import { CamelCaseDirectiveNames } from "./camel_case_directive_names";
 import { PascalCaseTypeNames } from "./pascal_case_type_names";
 import { UniqueDirectiveNames } from "./unique_directive_names";
 import { UniqueObjectNames } from "./unique_object_names";
@@ -8,7 +8,7 @@ import { UniqueParameterNames } from "./unique_parameter_names";
 import { UniqueTypeFieldNames } from "./unique_type_field_names";
 import { UniqueEnumValueNames } from "./unique_enum_value_names";
 import { UniqueEnumValueIndexes } from "./unique_enum_value_indexes";
-import { PositiveEnumValueIndexes } from "./positive_enum_value_indexes";
+import { ValidEnumValueIndexes } from "./valid_enum_value_indexes";
 import { KnownTypes } from "./known_types";
 import { ValidDirectiveParameterTypes } from "./valid_directive_parameter_types";
 import { ValidDirectiveRequires } from "./valid_directive_requires";
@@ -30,7 +30,7 @@ export const CommonRules: Array<ValidationRule> = [
   UniqueTypeFieldNames,
   UniqueEnumValueNames,
   UniqueEnumValueIndexes,
-  PositiveEnumValueIndexes,
+  ValidEnumValueIndexes,
   KnownTypes,
   ValidDirectiveParameterTypes,
   ValidDirectiveRequires,

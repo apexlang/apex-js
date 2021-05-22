@@ -33,14 +33,14 @@ export interface TypeSystemDefinition {
 }
 
 export class NamespaceDefinition extends AbstractNode {
-  description?: StringValue;
   name: Name;
+  description?: StringValue;
   annotations: Annotation[];
 
   constructor(
     loc: Location | undefined,
-    desc: StringValue | undefined,
     name: Name,
+    desc: StringValue | undefined,
     annotations?: Annotation[]
   ) {
     super(Kind.NamespaceDefinition, loc);
@@ -58,6 +58,39 @@ export class NamespaceDefinition extends AbstractNode {
 
   public accept(context: Context, visitor: Visitor): void {
     visitor.visitNamespace(context);
+    visitAnnotations(context, visitor, this.annotations);
+  }
+}
+
+export class AliasDefinition extends AbstractNode {
+  name: Name;
+  description?: StringValue;
+  type: Type;
+  annotations: Annotation[];
+
+  constructor(
+    loc: Location | undefined,
+    name: Name,
+    desc: StringValue | undefined,
+    type: Type,
+    annotations?: Annotation[]
+  ) {
+    super(Kind.AliasDefinition, loc);
+    this.name = name;
+    this.description = desc;
+    this.type = type;
+    this.annotations = annotations || [];
+  }
+
+  annotation(
+    name: string,
+    callback?: (annotation: Annotation) => void
+  ): Annotation | undefined {
+    return getAnnotation(name, this.annotations, callback);
+  }
+
+  public accept(context: Context, visitor: Visitor): void {
+    visitor.visitAlias(context);
     visitAnnotations(context, visitor, this.annotations);
   }
 }

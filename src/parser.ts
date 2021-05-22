@@ -30,6 +30,7 @@ import {
   NamespaceDefinition,
   ImportDefinition,
   TypeDefinition,
+  AliasDefinition,
   InterfaceDefinition,
   RoleDefinition,
   UnionDefinition,
@@ -185,6 +186,10 @@ class Parser {
                 const directive = def as DirectiveDefinition;
                 allDefs.set(directive.name.value, directive);
                 break;
+              case Kind.AliasDefinition:
+                const alias = def as AliasDefinition;
+                allDefs.set(alias.name.value, alias);
+                break;
             }
           });
 
@@ -248,12 +253,23 @@ class Parser {
                   )
                 );
                 break;
+              case Kind.AliasDefinition:
+                const alias = def as AliasDefinition;
+                defs.push(
+                  new AliasDefinition(
+                    name.loc,
+                    name,
+                    alias.description,
+                    alias.type,
+                    alias.annotations
+                  )
+                );
+                break;
             }
           });
         }
-      } else {
-        defs.push(def);
       }
+      defs.push(def);
     } while (!this.expectOptionalToken(TokenKind.EOF));
     return new Document(this.loc(start), defs);
   }
@@ -274,6 +290,7 @@ class Parser {
         case "namespace":
         case "import":
         case "directive":
+        case "alias":
         case "interface":
         case "role":
         case "type":
@@ -568,6 +585,8 @@ class Parser {
           return this.parseImportDefinition();
         case "directive":
           return this.parseDirectiveDefinition();
+        case "alias":
+          return this.parseAliasDefinition();
         case "interface":
           return this.parseInterfaceDefinition();
         case "role":
@@ -604,8 +623,8 @@ class Parser {
     const annotations = this.parseAnnotations();
     return new NamespaceDefinition(
       this.loc(start),
-      description,
       name,
+      description,
       annotations
     );
   }
@@ -651,6 +670,35 @@ class Parser {
       all,
       names,
       from,
+      annotations
+    );
+  }
+
+  parseAliasDefinition(): Node {
+    let start = this._lexer.token;
+    const description = this.parseDescription();
+    this.expectKeyword("alias");
+
+    start = this._lexer.token;
+    if (
+      start.kind == TokenKind.NS ||
+      start.kind == TokenKind.NAME ||
+      start.kind == TokenKind.STRING
+    ) {
+      this._lexer.advance();
+    } else {
+      throw this.unexpected();
+    }
+
+    const name = new Name(this.loc(start), start.value);
+    this.expectToken(TokenKind.EQUALS)
+    const type = this.parseType();
+    const annotations = this.parseAnnotations();
+    return new AliasDefinition(
+      this.loc(start),
+      name,
+      description,
+      type,
       annotations
     );
   }

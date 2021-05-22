@@ -11,6 +11,7 @@ import {
   EnumValueDefinition,
   DirectiveDefinition,
   ImportDefinition,
+  AliasDefinition,
 } from "./definitions";
 import { Document } from "./document";
 import { Annotation, Name } from "./nodes";
@@ -33,6 +34,9 @@ export class Writer {
 export type ObjectMap<T = any> = { [key: string]: T };
 
 interface NamedParameters {
+  importDef?: ImportDefinition;
+  directive?: DirectiveDefinition;
+  alias?: AliasDefinition;
   role?: RoleDefinition;
   type?: TypeDefinition;
   operations?: OperationDefinition[];
@@ -47,8 +51,6 @@ interface NamedParameters {
   enumValues?: EnumValueDefinition[];
   enumValue?: EnumValueDefinition;
   union?: UnionDefinition;
-  directive?: DirectiveDefinition;
-  importDef?: ImportDefinition;
   annotation?: Annotation;
 }
 
@@ -73,16 +75,21 @@ export class Context {
   imports: ImportDefinition[];
   directives: DirectiveDefinition[];
   directiveMap: Map<string, DirectiveDefinition>;
+  aliases: AliasDefinition[];
   interface: InterfaceDefinition;
   roles: RoleDefinition[];
   types: TypeDefinition[];
   enums: EnumDefinition[];
   unions: UnionDefinition[];
-  allTypes: Map<string, TypeDefinition | EnumDefinition | UnionDefinition>;
+  allTypes: Map<
+    string,
+    TypeDefinition | EnumDefinition | UnionDefinition | AliasDefinition
+  >;
 
   // Drill-down definitions
   importDef?: ImportDefinition;
   directive?: DirectiveDefinition;
+  alias?: AliasDefinition;
   role?: RoleDefinition;
   type?: TypeDefinition;
   operations?: OperationDefinition[];
@@ -112,6 +119,7 @@ export class Context {
       this.imports = other.imports;
       this.directives = other.directives;
       this.directiveMap = other.directiveMap;
+      this.aliases = other.aliases;
       this.interface = other.interface;
       this.roles = other.roles;
       this.enums = other.enums;
@@ -125,12 +133,13 @@ export class Context {
     } else {
       this.namespace = new NamespaceDefinition(
         undefined,
-        undefined,
-        new Name(undefined, "")
+        new Name(undefined, ""),
+        undefined
       );
       this.directives = new Array<DirectiveDefinition>();
       this.directiveMap = new Map<string, DirectiveDefinition>();
       this.imports = new Array<ImportDefinition>();
+      this.aliases = new Array<AliasDefinition>();
       this.interface = new InterfaceDefinition();
       this.roles = new Array<RoleDefinition>();
       this.enums = new Array<EnumDefinition>();
@@ -154,6 +163,9 @@ export class Context {
   }
 
   clone({
+    importDef,
+    directive,
+    alias,
     role,
     type,
     operations,
@@ -168,14 +180,13 @@ export class Context {
     enumValues,
     enumValue,
     union,
-    directive,
-    importDef,
     annotation,
   }: NamedParameters): Context {
     var context = new Context(this.config, undefined, this);
 
     context.importDef = importDef || this.importDef;
     context.directive = directive || this.directive;
+    context.alias = alias || this.alias;
     context.role = role || this.role;
     context.type = type || this.type;
     context.operations = operations || this.operations;
@@ -208,6 +219,11 @@ export class Context {
           break;
         case Kind.ImportDefinition:
           this.imports.push(value as ImportDefinition);
+          break;
+        case Kind.AliasDefinition:
+          const alias = value as AliasDefinition;
+          this.aliases.push(alias);
+          this.allTypes.set(alias.name.value, alias);
           break;
         case Kind.InterfaceDefinition:
           this.interface = value as InterfaceDefinition;
@@ -260,6 +276,12 @@ export interface Visitor {
   visitDirectiveParametersAfter(context: Context): void;
   visitDirectiveAfter(context: Context): void;
   visitDirectivesAfter(context: Context): void;
+
+  visitAliasesBefore(context: Context): void;
+  visitAliasBefore(context: Context): void;
+  visitAlias(context: Context): void;
+  visitAliasAfter(context: Context): void;
+  visitAliasesAfter(context: Context): void;
 
   visitAllOperationsBefore(context: Context): void;
   visitInterfaceBefore(context: Context): void;
@@ -417,6 +439,37 @@ export abstract class AbstractVisitor implements Visitor {
   }
   public triggerDirectivesAfter(context: Context): void {
     this.triggerCallbacks(context, "DirectivesAfter");
+  }
+
+  public visitAliasesBefore(context: Context): void {
+    this.triggerAliasesBefore(context);
+  }
+  public triggerAliasesBefore(context: Context): void {
+    this.triggerCallbacks(context, "AliasesBefore");
+  }
+  public visitAliasBefore(context: Context): void {
+    this.triggerAliasBefore(context);
+  }
+  public triggerAliasBefore(context: Context): void {
+    this.triggerCallbacks(context, "AliasBefore");
+  }
+  public visitAlias(context: Context): void {
+    this.triggerAlias(context);
+  }
+  public triggerAlias(context: Context): void {
+    this.triggerCallbacks(context, "Alias");
+  }
+  public visitAliasAfter(context: Context): void {
+    this.triggerAliasBefore(context);
+  }
+  public triggerAliasAfter(context: Context): void {
+    this.triggerCallbacks(context, "AliasAfter");
+  }
+  public visitAliasesAfter(context: Context): void {
+    this.triggerAliasesAfter(context);
+  }
+  public triggerAliasesAfter(context: Context): void {
+    this.triggerCallbacks(context, "AliasesAfter");
   }
 
   public visitAllOperationsBefore(context: Context): void {
@@ -748,6 +801,11 @@ export class MultiVisitor extends AbstractVisitor {
       visitor.visitDirectivesBefore(context);
     });
   }
+  public visitDirectiveBefore(context: Context): void {
+    this.visitors.map((visitor) => {
+      visitor.visitDirectiveBefore(context);
+    });
+  }
   public visitDirective(context: Context): void {
     this.visitors.map((visitor) => {
       visitor.visitDirective(context);
@@ -768,9 +826,40 @@ export class MultiVisitor extends AbstractVisitor {
       visitor.visitDirectiveParametersAfter(context);
     });
   }
+  public visitDirectiveAfter(context: Context): void {
+    this.visitors.map((visitor) => {
+      visitor.visitDirectiveAfter(context);
+    });
+  }
   public visitDirectivesAfter(context: Context): void {
     this.visitors.map((visitor) => {
       visitor.visitDirectivesAfter(context);
+    });
+  }
+
+  public visitAliasesBefore(context: Context): void {
+    this.visitors.map((visitor) => {
+      visitor.visitAliasesBefore(context);
+    });
+  }
+  public visitAliasBefore(context: Context): void {
+    this.visitors.map((visitor) => {
+      visitor.visitAliasBefore(context);
+    });
+  }
+  public visitAlias(context: Context): void {
+    this.visitors.map((visitor) => {
+      visitor.visitAlias(context);
+    });
+  }
+  public visitAliasAfter(context: Context): void {
+    this.visitors.map((visitor) => {
+      visitor.visitAliasAfter(context);
+    });
+  }
+  public visitAliasesAfter(context: Context): void {
+    this.visitors.map((visitor) => {
+      visitor.visitAliasesAfter(context);
     });
   }
 
