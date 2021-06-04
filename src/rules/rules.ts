@@ -1,4 +1,7 @@
 import { Visitor } from "../ast";
+import { NamespaceFirst } from "./namespace_first";
+import { SingleNamespaceDefined } from "./single_namespace_defined";
+import { SingleInterfaceDefined } from "./single_interface_defined";
 //import { CamelCaseDirectiveNames } from "./camel_case_directive_names";
 import { PascalCaseTypeNames } from "./pascal_case_type_names";
 import { UniqueDirectiveNames } from "./unique_directive_names";
@@ -21,6 +24,9 @@ export interface ValidationRule {
 }
 
 export const CommonRules: Array<ValidationRule> = [
+  NamespaceFirst,
+  SingleNamespaceDefined,
+  SingleInterfaceDefined,
   //CamelCaseDirectiveNames,
   PascalCaseTypeNames,
   UniqueDirectiveNames,

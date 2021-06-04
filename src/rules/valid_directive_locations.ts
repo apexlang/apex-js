@@ -12,6 +12,7 @@ const validLocationNames = new Set([
   "ENUM",
   "ENUM_VALUE",
   "UNION",
+  "ALIAS",
 ]);
 
 export class ValidDirectiveLocations extends AbstractVisitor {

@@ -691,7 +691,7 @@ class Parser {
     }
 
     const name = new Name(this.loc(start), start.value);
-    this.expectToken(TokenKind.EQUALS)
+    this.expectToken(TokenKind.EQUALS);
     const type = this.parseType();
     const annotations = this.parseAnnotations();
     return new AliasDefinition(
@@ -987,7 +987,7 @@ class Parser {
     const token = this.expectToken(TokenKind.INT);
     const index = new IntValue(this.loc(token), parseInt(token.value));
     let display: StringValue | undefined;
-    if (this.peek(TokenKind.STRING)) {
+    if (this.expectOptionalKeyword("as")) {
       display = this.parseStringLiteral();
     }
 

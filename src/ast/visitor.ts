@@ -34,9 +34,11 @@ export class Writer {
 export type ObjectMap<T = any> = { [key: string]: T };
 
 interface NamedParameters {
+  namespace?: NamespaceDefinition;
   importDef?: ImportDefinition;
   directive?: DirectiveDefinition;
   alias?: AliasDefinition;
+  interfaceDef?: InterfaceDefinition;
   role?: RoleDefinition;
   type?: TypeDefinition;
   operations?: OperationDefinition[];
@@ -71,12 +73,12 @@ export class Context {
   document?: Document;
 
   // Top-level definitions
-  namespace: NamespaceDefinition;
+  namespaces: NamespaceDefinition[];
   imports: ImportDefinition[];
   directives: DirectiveDefinition[];
   directiveMap: Map<string, DirectiveDefinition>;
   aliases: AliasDefinition[];
-  interface: InterfaceDefinition;
+  interfaces: InterfaceDefinition[];
   roles: RoleDefinition[];
   types: TypeDefinition[];
   enums: EnumDefinition[];
@@ -87,9 +89,12 @@ export class Context {
   >;
 
   // Drill-down definitions
-  importDef?: ImportDefinition;
+  namespace: NamespaceDefinition;
+  namespacePos: number = 9999;
+  import?: ImportDefinition;
   directive?: DirectiveDefinition;
   alias?: AliasDefinition;
+  interface?: InterfaceDefinition;
   role?: RoleDefinition;
   type?: TypeDefinition;
   operations?: OperationDefinition[];
@@ -116,11 +121,12 @@ export class Context {
     if (other != undefined) {
       this.document = other.document;
       this.namespace = other.namespace;
+      this.namespaces = other.namespaces;
       this.imports = other.imports;
       this.directives = other.directives;
       this.directiveMap = other.directiveMap;
       this.aliases = other.aliases;
-      this.interface = other.interface;
+      this.interfaces = other.interfaces;
       this.roles = other.roles;
       this.enums = other.enums;
       this.types = other.types;
@@ -136,11 +142,12 @@ export class Context {
         new Name(undefined, ""),
         undefined
       );
+      this.namespaces = new Array<NamespaceDefinition>();
       this.directives = new Array<DirectiveDefinition>();
       this.directiveMap = new Map<string, DirectiveDefinition>();
       this.imports = new Array<ImportDefinition>();
       this.aliases = new Array<AliasDefinition>();
-      this.interface = new InterfaceDefinition();
+      this.interfaces = new Array<InterfaceDefinition>();
       this.roles = new Array<RoleDefinition>();
       this.enums = new Array<EnumDefinition>();
       this.types = new Array<TypeDefinition>();
@@ -148,7 +155,7 @@ export class Context {
       this.annotations = new Array<Annotation>();
       this.allTypes = new Map<
         string,
-        TypeDefinition | EnumDefinition | UnionDefinition
+        TypeDefinition | EnumDefinition | UnionDefinition | AliasDefinition
       >();
 
       this.errors = new ErrorHolder();
@@ -163,9 +170,11 @@ export class Context {
   }
 
   clone({
+    namespace,
     importDef,
     directive,
     alias,
+    interfaceDef,
     role,
     type,
     operations,
@@ -184,9 +193,12 @@ export class Context {
   }: NamedParameters): Context {
     var context = new Context(this.config, undefined, this);
 
-    context.importDef = importDef || this.importDef;
+    context.namespace = namespace || this.namespace;
+    context.namespacePos = this.namespacePos;
+    context.import = importDef || this.import;
     context.directive = directive || this.directive;
     context.alias = alias || this.alias;
+    context.interface = interfaceDef || this.interface;
     context.role = role || this.role;
     context.type = type || this.type;
     context.operations = operations || this.operations;
@@ -207,10 +219,13 @@ export class Context {
   }
 
   private parseDocument(): void {
-    this.document!.definitions.forEach((value) => {
+    this.document!.definitions.forEach((value, index) => {
       switch (value.getKind()) {
         case Kind.NamespaceDefinition:
-          this.namespace = value as NamespaceDefinition;
+          const namespace = value as NamespaceDefinition;
+          this.namespaces.push(namespace);
+          this.namespace = namespace;
+          this.namespacePos = index;
           break;
         case Kind.DirectiveDefinition:
           const directive = value as DirectiveDefinition;
@@ -226,7 +241,8 @@ export class Context {
           this.allTypes.set(alias.name.value, alias);
           break;
         case Kind.InterfaceDefinition:
-          this.interface = value as InterfaceDefinition;
+          const iface = value as InterfaceDefinition;
+          this.interfaces.push(iface);
           break;
         case Kind.RoleDefinition:
           const role = value as RoleDefinition;
@@ -312,10 +328,12 @@ export interface Visitor {
   visitTypesAfter(context: Context): void;
 
   visitEnumsBefore(context: Context): void;
+  visitEnumBefore(context: Context): void;
   visitEnum(context: Context): void;
   visitEnumValuesBefore(context: Context): void;
   visitEnumValue(context: Context): void;
   visitEnumValuesAfter(context: Context): void;
+  visitEnumAfter(context: Context): void;
   visitEnumsAfter(context: Context): void;
 
   visitUnionsBefore(context: Context): void;
@@ -636,6 +654,12 @@ export abstract class AbstractVisitor implements Visitor {
   public triggerEnumsBefore(context: Context): void {
     this.triggerCallbacks(context, "EnumsBefore");
   }
+  public visitEnumBefore(context: Context): void {
+    this.triggerEnumsBefore(context);
+  }
+  public triggerEnumBefore(context: Context): void {
+    this.triggerCallbacks(context, "EnumBefore");
+  }
   public visitEnum(context: Context): void {
     this.triggerEnum(context);
   }
@@ -659,6 +683,12 @@ export abstract class AbstractVisitor implements Visitor {
   }
   public triggerEnumValuesAfter(context: Context): void {
     this.triggerCallbacks(context, "EnumValuesAfter");
+  }
+  public visitEnumAfter(context: Context): void {
+    this.triggerEnumsAfter(context);
+  }
+  public triggerEnumAfter(context: Context): void {
+    this.triggerCallbacks(context, "EnumAfter");
   }
   public visitEnumsAfter(context: Context): void {
     this.triggerEnumsAfter(context);

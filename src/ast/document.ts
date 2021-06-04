@@ -16,7 +16,9 @@ export class Document extends AbstractNode {
     context = new Context(context.config, this, context);
     visitor.visitDocumentBefore(context);
 
-    context.namespace.accept(context, visitor);
+    context.namespaces.map((namespace) => {
+      namespace.accept(context.clone({ namespace: namespace }), visitor);
+    });
 
     visitor.visitImportsBefore(context);
     context.imports.map((importDef) => {
@@ -37,7 +39,9 @@ export class Document extends AbstractNode {
     visitor.visitAliasesAfter(context);
 
     visitor.visitAllOperationsBefore(context);
-    context.interface.accept(context, visitor);
+    context.interfaces.map((iface) => {
+      iface.accept(context.clone({ interfaceDef: iface }), visitor);
+    });
 
     visitor.visitRolesBefore(context);
     context.roles.map((role) => {

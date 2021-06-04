@@ -9,6 +9,7 @@ export class UniqueTypeFieldNames extends AbstractVisitor {
     this.parentName = context.type!.name.value;
     this.names = new Set<string>();
   }
+
   visitTypeField(context: Context): void {
     const field = context.field!;
     const fieldName = field.name.value;

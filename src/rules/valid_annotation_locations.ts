@@ -52,6 +52,11 @@ export class ValidAnnotationLocations extends AbstractVisitor {
     this.check(context, def.annotations, "UNION");
   }
 
+  visitAlias(context: Context): void {
+    const alias = context.alias!;
+    this.check(context, alias.annotations, "ALIAS");
+  }
+
   private check(context: Context, annotations: Annotation[], location: string) {
     for (let annotation of annotations) {
       this.checkAnnotation(context, annotations, annotation, location);
@@ -105,7 +110,10 @@ export class ValidAnnotationLocations extends AbstractVisitor {
             }
           case "INTERFACE":
             if (
-              findAnnotation(req.directive.value, context.interface.annotations)
+              findAnnotation(
+                req.directive.value,
+                context.interface!.annotations
+              )
             ) {
               found = true;
               break;
@@ -168,6 +176,14 @@ export class ValidAnnotationLocations extends AbstractVisitor {
             if (
               context.union != undefined &&
               findAnnotation(req.directive.value, context.union!.annotations)
+            ) {
+              found = true;
+              break;
+            }
+          case "ALIAS":
+            if (
+              context.alias != undefined &&
+              findAnnotation(req.directive.value, context.alias!.annotations)
             ) {
               found = true;
               break;

@@ -17,6 +17,13 @@ export interface Definition {
   getLoc(): Location | undefined;
 }
 
+export interface Annotated {
+  annotation(
+    name: string,
+    callback?: (annotation: Annotation) => void
+  ): Annotation | undefined;
+}
+
 // DescribableNode are nodes that have descriptions associated with them.
 export interface DescribableNode {
   getDescription(): StringValue;
@@ -32,7 +39,7 @@ export interface TypeSystemDefinition {
   getLoc(): Location;
 }
 
-export class NamespaceDefinition extends AbstractNode {
+export class NamespaceDefinition extends AbstractNode implements Annotated {
   name: Name;
   description?: StringValue;
   annotations: Annotation[];
@@ -62,7 +69,7 @@ export class NamespaceDefinition extends AbstractNode {
   }
 }
 
-export class AliasDefinition extends AbstractNode {
+export class AliasDefinition extends AbstractNode implements Annotated {
   name: Name;
   description?: StringValue;
   type: Type;
@@ -95,7 +102,7 @@ export class AliasDefinition extends AbstractNode {
   }
 }
 
-export class ImportDefinition extends AbstractNode {
+export class ImportDefinition extends AbstractNode implements Annotated {
   description?: StringValue;
   all: boolean;
   names: ImportName[];
@@ -131,7 +138,7 @@ export class ImportDefinition extends AbstractNode {
   }
 }
 
-export class TypeDefinition extends AbstractNode {
+export class TypeDefinition extends AbstractNode implements Annotated {
   name: Name;
   description?: StringValue;
   interfaces: Named[];
@@ -177,7 +184,7 @@ export class TypeDefinition extends AbstractNode {
   }
 }
 
-export class OperationDefinition extends AbstractNode {
+export class OperationDefinition extends AbstractNode implements Annotated {
   name: Name;
   description: StringValue | undefined;
   parameters: ParameterDefinition[];
@@ -251,7 +258,9 @@ export class OperationDefinition extends AbstractNode {
   }
 }
 
-export abstract class ValuedDefinition extends AbstractNode {
+export abstract class ValuedDefinition
+  extends AbstractNode
+  implements Annotated {
   name: Name;
   description?: StringValue;
   type: Type;
@@ -331,7 +340,9 @@ export class ParameterDefinition extends ValuedDefinition {
   }
 }
 
-export class InterfaceDefinition extends AbstractNode implements Definition {
+export class InterfaceDefinition
+  extends AbstractNode
+  implements Definition, Annotated {
   description?: StringValue;
   operations: OperationDefinition[];
   annotations: Annotation[];
@@ -359,7 +370,7 @@ export class InterfaceDefinition extends AbstractNode implements Definition {
     visitor.visitInterfaceBefore(context);
     visitor.visitInterface(context);
 
-    context = context.clone({ operations: context.interface.operations });
+    context = context.clone({ operations: context.interface!.operations });
     visitor.visitOperationsBefore(context);
     context.operations!.map((operation) => {
       operation.accept(context.clone({ operation: operation }), visitor);
@@ -371,7 +382,9 @@ export class InterfaceDefinition extends AbstractNode implements Definition {
   }
 }
 
-export class RoleDefinition extends AbstractNode implements Definition {
+export class RoleDefinition
+  extends AbstractNode
+  implements Definition, Annotated {
   name: Name;
   description?: StringValue;
   operations: OperationDefinition[];
@@ -414,7 +427,9 @@ export class RoleDefinition extends AbstractNode implements Definition {
   }
 }
 
-export class UnionDefinition extends AbstractNode implements Definition {
+export class UnionDefinition
+  extends AbstractNode
+  implements Definition, Annotated {
   name: Name;
   description?: StringValue;
   annotations: Annotation[];
@@ -447,7 +462,9 @@ export class UnionDefinition extends AbstractNode implements Definition {
   }
 }
 
-export class EnumDefinition extends AbstractNode implements Definition {
+export class EnumDefinition
+  extends AbstractNode
+  implements Definition, Annotated {
   name: Name;
   description?: StringValue;
   annotations: Annotation[];
@@ -475,6 +492,7 @@ export class EnumDefinition extends AbstractNode implements Definition {
   }
 
   public accept(context: Context, visitor: Visitor): void {
+    visitor.visitEnumBefore(context);
     visitor.visitEnum(context);
 
     context = context.clone({ enumValues: context.enum!.values });
@@ -485,10 +503,13 @@ export class EnumDefinition extends AbstractNode implements Definition {
     visitor.visitEnumValuesAfter(context);
 
     visitAnnotations(context, visitor, this.annotations);
+    visitor.visitEnumAfter(context);
   }
 }
 
-export class EnumValueDefinition extends AbstractNode implements Definition {
+export class EnumValueDefinition
+  extends AbstractNode
+  implements Definition, Annotated {
   name: Name;
   description?: StringValue;
   annotations: Annotation[];
