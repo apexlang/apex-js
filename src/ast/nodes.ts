@@ -10,8 +10,6 @@ export interface Node {
   accept(_context: Context, _visitor: Visitor): void;
 }
 
-export type NodeArray = Node[];
-
 export abstract class AbstractNode implements Node {
   kind: Kind;
   loc?: Location;

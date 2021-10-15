@@ -330,10 +330,10 @@ class Parser {
       this.loc(start),
       name,
       description,
-      parameters,
       type,
       annotations,
-      isUnary
+      isUnary,
+      parameters
     );
   }
 
@@ -651,18 +651,7 @@ class Parser {
 
     this.expectKeyword("from");
 
-    start = this._lexer.token;
-    if (
-      start.kind == TokenKind.NS ||
-      start.kind == TokenKind.NAME ||
-      start.kind == TokenKind.STRING
-    ) {
-      this._lexer.advance();
-    } else {
-      throw this.unexpected();
-    }
-
-    const from = new Name(this.loc(start), start.value);
+    const from = this.parseStringLiteral();
     const annotations = this.parseAnnotations();
     return new ImportDefinition(
       this.loc(start),
@@ -938,10 +927,10 @@ class Parser {
    *   - NamedType
    *   - UnionMemberTypes | NamedType
    */
-  parseUnionMembers(): Array<Named> {
+  parseUnionMembers(): Array<Type> {
     const types = [];
     do {
-      const member = this.parseNamed();
+      const member = this.parseType();
       types.push(member);
     } while (this.expectOptionalToken(TokenKind.PIPE));
     return types;

@@ -24,21 +24,6 @@ export interface Annotated {
   ): Annotation | undefined;
 }
 
-// DescribableNode are nodes that have descriptions associated with them.
-export interface DescribableNode {
-  getDescription(): StringValue;
-}
-
-export interface TypeDefinition extends DescribableNode {
-  getKind(): Kind;
-  getLoc(): Location;
-}
-
-export interface TypeSystemDefinition {
-  getKind(): Kind;
-  getLoc(): Location;
-}
-
 export class NamespaceDefinition extends AbstractNode implements Annotated {
   name: Name;
   description?: StringValue;
@@ -78,13 +63,13 @@ export class AliasDefinition extends AbstractNode implements Annotated {
   constructor(
     loc: Location | undefined,
     name: Name,
-    desc: StringValue | undefined,
+    description: StringValue | undefined,
     type: Type,
     annotations?: Annotation[]
   ) {
     super(Kind.AliasDefinition, loc);
     this.name = name;
-    this.description = desc;
+    this.description = description;
     this.type = type;
     this.annotations = annotations || [];
   }
@@ -106,19 +91,19 @@ export class ImportDefinition extends AbstractNode implements Annotated {
   description?: StringValue;
   all: boolean;
   names: ImportName[];
-  from: Name;
+  from: StringValue;
   annotations?: Annotation[];
 
   constructor(
     loc: Location | undefined,
-    desc: StringValue | undefined,
+    description: StringValue | undefined,
     all: boolean,
     names: ImportName[],
-    from: Name,
+    from: StringValue,
     annotations?: Annotation[]
   ) {
     super(Kind.ImportDefinition, loc);
-    this.description = desc;
+    this.description = description;
     this.all = all;
     this.names = names;
     this.from = from;
@@ -184,80 +169,6 @@ export class TypeDefinition extends AbstractNode implements Annotated {
   }
 }
 
-export class OperationDefinition extends AbstractNode implements Annotated {
-  name: Name;
-  description: StringValue | undefined;
-  parameters: ParameterDefinition[];
-  type: Type;
-  annotations: Annotation[];
-  unary: boolean;
-
-  constructor(
-    loc: Location | undefined,
-    name: Name,
-    desc: StringValue | undefined,
-    parameters: ParameterDefinition[],
-    type: Type,
-    annotations: Annotation[],
-    unary: boolean
-  ) {
-    super(Kind.OperationDefinition, loc);
-    this.name = name;
-    this.description = desc;
-    this.parameters = parameters;
-    this.type = type;
-    this.annotations = annotations;
-    this.unary = unary;
-  }
-
-  public isUnary(): boolean {
-    return this.unary && this.parameters && this.parameters.length == 1;
-  }
-
-  public unaryOp(): ParameterDefinition {
-    return this.parameters[0];
-  }
-
-  mapTypeToTranslation(
-    typeTranslation: (inp: Type) => string
-  ): Map<String, String> {
-    const mp = new Map<String, String>();
-    if (this.unary) {
-      mp.set(this.unaryOp().name.value, typeTranslation(this.unaryOp().type));
-    } else {
-      this.parameters.forEach((arg) => {
-        mp.set(arg.name.value, typeTranslation(arg.type));
-      });
-    }
-    return mp;
-  }
-
-  annotation(
-    name: string,
-    callback?: (annotation: Annotation) => void
-  ): Annotation | undefined {
-    return getAnnotation(name, this.annotations, callback);
-  }
-
-  public accept(context: Context, visitor: Visitor): void {
-    visitor.visitOperationBefore(context);
-    visitor.visitOperation(context);
-
-    context = context.clone({ parameters: context.operation!.parameters });
-    visitor.visitParametersBefore(context);
-    context.parameters!.map((parameter, index) => {
-      parameter.accept(
-        context.clone({ parameter: parameter, parameterIndex: index }),
-        visitor
-      );
-    });
-    visitor.visitParametersAfter(context);
-
-    visitAnnotations(context, visitor, this.annotations);
-    visitor.visitOperationAfter(context);
-  }
-}
-
 export abstract class ValuedDefinition
   extends AbstractNode
   implements Annotated {
@@ -299,43 +210,13 @@ export class FieldDefinition extends ValuedDefinition {
     desc: StringValue | undefined,
     type: Type,
     defaultVal: Value | undefined,
-    directives: Annotation[]
+    annotations: Annotation[]
   ) {
-    super(Kind.FieldDefinition, loc, name, desc, type, defaultVal, directives);
+    super(Kind.FieldDefinition, loc, name, desc, type, defaultVal, annotations);
   }
 
   public accept(context: Context, visitor: Visitor): void {
     visitor.visitTypeField(context);
-    visitAnnotations(context, visitor, this.annotations);
-  }
-}
-
-export class ParameterDefinition extends ValuedDefinition {
-  constructor(
-    loc: Location | undefined,
-    name: Name,
-    desc: StringValue | undefined,
-    type: Type,
-    defaultVal: Value | undefined,
-    directives: Annotation[]
-  ) {
-    super(
-      Kind.ParameterDefinition,
-      loc,
-      name,
-      desc,
-      type,
-      defaultVal,
-      directives
-    );
-  }
-
-  public accept(context: Context, visitor: Visitor): void {
-    if (context.operation != undefined) {
-      visitor.visitParameter(context);
-    } else if (context.directive != undefined) {
-      visitor.visitDirectiveParameter(context);
-    }
     visitAnnotations(context, visitor, this.annotations);
   }
 }
@@ -427,20 +308,124 @@ export class RoleDefinition
   }
 }
 
+export class OperationDefinition extends AbstractNode implements Annotated {
+  name: Name;
+  description: StringValue | undefined;
+  parameters: ParameterDefinition[];
+  type: Type;
+  annotations: Annotation[];
+  unary: boolean;
+
+  constructor(
+    loc: Location | undefined,
+    name: Name,
+    desc: StringValue | undefined,
+    type: Type,
+    annotations: Annotation[],
+    unary: boolean,
+    parameters: ParameterDefinition[]
+  ) {
+    super(Kind.OperationDefinition, loc);
+    this.name = name;
+    this.description = desc;
+    this.type = type;
+    this.annotations = annotations;
+    this.parameters = parameters;
+    this.unary = unary;
+  }
+
+  public isUnary(): boolean {
+    return this.unary && this.parameters && this.parameters.length == 1;
+  }
+
+  public unaryOp(): ParameterDefinition {
+    return this.parameters[0];
+  }
+
+  mapTypeToTranslation(
+    typeTranslation: (inp: Type) => string
+  ): Map<String, String> {
+    const mp = new Map<String, String>();
+    if (this.unary) {
+      mp.set(this.unaryOp().name.value, typeTranslation(this.unaryOp().type));
+    } else {
+      this.parameters.forEach((arg) => {
+        mp.set(arg.name.value, typeTranslation(arg.type));
+      });
+    }
+    return mp;
+  }
+
+  annotation(
+    name: string,
+    callback?: (annotation: Annotation) => void
+  ): Annotation | undefined {
+    return getAnnotation(name, this.annotations, callback);
+  }
+
+  public accept(context: Context, visitor: Visitor): void {
+    visitor.visitOperationBefore(context);
+    visitor.visitOperation(context);
+
+    context = context.clone({ parameters: context.operation!.parameters });
+    visitor.visitParametersBefore(context);
+    context.parameters!.map((parameter, index) => {
+      parameter.accept(
+        context.clone({ parameter: parameter, parameterIndex: index }),
+        visitor
+      );
+    });
+    visitor.visitParametersAfter(context);
+
+    visitAnnotations(context, visitor, this.annotations);
+    visitor.visitOperationAfter(context);
+  }
+}
+
+export class ParameterDefinition extends ValuedDefinition {
+  constructor(
+    loc: Location | undefined,
+    name: Name,
+    desc: StringValue | undefined,
+    type: Type,
+    defaultVal: Value | undefined,
+    annotations: Annotation[]
+  ) {
+    super(
+      Kind.ParameterDefinition,
+      loc,
+      name,
+      desc,
+      type,
+      defaultVal,
+      annotations
+    );
+  }
+
+  public accept(context: Context, visitor: Visitor): void {
+    if (context.operation != undefined) {
+      visitor.visitParameter(context);
+    } else if (context.directive != undefined) {
+      visitor.visitDirectiveParameter(context);
+    }
+    visitAnnotations(context, visitor, this.annotations);
+  }
+}
+
 export class UnionDefinition
   extends AbstractNode
   implements Definition, Annotated {
   name: Name;
   description?: StringValue;
   annotations: Annotation[];
-  types: Named[];
+  types: Type[];
 
   constructor(
     loc: Location | undefined,
     name: Name,
     desc: StringValue | undefined,
     annotations: Annotation[],
-    types: Named[]
+    types: Type[]
   ) {
     super(Kind.UnionDefinition, loc);
     this.name = name;

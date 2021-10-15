@@ -1,9 +1,17 @@
-import { AbstractVisitor, Context, Node } from "../ast";
+import { AbstractVisitor, Context, Kind, Node } from "../ast";
 import { validationError } from "../error";
 
 export class NamespaceFirst extends AbstractVisitor {
   visitNamespace(context: Context): void {
-    if (context.namespacePos != 0) {
+    var firstNonImportPos = 0;
+    const definitions = context.document!.definitions;
+    for (let i = 0; i < definitions.length; i++) {
+      if (!definitions[i].isKind(Kind.ImportDefinition)) {
+        firstNonImportPos = i;
+        break;
+      }
+    }
+    if (context.namespacePos != firstNonImportPos) {
       context.reportError(
         validationError(
           context.namespace,
