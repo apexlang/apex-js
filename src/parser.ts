@@ -165,7 +165,10 @@ class Parser {
         }
         const importDoc = parse(importSource, this._resolver, this._options);
         if (imp.all) {
-          importDoc.definitions.map((def) => defs.push(def));
+          importDoc.definitions.map((def) => {
+            def.imported = true;
+            defs.push(def);
+          });
         } else {
           const allDefs = new Map<string, Definition>();
           importDoc.definitions.map((def) => {
@@ -205,65 +208,65 @@ class Parser {
             switch (def.getKind()) {
               case Kind.TypeDefinition:
                 const type = def as TypeDefinition;
-                defs.push(
-                  new TypeDefinition(
-                    name.loc,
-                    name,
-                    type.description,
-                    type.interfaces,
-                    type.annotations,
-                    type.fields
-                  )
+                const renamedType = new TypeDefinition(
+                  name.loc,
+                  name,
+                  type.description,
+                  type.interfaces,
+                  type.annotations,
+                  type.fields
                 );
+                renamedType.imported = true;
+                defs.push(renamedType);
                 break;
               case Kind.EnumDefinition:
                 const enumDef = def as EnumDefinition;
-                defs.push(
-                  new EnumDefinition(
-                    name.loc,
-                    name,
-                    enumDef.description,
-                    enumDef.annotations,
-                    enumDef.values
-                  )
+                const renamedEnum = new EnumDefinition(
+                  name.loc,
+                  name,
+                  enumDef.description,
+                  enumDef.annotations,
+                  enumDef.values
                 );
+                renamedEnum.imported = true;
+                defs.push(renamedEnum);
                 break;
               case Kind.UnionDefinition:
                 const unionDef = def as UnionDefinition;
-                defs.push(
-                  new UnionDefinition(
-                    name.loc,
-                    name,
-                    unionDef.description,
-                    unionDef.annotations,
-                    unionDef.types
-                  )
+                const renamedUnion = new UnionDefinition(
+                  name.loc,
+                  name,
+                  unionDef.description,
+                  unionDef.annotations,
+                  unionDef.types
                 );
+                renamedUnion.imported = true;
+                defs.push(renamedUnion);
                 break;
               case Kind.DirectiveDefinition:
                 const directive = def as DirectiveDefinition;
-                defs.push(
-                  new DirectiveDefinition(
-                    name.loc,
-                    name,
-                    directive.description,
-                    directive.parameters,
-                    directive.locations,
-                    directive.requires
-                  )
+                const renamedDirective = new DirectiveDefinition(
+                  name.loc,
+                  name,
+                  directive.description,
+                  directive.parameters,
+                  directive.locations,
+                  directive.requires
                 );
+                renamedDirective.imported = true;
+                defs.push(renamedDirective);
                 break;
               case Kind.AliasDefinition:
                 const alias = def as AliasDefinition;
-                defs.push(
-                  new AliasDefinition(
-                    name.loc,
-                    name,
-                    alias.description,
-                    alias.type,
-                    alias.annotations
-                  )
+                const renamedAlias = new AliasDefinition(
+                  name.loc,
+                  name,
+                  alias.description,
+                  alias.type,
+                  alias.annotations
                 );
+                renamedAlias.imported = true;
+                defs.push(renamedAlias);
                 break;
             }
           });
@@ -565,7 +568,7 @@ class Parser {
    *   - EnumTypeDefinition
    *   - InputObjectTypeDefinition
    */
-  parseTypeSystemDefinition(): Node {
+  parseTypeSystemDefinition(): Definition {
     // Many definitions begin with a description and require a lookahead.
     const keywordToken = this.peekDescription()
       ? this._lexer.lookahead()
@@ -590,7 +593,7 @@ class Parser {
         case "interface":
           return this.parseInterfaceDefinition();
         case "role":
-          return this.parseRoleTypeDefinition();
+          return this.parseRoleDefinition();
         case "type":
           return this.parseTypeDefinition();
         case "union":
@@ -603,7 +606,7 @@ class Parser {
     throw this.unexpected(keywordToken);
   }
 
-  parseNamespaceDefinition(): Node {
+  parseNamespaceDefinition(): NamespaceDefinition {
     let start = this._lexer.token;
     const description = this.parseDescription();
     this.expectKeyword("namespace");
@@ -629,7 +632,7 @@ class Parser {
     );
   }
 
-  parseImportDefinition(): Node {
+  parseImportDefinition(): ImportDefinition {
     let start = this._lexer.token;
     const description = this.parseDescription();
     this.expectKeyword("import");
@@ -663,7 +666,7 @@ class Parser {
     );
   }
 
-  parseAliasDefinition(): Node {
+  parseAliasDefinition(): AliasDefinition {
     let start = this._lexer.token;
     const description = this.parseDescription();
     this.expectKeyword("alias");
@@ -711,7 +714,7 @@ class Parser {
    *   Description?
    *   type Name ImplementsInterfaces? Annotations[Const]? FieldsDefinition?
    */
-  parseTypeDefinition(): Node {
+  parseTypeDefinition(): TypeDefinition {
     const start = this._lexer.token;
     const description = this.parseDescription();
     this.expectKeyword("type");
@@ -857,7 +860,7 @@ class Parser {
    * InterfaceTypeDefinition :
    *   - Description? interface Name Annotations[Const]? FieldsDefinition?
    */
-  parseInterfaceDefinition(): Node {
+  parseInterfaceDefinition(): InterfaceDefinition {
     const start = this._lexer.token;
     const description = this.parseDescription();
     this.expectKeyword("interface"); // TODO
@@ -880,7 +883,7 @@ class Parser {
    * InterfaceTypeDefinition :
    *   - Description? interface Name Annotations[Const]? FieldsDefinition?
    */
-  parseRoleTypeDefinition(): Node {
+  parseRoleDefinition(): RoleDefinition {
     const start = this._lexer.token;
     const description = this.parseDescription();
     this.expectKeyword("role");
@@ -905,7 +908,7 @@ class Parser {
    * UnionTypeDefinition :
    *   - Description? union Name Annotations[Const]? UnionMemberTypes?
    */
-  parseUnionDefinition(): Node {
+  parseUnionDefinition(): UnionDefinition {
     const start = this._lexer.token;
     const description = this.parseDescription();
     this.expectKeyword("union");
@@ -940,7 +943,7 @@ class Parser {
    * EnumDefinition :
    *   - Description? enum Name Annotations[Const]? EnumValuesDefinition?
    */
-  parseEnumDefinition(): Node {
+  parseEnumDefinition(): EnumDefinition {
     const start = this._lexer.token;
     const description = this.parseDescription();
     this.expectKeyword("enum");

@@ -13,6 +13,7 @@ export interface Node {
 export abstract class AbstractNode implements Node {
   kind: Kind;
   loc?: Location;
+  imported: boolean = false;
 
   constructor(kind: Kind, loc: Location | undefined) {
     this.kind = kind;

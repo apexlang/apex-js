@@ -15,6 +15,7 @@ export interface Definition {
   getKind(): Kind;
   isKind(kind: Kind): boolean;
   getLoc(): Location | undefined;
+  imported: boolean;
 }
 
 export interface Annotated {
