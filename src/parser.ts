@@ -42,6 +42,7 @@ import {
   Definition,
   ImportName,
   Kind,
+  Stream,
 } from "./ast";
 
 type parseFunction = () => Node;
@@ -325,7 +326,13 @@ class Parser {
     const colon = this.expectOptionalToken(TokenKind.COLON);
     let type: Type = new Named(undefined, new Name(undefined, "void"));
     if (colon) {
+      const streamLoc = this.loc(this._lexer.token);
+      const stream = this.expectOptionalKeyword("stream");
       type = this.parseType();
+      if (stream) {
+        const streamLoc = this.loc(this._lexer.token);
+        type = new Stream(streamLoc, type);
+      }
     }
     const annotations = this.parseAnnotations();
 
@@ -798,7 +805,7 @@ class Parser {
     } else if (unary && this.peek(TokenKind.BRACE_L)) {
       // unary
       this._lexer.advance();
-      const inputValueDef = this.parseParameterDefinition();
+      const inputValueDef = this.parseParameterDefinition(true);
       this.expectToken(TokenKind.BRACE_R);
       const arr = new Array<ParameterDefinition>();
       arr.push(inputValueDef);
@@ -814,12 +821,17 @@ class Parser {
    * ParameterDefinition :
    *   - Description? Name : Type DefaultValue? Annotations[Const]?
    */
-  parseParameterDefinition(): ParameterDefinition {
+  parseParameterDefinition(allowStream: boolean = false): ParameterDefinition {
     const start = this._lexer.token;
     const description = this.parseDescription();
     const name = this.parseName();
     this.expectToken(TokenKind.COLON);
-    const type = this.parseType();
+    const streamLoc = this.loc(this._lexer.token);
+    const stream = allowStream && this.expectOptionalKeyword("stream");
+    var type = this.parseType();
+    if (stream) {
+      type = new Stream(streamLoc, type);
+    }
     let defaultValue: Value | undefined;
     if (this.expectOptionalToken(TokenKind.EQUALS)) {
       defaultValue = this.parseConstValue();

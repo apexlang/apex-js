@@ -23,6 +23,7 @@ export enum Kind {
   ListType = "ListType",
   MapType = "MapType",
   Optional = "Optional",
+  Stream = "Stream",
 
   // Definitions
   NamespaceDefinition = "NamespaceDefinition",

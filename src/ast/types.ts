@@ -59,3 +59,16 @@ export class Optional extends AbstractNode implements Type {
     return this.getKind();
   }
 }
+
+export class Stream extends AbstractNode implements Type {
+  type: Type;
+
+  constructor(loc: Location | undefined, type: Type) {
+    super(Kind.Stream, loc);
+    this.type = type || null;
+  }
+
+  public string(): string {
+    return this.getKind();
+  }
+}
