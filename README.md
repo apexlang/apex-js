@@ -1,17 +1,17 @@
-# Web Assembly IDL (widl) Parser
+# Apex Language Parser
 
-This library will parse `.widl` files into an AST. Refer to the docs [docs](https://wapc.github.io/widl-js) for more information.
+This library will parse `.apex` files into an AST. Refer to the docs [docs](https://docs.apexlang.io) for more information.
 
 ## Installation
 
 ```sh
-$ npm install @wapc/widl
+$ npm install @apexlang/core
 ```
 
 ## Usage (node)
 
 ```js
-const widl = require("@wapc/widl");
+const Apex = require("@apexlang/core");
 
 const source = `
 namespace "mandelbrot"
@@ -20,7 +20,7 @@ interface {
   update(width: u32, height: u32, limit: u32): [u16]
 }`;
 
-const doc = widl.parse(source, { noLocation: true });
+const doc = Apex.parse(source, { noLocation: true });
 
 console.log(JSON.stringify(doc));
 ```
@@ -30,7 +30,7 @@ console.log(JSON.stringify(doc));
 ```html
 <script
   type="text/javascript"
-  src="https://cdn.jsdelivr.net/npm/@wapc/widl/dist/standalone.min.js"
+  src="https://cdn.jsdelivr.net/npm/@apexlang/apex-js/dist/standalone.min.js"
 ></script>
 <script type="text/javascript">
   const source = `
@@ -40,7 +40,7 @@ interface {
   update(width: u32, height: u32, limit: u32): [u16]
 }`;
 
-  const doc = widl.parse(source, { noLocation: true });
+  const doc = Apex.parse(source, { noLocation: true });
 
   console.log(JSON.stringify(doc));
 </script>

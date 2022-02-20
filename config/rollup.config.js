@@ -7,7 +7,7 @@ export default [
   {
     input: "dist/cjs/index.js",
     output: {
-      name: "widl",
+      name: "Apex",
       file: pkg.browser,
       format: "umd",
       sourcemap: true,

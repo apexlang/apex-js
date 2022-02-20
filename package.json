@@ -1,16 +1,15 @@
 {
-  "name": "@wapc/widl",
-  "version": "0.0.12",
-  "description": "waPC Interface Definition Language",
+  "name": "@apexlang/core",
+  "version": "0.0.13",
+  "description": "Apex language JavaScript library",
   "keywords": [
-    "webassembly",
-    "wasm",
-    "wapc",
-    "widl"
+    "apex",
+    "idl",
+    "codegen"
   ],
   "repository": {
     "type": "git",
-    "url": "https://www.github.com/wapc/widl-js"
+    "url": "https://www.github.com/apexlang/apex-js"
   },
   "author": "Phil Kedy",
   "license": "Apache-2.0",

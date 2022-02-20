@@ -7,17 +7,17 @@ export default [
   {
     input: "dist/cjs/index.js",
     external: [
-      "@wapc/widl",
-      "@wapc/widl/ast"
+      "@apexlang/core",
+      "@apexlang/core/ast"
     ],
     output: {
-      name: "widl.codegen",
+      name: "apex.codegen",
       file: pkg.browser,
       format: "umd",
       sourcemap: true,
       globals: {
-        '@wapc/widl': 'widl',
-        '@wapc/widl/ast': 'widl.ast'
+        '@apexlang/core': 'apex',
+        '@apexlang/core/ast': 'apex.ast'
       }
     },
     plugins: [commonjs(), resolve()],

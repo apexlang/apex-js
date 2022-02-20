@@ -7,8 +7,8 @@
     "outDir": "dist/cjs",
     "baseUrl": ".",
     "paths": {
-      "@wapc/widl": ["node_modules/@wapc/widl/dist/types"],
-      "@wapc/widl/*": ["node_modules/@wapc/widl/dist/types/*"]
+      "@apexlang/core": ["node_modules/@apexlang/core/dist/types"],
+      "@apexlang/core/*": ["node_modules/@apexlang/core/dist/types/*"]
     },
     "strict": true,
     "esModuleInterop": true,

@@ -4,7 +4,7 @@ variables:
 
 - name: module
   description: The module name
-  prompt: Please enter the module name (e.g. @widl/mymodule)
+  prompt: Please enter the module name (e.g. @apexlang/mymodule)
 
 - name: description
   description: The module description

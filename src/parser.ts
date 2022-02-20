@@ -114,7 +114,7 @@ class Parser {
   _lexer: Lexer;
 
   constructor(source: string, resolver?: Resolver, options?: ParseOptions) {
-    let src = new Source("widl");
+    let src = new Source("apex");
     src.setBody(source);
     this._resolver = resolver;
     this._lexer = new Lexer(src);
