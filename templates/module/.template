@@ -1,10 +1,10 @@
 name: module
-description: A WIDL codegen project
+description: A Apex codegen project
 variables:
 
 - name: module
   description: The module name
-  prompt: Please enter the module name (e.g. @apexlang/mymodule)
+  prompt: Please enter the module name (e.g. @myorg/mymodule)
 
 - name: description
   description: The module description

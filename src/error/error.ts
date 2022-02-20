@@ -1,6 +1,6 @@
 import { Node, Source } from "../ast";
 
-export class WidlError extends Error {
+export class ApexError extends Error {
   nodes: Array<Node> | Node | undefined;
   source: Source | undefined;
   positions: Array<number> | undefined;
@@ -25,8 +25,8 @@ export function syntaxError(
   source: Source,
   position: number,
   description: string
-): WidlError {
-  return new WidlError(
+): ApexError {
+  return new ApexError(
     `Syntax Error: ${description}`,
     undefined,
     source,
@@ -35,13 +35,13 @@ export function syntaxError(
   );
 }
 
-export function importError(node: Node, description: string): WidlError {
+export function importError(node: Node, description: string): ApexError {
   const loc = node.getLoc();
   var source: Source | undefined;
   if (loc != undefined) {
     source = loc.source;
   }
-  return new WidlError(
+  return new ApexError(
     `Import Error: ${description}`,
     node,
     source,
@@ -50,13 +50,13 @@ export function importError(node: Node, description: string): WidlError {
   );
 }
 
-export function validationError(node: Node, description: string): WidlError {
+export function validationError(node: Node, description: string): ApexError {
   const loc = node.getLoc();
   var source: Source | undefined;
   if (loc != undefined) {
     source = loc.source;
   }
-  return new WidlError(
+  return new ApexError(
     `Validation Error: ${description}`,
     node,
     source,

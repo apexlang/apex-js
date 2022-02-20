@@ -1,6 +1,6 @@
 import { TokenKind } from "./token_kind";
 import { Lexer, getTokenDesc, getTokenKindDesc } from "./lexer";
-import { importError, syntaxError, WidlError } from "./error";
+import { importError, syntaxError, ApexError } from "./error";
 import autoBind from "./auto-bind";
 import {
   Location,
@@ -66,8 +66,8 @@ export type ParseOptions = {
 export type Resolver = (location: string, from: string) => string;
 
 /**
- * Given a WIDL source, parses it into a Document.
- * Throws WidlError if a syntax error is encountered.
+ * Given a Apex source, parses it into a Document.
+ * Throws ApexError if a syntax error is encountered.
  */
 export function parse(
   source: string,
@@ -79,12 +79,12 @@ export function parse(
 }
 
 /**
- * Given a string containing a WIDL value (ex. `[42]`), parse the AST for
+ * Given a string containing a Apex value (ex. `[42]`), parse the AST for
  * that value.
- * Throws WidlError if a syntax error is encountered.
+ * Throws ApexError if a syntax error is encountered.
  *
- * This is useful within tools that operate upon WIDL Values directly and
- * in isolation of complete WIDL documents.
+ * This is useful within tools that operate upon Apex Values directly and
+ * in isolation of complete Apex documents.
  *
  * Consider providing the results to the utility function: valueFromAST().
  */
@@ -1184,7 +1184,7 @@ class Parser {
    * Helper function for creating an error when an unexpected lexed token
    * is encountered.
    */
-  unexpected(atToken?: Token): WidlError {
+  unexpected(atToken?: Token): ApexError {
     const token = atToken ?? this._lexer.token;
     return syntaxError(
       this._lexer.source,

@@ -16,7 +16,7 @@ import {
 import { Document } from "./document";
 import { Annotation, Name } from "./nodes";
 import autoBind from "../auto-bind";
-import { WidlError } from "../error/error";
+import { ApexError } from "../error/error";
 import { Kind } from "./kinds";
 
 export class Writer {
@@ -57,13 +57,13 @@ interface NamedParameters {
 }
 
 class ErrorHolder {
-  errors: WidlError[];
+  errors: ApexError[];
 
   constructor() {
-    this.errors = new Array<WidlError>();
+    this.errors = new Array<ApexError>();
   }
 
-  reportError(error: WidlError): void {
+  reportError(error: ApexError): void {
     this.errors.push(error);
   }
 }
@@ -267,11 +267,11 @@ export class Context {
     });
   }
 
-  reportError(error: WidlError): void {
+  reportError(error: ApexError): void {
     this.errors.reportError(error);
   }
 
-  getErrors(): WidlError[] {
+  getErrors(): ApexError[] {
     return this.errors.errors;
   }
 }

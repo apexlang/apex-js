@@ -1,11 +1,11 @@
 import { Context, Document, MultiVisitor } from "./ast";
-import { WidlError } from "./error";
+import { ApexError } from "./error";
 import { ValidationRule } from "./rules";
 
 export function validate(
   doc: Document,
   ...rules: ValidationRule[]
-): WidlError[] {
+): ApexError[] {
   const context = new Context({});
 
   const ruleVisitors = rules.map((r) => new r());
