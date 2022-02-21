@@ -15,12 +15,7 @@
   "browser": "./dist/standalone.js",
   "browser-min": "./dist/standalone.min.js",
   "exports": {
-    ".": "./dist/cjs/index.js",
-    "./assemblyscript": "./dist/cjs/assemblyscript/index.js",
-    "./go": "./dist/cjs/go/index.js",
-    "./rust": "./dist/cjs/rust/index.js",
-    "./tinygo": "./dist/cjs/tinygo/index.js",
-    "./utils": "./dist/cjs/utils/index.js"
+    ".": "./dist/cjs/index.js"
   },
   "files": [
     "templates",
@@ -28,7 +23,8 @@
     "README.md",
     "test",
     "src",
-    "docs"
+    "docs",
+    "templates"
   ],
   "sideEffects": false,
   "scripts": {
@@ -58,7 +54,7 @@
     "release:preflight": "npm pack --dry-run"
   },
   "dependencies": {
-    "@apexlang/core": "^0.0.14"
+    "@apexlang/core": "^0.0.16"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^17.1.0",
