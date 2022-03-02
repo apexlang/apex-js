@@ -12,12 +12,12 @@ import {
   DirectiveDefinition,
   ImportDefinition,
   AliasDefinition,
-} from "./definitions";
-import { Document } from "./document";
-import { Annotation, Name } from "./nodes";
-import autoBind from "../auto-bind";
-import { ApexError } from "../error/error";
-import { Kind } from "./kinds";
+} from "./definitions.js";
+import { Document } from "./document.js";
+import { Annotation, Name } from "./nodes.js";
+import autoBind from "../auto-bind.js";
+import { ApexError } from "../error/index.js";
+import { Kind } from "./kinds.js";
 
 export class Writer {
   private code: string = "";

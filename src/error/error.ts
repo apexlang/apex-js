@@ -1,4 +1,4 @@
-import { Node, Source } from "../ast";
+import { Node, Source } from "../ast/index.js";
 
 export class ApexError extends Error {
   nodes: Array<Node> | Node | undefined;

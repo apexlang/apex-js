@@ -2,10 +2,10 @@
 
 //import { syntaxError } from '../error/syntaxError';
 
-import { Token, Source } from "./ast";
-import { dedentBlockStringValue } from "./blockstring";
-import { TokenDescription, TokenKind } from "./token_kind";
-import { syntaxError } from "./error";
+import { Token, Source } from "./ast/index.js";
+import { dedentBlockStringValue } from "./blockstring.js";
+import { TokenDescription, TokenKind } from "./token_kind.js";
+import { syntaxError } from "./error/index.js";
 /**
  * Given a Source object, creates a Lexer for that source.
  * A Lexer is a stateful stream generator in that every time
@@ -491,7 +491,7 @@ function readString(
     // SourceCharacter
     if (code < 0x0020 && code !== 0x0009) {
       // TODO
-      /* 
+      /*
       throw syntaxError(
         source,
         position,

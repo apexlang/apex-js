@@ -1,6 +1,6 @@
-import { AbstractNode, Name, Node } from "./nodes";
-import { Kind } from "./kinds";
-import { Location } from "./location";
+import { AbstractNode, Name, Node } from "./nodes.js";
+import { Kind } from "./kinds.js";
+import { Location } from "./location.js";
 
 export interface Type extends Node {
   string(): string;

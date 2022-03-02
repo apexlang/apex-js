@@ -8,8 +8,8 @@ import {
   MapType,
   ListType,
   Named,
-} from "../ast";
-import { validationError } from "../error";
+} from "../ast/index.js";
+import { validationError } from "../error/index.js";
 
 const validTypes = new Set([Kind.TypeDefinition, Kind.EnumDefinition]);
 

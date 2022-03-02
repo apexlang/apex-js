@@ -1,5 +1,5 @@
-import { AbstractVisitor, Context } from "../ast";
-import { validationError } from "../error";
+import { AbstractVisitor, Context } from "../ast/index.js";
+import { validationError } from "../error/index.js";
 
 const validLocationNames = new Set([
   "NAMESPACE",

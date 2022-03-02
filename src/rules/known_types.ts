@@ -7,8 +7,8 @@ import {
   Optional,
   MapType,
   ListType,
-} from "../ast";
-import { validationError } from "../error";
+} from "../ast/index.js";
+import { validationError } from "../error/index.js";
 
 const builtInTypeNames = new Set([
   "i8",

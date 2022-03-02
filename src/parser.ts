@@ -1,6 +1,6 @@
-import { TokenKind } from "./token_kind";
-import { Lexer, getTokenDesc, getTokenKindDesc } from "./lexer";
-import { importError, syntaxError, ApexError } from "./error";
+import { TokenKind } from "./token_kind.js";
+import { Lexer, getTokenDesc, getTokenKindDesc } from "./lexer.js";
+import { importError, syntaxError, ApexError } from "./error/index.js";
 import autoBind from "./auto-bind";
 import {
   Location,
@@ -43,7 +43,7 @@ import {
   ImportName,
   Kind,
   Stream,
-} from "./ast";
+} from "./ast/index.js";
 
 type parseFunction = () => Node;
 /**

@@ -1,5 +1,5 @@
-import { AbstractVisitor, Annotation, Context, Kind } from "../ast";
-import { validationError } from "../error";
+import { AbstractVisitor, Annotation, Context, Kind } from "../ast/index.js";
+import { validationError } from "../error/index.js";
 
 export class ValidAnnotationLocations extends AbstractVisitor {
   visitNamespace(context: Context): void {
@@ -84,9 +84,9 @@ export class ValidAnnotationLocations extends AbstractVisitor {
       context.reportError(
         validationError(
           annotation,
-          `annotation "${
-            annotation.name.value
-          }" is not valid on a ${location.toLowerCase().replace("_", " ")}`
+          `annotation "${annotation.name.value}" is not valid on a ${location
+            .toLowerCase()
+            .replace("_", " ")}`
         )
       );
       return;

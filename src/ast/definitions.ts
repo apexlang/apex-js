@@ -1,15 +1,15 @@
-import { Kind } from "./kinds";
-import { IntValue, StringValue, Value } from "./values";
+import { Kind } from "./kinds.js";
+import { IntValue, StringValue, Value } from "./values.js";
 import {
   AbstractNode,
   Name,
   Annotation,
   DirectiveRequire,
   ImportName,
-} from "./nodes";
-import { Named, Type } from "./types";
-import { Location } from "./location";
-import { Context, Visitor } from "./visitor";
+} from "./nodes.js";
+import { Named, Type } from "./types.js";
+import { Location } from "./location.js";
+import { Context, Visitor } from "./visitor.js";
 
 export interface Definition {
   getKind(): Kind;
@@ -172,7 +172,8 @@ export class TypeDefinition extends AbstractNode implements Annotated {
 
 export abstract class ValuedDefinition
   extends AbstractNode
-  implements Annotated {
+  implements Annotated
+{
   name: Name;
   description?: StringValue;
   type: Type;
@@ -224,7 +225,8 @@ export class FieldDefinition extends ValuedDefinition {
 
 export class InterfaceDefinition
   extends AbstractNode
-  implements Definition, Annotated {
+  implements Definition, Annotated
+{
   description?: StringValue;
   operations: OperationDefinition[];
   annotations: Annotation[];
@@ -266,7 +268,8 @@ export class InterfaceDefinition
 
 export class RoleDefinition
   extends AbstractNode
-  implements Definition, Annotated {
+  implements Definition, Annotated
+{
   name: Name;
   description?: StringValue;
   operations: OperationDefinition[];
@@ -415,7 +418,8 @@ export class ParameterDefinition extends ValuedDefinition {
 
 export class UnionDefinition
   extends AbstractNode
-  implements Definition, Annotated {
+  implements Definition, Annotated
+{
   name: Name;
   description?: StringValue;
   annotations: Annotation[];
@@ -450,7 +454,8 @@ export class UnionDefinition
 
 export class EnumDefinition
   extends AbstractNode
-  implements Definition, Annotated {
+  implements Definition, Annotated
+{
   name: Name;
   description?: StringValue;
   annotations: Annotation[];
@@ -495,7 +500,8 @@ export class EnumDefinition
 
 export class EnumValueDefinition
   extends AbstractNode
-  implements Definition, Annotated {
+  implements Definition, Annotated
+{
   name: Name;
   description?: StringValue;
   annotations: Annotation[];

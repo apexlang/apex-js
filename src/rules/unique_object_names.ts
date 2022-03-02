@@ -1,5 +1,5 @@
-import { AbstractVisitor, Context, Node } from "../ast";
-import { validationError } from "../error";
+import { AbstractVisitor, Context, Node } from "../ast/index.js";
+import { validationError } from "../error/index.js";
 
 export class UniqueObjectNames extends AbstractVisitor {
   private typeNames: Set<string> = new Set<string>();

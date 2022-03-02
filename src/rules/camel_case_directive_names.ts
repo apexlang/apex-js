@@ -1,6 +1,6 @@
-import { AbstractVisitor, Context, Node } from "../ast";
-import { validationError } from "../error";
-import { camelCase } from "./case";
+import { AbstractVisitor, Context, Node } from "../ast/index.js";
+import { validationError } from "../error/index.js";
+import { camelCase } from "./case.js";
 
 export class CamelCaseDirectiveNames extends AbstractVisitor {
   visitDirective(context: Context): void {

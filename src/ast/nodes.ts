@@ -1,7 +1,7 @@
-import { Context, Visitor } from "./visitor";
-import { Location } from "./location";
-import { Kind } from "./kinds";
-import { Value } from "./values";
+import { Context, Visitor } from "./visitor.js";
+import { Location } from "./location.js";
+import { Kind } from "./kinds.js";
+import { Value } from "./values.js";
 
 export interface Node {
   getKind(): Kind;
