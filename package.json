@@ -20,13 +20,13 @@
     }
   ],
   "type": "module",
-  "module": "./dist/src/index.js",
-  "types": "./dist/src/index.d.ts",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
-    ".": "./dist/src/index.js",
-    "./ast": "./dist/src/ast/index.js",
-    "./error": "./dist/src/error/index.js",
-    "./rules": "./dist/src/rules/rules.js"
+    ".": "./dist/index.js",
+    "./ast": "./dist/ast/index.js",
+    "./error": "./dist/error/index.js",
+    "./rules": "./dist/rules/rules.js"
   },
   "engines": {
     "node": ">=14.0"

@@ -1,7 +1,7 @@
 import { TokenKind } from "./token_kind.js";
 import { Lexer, getTokenDesc, getTokenKindDesc } from "./lexer.js";
 import { importError, syntaxError, ApexError } from "./error/index.js";
-import autoBind from "./auto-bind";
+import autoBind from "./auto-bind.js";
 import {
   Location,
   Token,
