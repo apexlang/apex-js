@@ -36,7 +36,7 @@ if (errors.length > 0) {
     if (oper == undefined || oper.name.value != "update") {
       return;
     }
-  console.log(oper);
+    console.log(oper);
   });
   doc.accept(context, visitor);
 }
@@ -46,9 +46,9 @@ if (errors.length > 0) {
 
 ```html
 <script type="module">
-import { parse, validate } from 'https://cdn.jsdelivr.net/npm/@apexlang/apex-js/dist/index.js';
-import { CommonRules } from 'https://cdn.jsdelivr.net/npm/@apexlang/apex-js/dist/rules/index.js';
-import { Context, Writer, AbstractVisitor } from 'https://cdn.jsdelivr.net/npm/@apexlang/apex-js/dist/ast/index.js';
+import { parse, validate } from 'https://cdn.jsdelivr.net/npm/@apexlang/core/dist/index.js';
+import { CommonRules } from 'https://cdn.jsdelivr.net/npm/@apexlang/core/dist/rules/index.js';
+import { Context, Writer, AbstractVisitor } from 'https://cdn.jsdelivr.net/npm/@apexlang/core/dist/ast/index.js';
 
 const source = `
 namespace "mandelbrot"
@@ -71,7 +71,7 @@ if (errors.length > 0) {
     if (oper == undefined || oper.name.value != "update") {
       return;
     }
-  console.log(oper);
+    console.log(oper);
   });
   doc.accept(context, visitor);
 }
