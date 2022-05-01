@@ -1,5 +1,5 @@
-import { AbstractVisitor, Context, Kind, Node } from "../ast";
-import { validationError } from "../error";
+import { AbstractVisitor, Context, Kind, Node } from "../ast/index.js";
+import { validationError } from "../error/index.js";
 
 export class NamespaceFirst extends AbstractVisitor {
   visitNamespace(context: Context): void {

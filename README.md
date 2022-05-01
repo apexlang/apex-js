@@ -8,10 +8,12 @@ This library will parse `.apex` files into an AST. Refer to the docs [docs](http
 $ npm install @apexlang/core
 ```
 
-## Usage (node)
+## Usage (node v12+)
 
 ```js
-const Apex = require("@apexlang/core");
+import { parse, validate } from '@apexlang/core/index.js';
+import { CommonRules } from '@apexlang/core/rules/index.js';
+import { Context, Writer, AbstractVisitor } from '@apexlang/core/ast/index.js';
 
 const source = `
 namespace "mandelbrot"
@@ -20,29 +22,59 @@ interface {
   update(width: u32, height: u32, limit: u32): [u16]
 }`;
 
-const doc = Apex.parse(source, { noLocation: true });
+const doc = parse(source, undefined, { noLocation: true });
+const errors = validate(doc, ...CommonRules);
 
-console.log(JSON.stringify(doc));
+if (errors.length > 0) { 
+  errors.map(e => console.log(e.message));
+} else {
+  const context = new Context({});
+  const writer = new Writer();
+  const visitor = new AbstractVisitor();
+  visitor.setCallback("Operation", "", function(context) {
+    const oper = context.operation;
+    if (oper == undefined || oper.name.value != "update") {
+      return;
+    }
+  console.log(oper);
+  });
+  doc.accept(context, visitor);
+}
 ```
 
 ## Usage (browser)
 
 ```html
-<script
-  type="text/javascript"
-  src="https://cdn.jsdelivr.net/npm/@apexlang/apex-js/dist/standalone.min.js"
-></script>
-<script type="text/javascript">
-  const source = `
+<script type="module">
+import { parse, validate } from 'https://cdn.jsdelivr.net/npm/@apexlang/apex-js/dist/index.js';
+import { CommonRules } from 'https://cdn.jsdelivr.net/npm/@apexlang/apex-js/dist/rules/index.js';
+import { Context, Writer, AbstractVisitor } from 'https://cdn.jsdelivr.net/npm/@apexlang/apex-js/dist/ast/index.js';
+
+const source = `
 namespace "mandelbrot"
 
 interface {
   update(width: u32, height: u32, limit: u32): [u16]
 }`;
 
-  const doc = Apex.parse(source, { noLocation: true });
+const doc = parse(source, undefined, { noLocation: true });
+const errors = validate(doc, ...CommonRules);
 
-  console.log(JSON.stringify(doc));
+if (errors.length > 0) { 
+  errors.map(e => console.log(e.message));
+} else {
+  const context = new Context({});
+  const writer = new Writer();
+  const visitor = new AbstractVisitor();
+  visitor.setCallback("Operation", "", function(context) {
+    const oper = context.operation;
+    if (oper == undefined || oper.name.value != "update") {
+      return;
+    }
+  console.log(oper);
+  });
+  doc.accept(context, visitor);
+}
 </script>
 ```
 

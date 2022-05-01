@@ -1,8 +1,8 @@
-import { Kind } from "./kinds";
-import { AbstractNode } from "./nodes";
-import { Location } from "./location";
-import { Definition } from "./definitions";
-import { Context, Visitor } from "./visitor";
+import { Kind } from "./kinds.js";
+import { AbstractNode } from "./nodes.js";
+import { Location } from "./location.js";
+import { Definition } from "./definitions.js";
+import { Context, Visitor } from "./visitor.js";
 
 export class Document extends AbstractNode {
   definitions: Definition[];

@@ -1,6 +1,6 @@
-import { Context, Document, MultiVisitor } from "./ast";
-import { ApexError } from "./error";
-import { ValidationRule } from "./rules";
+import { Context, Document, MultiVisitor } from "./ast/index.js";
+import { ApexError } from "./error/index.js";
+import { ValidationRule } from "./rules/index.js";
 
 export function validate(
   doc: Document,
