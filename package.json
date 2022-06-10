@@ -26,7 +26,8 @@
     ".": "./dist/index.js",
     "./ast": "./dist/ast/index.js",
     "./error": "./dist/error/index.js",
-    "./rules": "./dist/rules/rules.js"
+    "./model": "./dist/model/index.js",
+    "./rules": "./dist/rules/index.js"
   },
   "engines": {
     "node": ">=14.0"
