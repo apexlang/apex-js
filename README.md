@@ -25,7 +25,7 @@ interface {
 const doc = parse(source, undefined, { noLocation: true });
 const errors = validate(doc, ...CommonRules);
 
-if (errors.length > 0) { 
+if (errors.length > 0) {
   errors.map(e => console.log(e.message));
 } else {
   const context = new Context({});
