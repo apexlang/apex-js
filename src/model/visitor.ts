@@ -110,17 +110,7 @@ class ErrorHolder {
 }
 
 function dummyValue<T>(fieldName: string): T {
-  return new Proxy(
-    {},
-    {
-      get: function (target, name, receiver) {
-        throw new Error(`${fieldName} is not available in this scope`);
-      },
-      set: function (target, name, value, receiver) {
-        throw new Error(`${fieldName} is not available in this scope`);
-      },
-    }
-  ) as T;
+  return undefined as unknown as T;
 }
 
 export class Context {
@@ -132,7 +122,7 @@ export class Context {
 
   // Drill-down definitions
   namespace: Namespace;
-  namespacePos: number = 9999;
+  namespacePos: number = dummyValue<number>("namespacePos");
   directive: Directive = dummyValue<Directive>("directive");
   alias: Alias = dummyValue<Alias>("alias");
   interface: Interface = dummyValue<Interface>("interface");
@@ -142,10 +132,10 @@ export class Context {
   operation: Operation = dummyValue<Operation>("operation");
   parameters: Parameter[] = dummyValue<Parameter[]>("parameters");
   parameter: Parameter = dummyValue<Parameter>("parameter");
-  parameterIndex: number = 9999;
+  parameterIndex: number = dummyValue<number>("parameterIndex");
   fields: Field[] = dummyValue<Field[]>("fields");
   field: Field = dummyValue<Field>("fields");
-  fieldIndex: number = 9999;
+  fieldIndex: number = dummyValue<number>("fieldIndex");
   enum: Enum = dummyValue<Enum>("enum");
   enumValues: EnumValue[] = dummyValue<EnumValue[]>("enumValues");
   enumValue: EnumValue = dummyValue<EnumValue>("enumValue");
