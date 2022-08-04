@@ -1,5 +1,5 @@
 name: module
-description: A Apex codegen project
+description: An Apex codegen project
 variables:
 
 - name: module

@@ -1,27 +1,9 @@
 {
-  "name": "{{.module}}",
-  "version": "{{.version}}",
-  "description": "{{.description}}",
-  "keywords": [
-    "apex",
-    "codegen"
-  ],
+  "name": "codegen",
   "type": "module",
-  "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": "./dist/index.js"
+  "engines": {
+    "node": ">=14.0"
   },
-  "files": [
-    "templates",
-    "dist",
-    "README.md",
-    "test",
-    "src",
-    "docs",
-    "definitions",
-    "templates"
-  ],
   "sideEffects": false,
   "scripts": {
     "prebuild": "npm run clean",
@@ -34,8 +16,7 @@
     "format": "prettier \"src/**/*.{ts,tsx,js,jsx,css,scss,sass,less,md}\"",
     "format:fix": "npm run format -- --write",
     "lint": "eslint -c ./config/.eslintrc.json src --ext .ts",
-    "lint:fix": "npm run lint -- --fix",
-    "prerelease": "npm run build"
+    "lint:fix": "npm run lint -- --fix"
   },
   "dependencies": {
     "@apexlang/core": "^0.0.20"

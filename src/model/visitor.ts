@@ -109,6 +109,20 @@ class ErrorHolder {
   }
 }
 
+function dummyValue<T>(fieldName: string): T {
+  return new Proxy(
+    {},
+    {
+      get: function (target, name, receiver) {
+        throw new Error(`${fieldName} is not available in this scope`);
+      },
+      set: function (target, name, value, receiver) {
+        throw new Error(`${fieldName} is not available in this scope`);
+      },
+    }
+  ) as T;
+}
+
 export class Context {
   config: ObjectMap;
   document?: Document;
@@ -119,26 +133,26 @@ export class Context {
   // Drill-down definitions
   namespace: Namespace;
   namespacePos: number = 9999;
-  directive?: Directive;
-  alias?: Alias;
-  interface?: Interface;
-  role?: Role;
-  type?: MObject;
-  operations?: Operation[];
-  operation?: Operation;
-  parameters?: Parameter[];
-  parameter?: Parameter;
-  parameterIndex?: number;
-  fields?: Field[];
-  field?: Field;
-  fieldIndex?: number;
-  enum?: Enum;
-  enumValues?: EnumValue[];
-  enumValue?: EnumValue;
-  union?: Union;
+  directive: Directive = dummyValue<Directive>("directive");
+  alias: Alias = dummyValue<Alias>("alias");
+  interface: Interface = dummyValue<Interface>("interface");
+  role: Role = dummyValue<Role>("role");
+  type: MObject = dummyValue<MObject>("type");
+  operations: Operation[] = dummyValue<Operation[]>("operations");
+  operation: Operation = dummyValue<Operation>("operation");
+  parameters: Parameter[] = dummyValue<Parameter[]>("parameters");
+  parameter: Parameter = dummyValue<Parameter>("parameter");
+  parameterIndex: number = 9999;
+  fields: Field[] = dummyValue<Field[]>("fields");
+  field: Field = dummyValue<Field>("fields");
+  fieldIndex: number = 9999;
+  enum: Enum = dummyValue<Enum>("enum");
+  enumValues: EnumValue[] = dummyValue<EnumValue[]>("enumValues");
+  enumValue: EnumValue = dummyValue<EnumValue>("enumValue");
+  union: Union = dummyValue<Union>("union");
 
-  annotations?: Annotation[];
-  annotation?: Annotation;
+  annotations: Annotation[] = dummyValue<Annotation[]>("annotations");
+  annotation: Annotation = dummyValue<Annotation>("annotation");
 
   private errors: ErrorHolder;
   private typeMap: {
@@ -270,7 +284,7 @@ export class Context {
       throw new Error("namespace not found");
     }
 
-    this.document!.definitions.forEach((value, index) => {
+    this.document!.definitions.forEach((value) => {
       switch (value.getKind()) {
         case Kind.DirectiveDefinition:
           const directiveDef = value as DirectiveDefinition;
@@ -328,6 +342,44 @@ export class Context {
           break;
       }
     });
+
+    // Reorder all types per the contents of the spec document.
+    this.document!.definitions.forEach((value) => {
+      switch (value.getKind()) {
+        case Kind.AliasDefinition:
+          const aliasDef = value as AliasDefinition;
+          const a = this.namespace.aliases[aliasDef.name.value];
+          delete this.namespace.aliases[a.name];
+          delete this.namespace.allTypes[a.name];
+          this.namespace.aliases[a.name] = a;
+          this.namespace.allTypes[a.name] = a;
+          break;
+        case Kind.TypeDefinition:
+          const typeDef = value as TypeDefinition;
+          const t = this.namespace.types[typeDef.name.value];
+          delete this.namespace.types[t.name];
+          delete this.namespace.allTypes[t.name];
+          this.namespace.types[t.name] = t;
+          this.namespace.allTypes[t.name] = t;
+          break;
+        case Kind.EnumDefinition:
+          const enumDef = value as EnumDefinition;
+          const e = this.namespace.enums[enumDef.name.value];
+          delete this.namespace.enums[e.name];
+          delete this.namespace.allTypes[e.name];
+          this.namespace.enums[e.name] = e;
+          this.namespace.allTypes[e.name] = e;
+          break;
+        case Kind.UnionDefinition:
+          const unionDef = value as UnionDefinition;
+          const u = this.namespace.unions[unionDef.name.value];
+          delete this.namespace.unions[u.name];
+          delete this.namespace.allTypes[u.name];
+          this.namespace.unions[u.name] = u;
+          this.namespace.allTypes[u.name] = u;
+          break;
+      }
+    });
   }
 
   reportError(error: ApexError): void {
@@ -363,37 +415,37 @@ export class Context {
               this.getType.bind(this),
               anyTypeDef as AliasDefinition
             );
-            this.namespace!.aliases[name] = alias;
-            this.namespace!.allTypes[name] = alias;
+            this.namespace.aliases[name] = alias;
+            this.namespace.allTypes[name] = alias;
             return alias;
           case ASTKind.TypeDefinition:
             const type = new MObject(
               this.getType.bind(this),
               anyTypeDef as TypeDefinition
             );
-            this.namespace!.types[name] = type;
-            this.namespace!.allTypes[name] = type;
+            this.namespace.types[name] = type;
+            this.namespace.allTypes[name] = type;
             return type;
           case ASTKind.UnionDefinition:
             const union = new Union(
               this.getType.bind(this),
               anyTypeDef as UnionDefinition
             );
-            this.namespace!.unions[name] = union;
-            this.namespace!.allTypes[name] = union;
+            this.namespace.unions[name] = union;
+            this.namespace.allTypes[name] = union;
             return union;
           case ASTKind.EnumDefinition:
             const enumDef = (namedType = new Enum(
               this.getType.bind(this),
               anyTypeDef as EnumDefinition
             ));
-            this.namespace!.enums[name] = enumDef;
-            this.namespace!.allTypes[name] = enumDef;
+            this.namespace.enums[name] = enumDef;
+            this.namespace.allTypes[name] = enumDef;
             return enumDef;
         }
 
         if (namedType != undefined) {
-          this.namespace!.allTypes[name] = namedType;
+          this.namespace.allTypes[name] = namedType;
           return namedType;
         }
 
