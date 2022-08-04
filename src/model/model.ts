@@ -463,14 +463,18 @@ export class Union extends Annotated implements Named {
   readonly node: UnionDefinition;
   readonly name: string;
   readonly description?: string;
-  readonly types: AnyType[];
+  readonly tr: TypeResolver;
 
   constructor(tr: TypeResolver, node: UnionDefinition) {
     super(Kind.Union, node.annotations);
     this.node = node;
     this.name = node.name.value;
     this.description = optionalString(node.description);
-    this.types = node.types.map((v) => tr(v));
+    this.tr = tr;
+  }
+
+  get types(): AnyType[] {
+    return this.node.types.map((v) => this.tr(v));
   }
 
   public accept(context: Context, visitor: Visitor): void {
