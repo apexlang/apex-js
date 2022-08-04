@@ -41,7 +41,8 @@ const builtInTypeNames = new Set([
   "string",
   "datetime",
   "bytes",
-  "raw",
+  "any",
+  "value",
 ]);
 
 export class KnownTypes extends AbstractVisitor {
@@ -85,6 +86,18 @@ export class KnownTypes extends AbstractVisitor {
       `${type.name.value}`,
       field.type
     );
+  }
+
+  visitUnion(context: Context): void {
+    const union = context.union!;
+    union.types.forEach((t) => {
+      this.checkType(
+        context,
+        `union "${union.name.value}"`,
+        `${union.name.value}`,
+        t
+      );
+    });
   }
 
   visitDirectiveParameter(context: Context): void {

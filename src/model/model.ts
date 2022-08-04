@@ -66,6 +66,8 @@ export enum PrimitiveName {
   DateTime = "datetime",
   Bool = "bool",
   Bytes = "bytes",
+  Any = "any",
+  Value = "value",
 }
 
 export class Void extends Base {
@@ -105,6 +107,8 @@ export const primitives: { [name: string]: Primitive } = {
   datetime: new Primitive(PrimitiveName.DateTime),
   bool: new Primitive(PrimitiveName.Bool),
   bytes: new Primitive(PrimitiveName.Bytes),
+  any: new Primitive(PrimitiveName.Any),
+  value: new Primitive(PrimitiveName.Value),
 };
 
 export class List extends Base {
