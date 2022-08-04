@@ -277,57 +277,66 @@ export class Context {
     this.document!.definitions.forEach((value) => {
       switch (value.getKind()) {
         case Kind.DirectiveDefinition:
-          const directiveDef = value as DirectiveDefinition;
-          const directive = new Directive(
+          new Directive(
             this.getType.bind(this),
-            directiveDef
+            value as DirectiveDefinition,
+            (d: Directive) => {
+              this.namespace.directives[d.name] = d;
+            }
           );
-          this.namespace.directives[directive.name] = directive;
           break;
         case Kind.AliasDefinition:
           const aliasDef = value as AliasDefinition;
           if (!this.namespace.allTypes[aliasDef.name.value]) {
-            const alias = new Alias(this.getType.bind(this), aliasDef);
-            this.namespace.aliases[alias.name] = alias;
-            this.namespace.allTypes[alias.name] = alias;
+            new Alias(this.getType.bind(this), aliasDef, (a: Alias) => {
+              this.namespace.aliases[a.name] = a;
+              this.namespace.allTypes[a.name] = a;
+            });
           }
           break;
         case Kind.InterfaceDefinition:
-          const iface = new Interface(
+          new Interface(
             this.getType.bind(this),
-            value as InterfaceDefinition
+            value as InterfaceDefinition,
+            (i: Interface) => {
+              this.namespace.interfaces.push(i);
+            }
           );
-          this.namespace.interfaces.push(iface);
           break;
         case Kind.RoleDefinition:
-          const role = new Role(
+          new Role(
             this.getType.bind(this),
-            value as RoleDefinition
+            value as RoleDefinition,
+            (r: Role) => {
+              this.namespace.roles[r.name] = r;
+            }
           );
-          this.namespace.roles[role.name] = role;
           break;
         case Kind.TypeDefinition:
           const typeDef = value as TypeDefinition;
           if (!this.namespace.allTypes[typeDef.name.value]) {
-            const type = new MObject(this.getType.bind(this), typeDef);
-            this.namespace.types[type.name] = type;
-            this.namespace.allTypes[type.name] = type;
+            new MObject(this.getType.bind(this), typeDef, (t: MObject) => {
+              this.namespace.types[t.name] = t;
+              this.namespace.allTypes[t.name] = t;
+            });
           }
           break;
         case Kind.EnumDefinition:
           const enumDef = value as EnumDefinition;
           if (!this.namespace.allTypes[enumDef.name.value]) {
-            const enumInst = new Enum(this.getType.bind(this), enumDef);
-            this.namespace.enums[enumInst.name] = enumInst;
-            this.namespace.allTypes[enumInst.name] = enumInst;
+            new Enum(this.getType.bind(this), enumDef, (e: Enum) => {
+              this.namespace.enums[e.name] = e;
+              this.namespace.allTypes[e.name] = e;
+            });
           }
           break;
         case Kind.UnionDefinition:
           const unionDef = value as UnionDefinition;
           if (!this.namespace.allTypes[unionDef.name.value]) {
-            const union = new Union(this.getType.bind(this), unionDef);
-            this.namespace.unions[union.name] = union;
-            this.namespace.allTypes[union.name] = union;
+            new Union(this.getType.bind(this), unionDef, (u: Union) => {
+              this.namespace.unions[u.name] = u;
+              this.namespace.allTypes[u.name] = u;
+            });
           }
           break;
       }
@@ -388,7 +397,7 @@ export class Context {
           return VoidValue;
         }
 
-        let namedType = this.namespace!.allTypes[name];
+        let namedType = this.namespace.allTypes[name];
         if (namedType != undefined) {
           return namedType;
         }
@@ -399,44 +408,47 @@ export class Context {
         }
 
         const anyTypeDef = this.typeMap[name];
-        switch (anyTypeDef.getKind()) {
-          case ASTKind.AliasDefinition:
-            const alias = new Alias(
-              this.getType.bind(this),
-              anyTypeDef as AliasDefinition
-            );
-            this.namespace.aliases[name] = alias;
-            this.namespace.allTypes[name] = alias;
-            return alias;
-          case ASTKind.TypeDefinition:
-            const type = new MObject(
-              this.getType.bind(this),
-              anyTypeDef as TypeDefinition
-            );
-            this.namespace.types[name] = type;
-            this.namespace.allTypes[name] = type;
-            return type;
-          case ASTKind.UnionDefinition:
-            const union = new Union(
-              this.getType.bind(this),
-              anyTypeDef as UnionDefinition
-            );
-            this.namespace.unions[name] = union;
-            this.namespace.allTypes[name] = union;
-            return union;
-          case ASTKind.EnumDefinition:
-            const enumDef = (namedType = new Enum(
-              this.getType.bind(this),
-              anyTypeDef as EnumDefinition
-            ));
-            this.namespace.enums[name] = enumDef;
-            this.namespace.allTypes[name] = enumDef;
-            return enumDef;
+        if (!anyTypeDef) {
+          throw new Error(`Unknown type ${name}`);
         }
 
-        if (namedType != undefined) {
-          this.namespace.allTypes[name] = namedType;
-          return namedType;
+        switch (anyTypeDef.getKind()) {
+          case ASTKind.AliasDefinition:
+            return new Alias(
+              this.getType.bind(this),
+              anyTypeDef as AliasDefinition,
+              (a: Alias) => {
+                this.namespace.aliases[a.name] = a;
+                this.namespace.allTypes[a.name] = a;
+              }
+            );
+          case ASTKind.TypeDefinition:
+            return new MObject(
+              this.getType.bind(this),
+              anyTypeDef as TypeDefinition,
+              (t: MObject) => {
+                this.namespace.types[t.name] = t;
+                this.namespace.allTypes[t.name] = t;
+              }
+            );
+          case ASTKind.UnionDefinition:
+            return new Union(
+              this.getType.bind(this),
+              anyTypeDef as UnionDefinition,
+              (u: Union) => {
+                this.namespace.unions[u.name] = u;
+                this.namespace.allTypes[u.name] = u;
+              }
+            );
+          case ASTKind.EnumDefinition:
+            return new Enum(
+              this.getType.bind(this),
+              anyTypeDef as EnumDefinition,
+              (e: Enum) => {
+                this.namespace.enums[e.name] = e;
+                this.namespace.allTypes[e.name] = e;
+              }
+            );
         }
 
         break;
