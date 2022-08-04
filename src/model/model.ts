@@ -274,11 +274,18 @@ export class Alias extends Annotated implements Named {
   readonly description?: string;
   readonly type: AnyType;
 
-  constructor(tr: TypeResolver, node: AliasDefinition) {
+  constructor(
+    tr: TypeResolver,
+    node: AliasDefinition,
+    register?: (a: Alias) => void
+  ) {
     super(Kind.Alias, node.annotations);
     this.node = node;
     this.name = node.name.value;
     this.description = optionalString(node.description);
+    if (register) {
+      register(this);
+    }
     this.type = tr(node.type);
   }
 
@@ -293,11 +300,18 @@ export class Type extends Annotated implements Named {
   readonly description?: string;
   readonly fields: Field[];
 
-  constructor(tr: TypeResolver, node: TypeDefinition) {
+  constructor(
+    tr: TypeResolver,
+    node: TypeDefinition,
+    register?: (a: Type) => void
+  ) {
     super(Kind.Type, node.annotations);
     this.node = node;
     this.name = node.name.value;
     this.description = optionalString(node.description);
+    if (register) {
+      register(this);
+    }
     this.fields = node.fields.map((v) => new Field(tr, v));
   }
 
@@ -347,10 +361,17 @@ export class Interface extends Annotated {
   readonly description?: string;
   readonly operations: Operation[];
 
-  constructor(tr: TypeResolver, node: InterfaceDefinition) {
+  constructor(
+    tr: TypeResolver,
+    node: InterfaceDefinition,
+    register?: (r: Interface) => void
+  ) {
     super(Kind.Interface, node.annotations);
     this.node = node;
     this.description = optionalString(node.description);
+    if (register) {
+      register(this);
+    }
     this.operations = node.operations.map((v) => new Operation(tr, v));
   }
 
@@ -375,11 +396,18 @@ export class Role extends Annotated implements Named {
   readonly description?: string;
   readonly operations: Operation[];
 
-  constructor(tr: TypeResolver, node: RoleDefinition) {
+  constructor(
+    tr: TypeResolver,
+    node: RoleDefinition,
+    register?: (r: Role) => void
+  ) {
     super(Kind.Role, node.annotations);
     this.node = node;
     this.name = node.name.value;
     this.description = optionalString(node.description);
+    if (register) {
+      register(this);
+    }
     this.operations = node.operations.map((v) => new Operation(tr, v));
   }
 
@@ -463,18 +491,21 @@ export class Union extends Annotated implements Named {
   readonly node: UnionDefinition;
   readonly name: string;
   readonly description?: string;
-  readonly tr: TypeResolver;
+  readonly types: AnyType[];
 
-  constructor(tr: TypeResolver, node: UnionDefinition) {
+  constructor(
+    tr: TypeResolver,
+    node: UnionDefinition,
+    register?: (a: Union) => void
+  ) {
     super(Kind.Union, node.annotations);
     this.node = node;
     this.name = node.name.value;
     this.description = optionalString(node.description);
-    this.tr = tr;
-  }
-
-  get types(): AnyType[] {
-    return this.node.types.map((v) => this.tr(v));
+    if (register) {
+      register(this);
+    }
+    this.types = node.types.map((v) => tr(v));
   }
 
   public accept(context: Context, visitor: Visitor): void {
@@ -488,11 +519,18 @@ export class Enum extends Annotated implements Named {
   readonly description?: string;
   readonly values: EnumValue[];
 
-  constructor(tr: TypeResolver, node: EnumDefinition) {
+  constructor(
+    tr: TypeResolver,
+    node: EnumDefinition,
+    register?: (e: Enum) => void
+  ) {
     super(Kind.Enum, node.annotations);
     this.node = node;
     this.name = node.name.value;
     this.description = optionalString(node.description);
+    if (register) {
+      register(this);
+    }
     this.values = node.values.map((v) => new EnumValue(tr, v));
   }
 
@@ -540,11 +578,18 @@ export class Directive extends Base implements Named {
   readonly locations: string[];
   readonly requires: Require[];
 
-  constructor(tr: TypeResolver, node: DirectiveDefinition) {
+  constructor(
+    tr: TypeResolver,
+    node: DirectiveDefinition,
+    register?: (r: Directive) => void
+  ) {
     super(Kind.Directive);
     this.node = node;
     this.name = node.name.value;
     this.description = optionalString(node.description);
+    if (register) {
+      register(this);
+    }
     this.parameters = node.parameters.map((v) => new Parameter(tr, v));
     this.locations = node.locations.map((v) => v.value);
     this.requires = node.requires.map((v) => new Require(tr, v));
@@ -638,11 +683,7 @@ export class Argument extends Base implements Named {
 }
 
 function optionalString(value?: StringValue): string | undefined {
-  if (value == undefined) {
-    return undefined;
-  }
-
-  return value.value;
+  return value?.value;
 }
 
 function getAnnotation(

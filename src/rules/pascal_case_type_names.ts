@@ -17,7 +17,7 @@ limitations under the License.
 import { AbstractVisitor, Context } from "../ast/index.js";
 import { validationError } from "../error/index.js";
 
-const pascalMatcher = /[A-Z][0-9A-Za-z]/;
+const pascalMatcher = /^[A-Z](?:[A-Za-z0-9]+)*$/gm;
 
 export class PascalCaseTypeNames extends AbstractVisitor {
   visitAlias(context: Context): void {
