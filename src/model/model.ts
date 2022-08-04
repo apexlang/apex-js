@@ -16,7 +16,6 @@ limitations under the License.
 
 import {
   NamespaceDefinition,
-  StringValue,
   Annotation as AnnotationDef,
   Argument as ArgumentDef,
   AliasDefinition,
@@ -194,7 +193,7 @@ export class Namespace extends Annotated {
     super(Kind.Namespace, node.annotations);
     this.node = node;
     this.name = node.name.value;
-    this.description = optionalString(node.description);
+    this.description = node.description?.value;
     this.directives = {};
     this.interfaces = [];
     this.roles = {};
@@ -282,7 +281,7 @@ export class Alias extends Annotated implements Named {
     super(Kind.Alias, node.annotations);
     this.node = node;
     this.name = node.name.value;
-    this.description = optionalString(node.description);
+    this.description = node.description?.value;
     if (register) {
       register(this);
     }
@@ -308,7 +307,7 @@ export class Type extends Annotated implements Named {
     super(Kind.Type, node.annotations);
     this.node = node;
     this.name = node.name.value;
-    this.description = optionalString(node.description);
+    this.description = node.description?.value;
     if (register) {
       register(this);
     }
@@ -338,7 +337,7 @@ export abstract class Valued extends Annotated implements Named {
   constructor(tr: TypeResolver, kind: Kind, node: ValuedDefinition) {
     super(kind, node.annotations);
     this.name = node.name.value;
-    this.description = optionalString(node.description);
+    this.description = node.description?.value;
     this.type = tr(node.type);
   }
 }
@@ -368,7 +367,7 @@ export class Interface extends Annotated {
   ) {
     super(Kind.Interface, node.annotations);
     this.node = node;
-    this.description = optionalString(node.description);
+    this.description = node.description?.value;
     if (register) {
       register(this);
     }
@@ -404,7 +403,7 @@ export class Role extends Annotated implements Named {
     super(Kind.Role, node.annotations);
     this.node = node;
     this.name = node.name.value;
-    this.description = optionalString(node.description);
+    this.description = node.description?.value;
     if (register) {
       register(this);
     }
@@ -438,7 +437,7 @@ export class Operation extends Annotated implements Named {
     super(Kind.Operation, node.annotations);
     this.node = node;
     this.name = node.name.value;
-    this.description = optionalString(node.description);
+    this.description = node.description?.value;
     this.parameters = node.parameters.map((v) => new Parameter(tr, v));
     this.type = tr(node.type);
     this.unary = node.unary;
@@ -501,7 +500,7 @@ export class Union extends Annotated implements Named {
     super(Kind.Union, node.annotations);
     this.node = node;
     this.name = node.name.value;
-    this.description = optionalString(node.description);
+    this.description = node.description?.value;
     if (register) {
       register(this);
     }
@@ -527,7 +526,7 @@ export class Enum extends Annotated implements Named {
     super(Kind.Enum, node.annotations);
     this.node = node;
     this.name = node.name.value;
-    this.description = optionalString(node.description);
+    this.description = node.description?.value;
     if (register) {
       register(this);
     }
@@ -560,9 +559,9 @@ export class EnumValue extends Annotated implements Named {
     super(Kind.EnumValue, node.annotations);
     this.node = node;
     this.name = node.name.value;
-    this.description = optionalString(node.description);
+    this.description = node.description?.value;
     this.index = node.index.value;
-    this.display = optionalString(node.display);
+    this.display = node.display?.value;
   }
 
   public accept(context: Context, visitor: Visitor): void {
@@ -586,7 +585,7 @@ export class Directive extends Base implements Named {
     super(Kind.Directive);
     this.node = node;
     this.name = node.name.value;
-    this.description = optionalString(node.description);
+    this.description = node.description?.value;
     if (register) {
       register(this);
     }
@@ -680,10 +679,6 @@ export class Argument extends Base implements Named {
     this.name = node.name.value;
     this.value = node.value;
   }
-}
-
-function optionalString(value?: StringValue): string | undefined {
-  return value?.value;
 }
 
 function getAnnotation(
