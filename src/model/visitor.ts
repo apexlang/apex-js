@@ -276,15 +276,6 @@ export class Context {
 
     this.document!.definitions.forEach((value) => {
       switch (value.getKind()) {
-        case Kind.DirectiveDefinition:
-          new Directive(
-            this.getType.bind(this),
-            value as DirectiveDefinition,
-            (d: Directive) => {
-              this.namespace.directives[d.name] = d;
-            }
-          );
-          break;
         case Kind.AliasDefinition:
           const aliasDef = value as AliasDefinition;
           if (!this.namespace.allTypes[aliasDef.name.value]) {
@@ -293,24 +284,6 @@ export class Context {
               this.namespace.allTypes[a.name] = a;
             });
           }
-          break;
-        case Kind.InterfaceDefinition:
-          new Interface(
-            this.getType.bind(this),
-            value as InterfaceDefinition,
-            (i: Interface) => {
-              this.namespace.interfaces.push(i);
-            }
-          );
-          break;
-        case Kind.RoleDefinition:
-          new Role(
-            this.getType.bind(this),
-            value as RoleDefinition,
-            (r: Role) => {
-              this.namespace.roles[r.name] = r;
-            }
-          );
           break;
         case Kind.TypeDefinition:
           const typeDef = value as TypeDefinition;
@@ -338,6 +311,38 @@ export class Context {
               this.namespace.allTypes[u.name] = u;
             });
           }
+          break;
+      }
+    });
+
+    this.document!.definitions.forEach((value) => {
+      switch (value.getKind()) {
+        case Kind.DirectiveDefinition:
+          new Directive(
+            this.getType.bind(this),
+            value as DirectiveDefinition,
+            (d: Directive) => {
+              this.namespace.directives[d.name] = d;
+            }
+          );
+          break;
+        case Kind.InterfaceDefinition:
+          new Interface(
+            this.getType.bind(this),
+            value as InterfaceDefinition,
+            (i: Interface) => {
+              this.namespace.interfaces.push(i);
+            }
+          );
+          break;
+        case Kind.RoleDefinition:
+          new Role(
+            this.getType.bind(this),
+            value as RoleDefinition,
+            (r: Role) => {
+              this.namespace.roles[r.name] = r;
+            }
+          );
           break;
       }
     });

@@ -223,7 +223,9 @@ export class Namespace extends Annotated {
     visitor.visitAliasesBefore(context);
     for (let name in this.aliases) {
       const item = this.aliases[name];
-      item.accept(context.clone({ alias: item }), visitor);
+      if (!item.annotation("novisit")) {
+        item.accept(context.clone({ alias: item }), visitor);
+      }
     }
     visitor.visitAliasesAfter(context);
 
@@ -254,7 +256,9 @@ export class Namespace extends Annotated {
     visitor.visitUnionsBefore(context);
     for (let name in this.unions) {
       const item = this.unions[name];
-      item.accept(context.clone({ union: item }), visitor);
+      if (!item.annotation("novisit")) {
+        item.accept(context.clone({ union: item }), visitor);
+      }
     }
     visitor.visitUnionsAfter(context);
 
