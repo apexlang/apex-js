@@ -1,6 +1,6 @@
 {
   "name": "@apexlang/core",
-  "version": "0.0.25",
+  "version": "0.0.26",
   "description": "Apex language JavaScript support",
   "keywords": [
     "apex",
@@ -37,6 +37,7 @@
     "README.md",
     "test",
     "src",
+    "templates",
     "docs",
     "*.js",
     "*.d.ts"
