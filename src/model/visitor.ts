@@ -475,13 +475,18 @@ export class Context {
   }
 
   accept(context: Context, visitor: Visitor): void {
+    visitor.visitContextBefore(context);
     context.namespaces.map((namespace) => {
       namespace.accept(context.clone({ namespace: namespace }), visitor);
     });
+    visitor.visitContextAfter(context);
   }
 }
 
 export interface Visitor {
+  visitContextBefore(context: Context): void;
+  visitContextAfter(context: Context): void;
+
   visitNamespaceBefore(context: Context): void;
   visitNamespace(context: Context): void;
   visitNamespaceAfter(context: Context): void;
@@ -580,6 +585,20 @@ export abstract class AbstractVisitor implements Visitor {
       const callback = purposes[name];
       callback(context);
     }
+  }
+
+  public visitContextBefore(context: Context): void {
+    this.triggerContextBefore(context);
+  }
+  public triggerContextBefore(context: Context): void {
+    this.triggerCallbacks(context, "ContextBefore");
+  }
+
+  public visitContextAfter(context: Context): void {
+    this.triggerContextAfter(context);
+  }
+  public triggerContextAfter(context: Context): void {
+    this.triggerCallbacks(context, "ContextAfter");
   }
 
   public visitNamespaceBefore(context: Context): void {
