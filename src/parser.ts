@@ -821,7 +821,7 @@ class Parser {
     } else if (unary && this.peek(TokenKind.BRACE_L)) {
       // unary
       this._lexer.advance();
-      const inputValueDef = this.parseParameterDefinition(true);
+      const inputValueDef = this.parseParameterDefinition();
       this.expectToken(TokenKind.BRACE_R);
       const arr = new Array<ParameterDefinition>();
       arr.push(inputValueDef);
@@ -837,13 +837,13 @@ class Parser {
    * ParameterDefinition :
    *   - Description? Name : Type DefaultValue? Annotations[Const]?
    */
-  parseParameterDefinition(allowStream: boolean = false): ParameterDefinition {
+  parseParameterDefinition(): ParameterDefinition {
     const start = this._lexer.token;
     const description = this.parseDescription();
     const name = this.parseName();
     this.expectToken(TokenKind.COLON);
     const streamLoc = this.loc(this._lexer.token);
-    const stream = allowStream && this.expectOptionalKeyword("stream");
+    const stream = this.expectOptionalKeyword("stream");
     var type = this.parseType();
     if (stream) {
       type = new Stream(streamLoc, type);
