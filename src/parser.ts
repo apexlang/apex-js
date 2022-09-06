@@ -48,7 +48,6 @@ import {
   TypeDefinition,
   AliasDefinition,
   InterfaceDefinition,
-  RoleDefinition,
   UnionDefinition,
   EnumDefinition,
   DirectiveDefinition,
@@ -312,7 +311,7 @@ class Parser {
         case "directive":
         case "alias":
         case "interface":
-        case "role":
+        case "func":
         case "type":
         case "union":
         case "enum":
@@ -338,6 +337,14 @@ class Parser {
     const start = this._lexer.token;
     const description = this.parseDescription();
     const name = this.parseName();
+    return this.parseOperationDefinitionBody(start, name, description);
+  }
+
+  private parseOperationDefinitionBody(
+    start: Token,
+    name: Name,
+    description: StringValue | undefined
+  ) {
     const [parameters, isUnary] = this.parseParameterDefinitions(true);
     const colon = this.expectOptionalToken(TokenKind.COLON);
     let type: Type = new Named(undefined, new Name(undefined, "void"));
@@ -586,7 +593,6 @@ class Parser {
    *   - ScalarTypeDefinition
    *   - ObjectTypeDefinition
    *   - InterfaceTypeDefinition
-   *   - RoleTypeDefinition
    *   - UnionTypeDefinition
    *   - EnumTypeDefinition
    *   - InputObjectTypeDefinition
@@ -613,10 +619,10 @@ class Parser {
           return this.parseDirectiveDefinition();
         case "alias":
           return this.parseAliasDefinition();
+        case "func":
+          return this.parseFunctionDefinition();
         case "interface":
           return this.parseInterfaceDefinition();
-        case "role":
-          return this.parseRoleDefinition();
         case "type":
           return this.parseTypeDefinition();
         case "union":
@@ -818,18 +824,18 @@ class Parser {
         true
       );
       return [inputValDefs as Array<ParameterDefinition>, false];
-    } else if (unary && this.peek(TokenKind.BRACE_L)) {
+    } else if (unary && this.peek(TokenKind.BRACKET_L)) {
       // unary
       this._lexer.advance();
       const inputValueDef = this.parseParameterDefinition();
-      this.expectToken(TokenKind.BRACE_R);
+      this.expectToken(TokenKind.BRACKET_R);
       const arr = new Array<ParameterDefinition>();
       arr.push(inputValueDef);
       return [arr, true];
     }
-    this._lexer.advance();
+    //this._lexer.advance();
     throw new Error(
-      "for Argument Definitions, expect a ( or [ got " + this._lexer.token
+      "for Argument Definitions, expect a ( or [ got " + getTokenDesc(this._lexer.token)
     );
   }
 
@@ -884,6 +890,14 @@ class Parser {
     return nodeArr;
   }
 
+  parseFunctionDefinition(): OperationDefinition {
+    const start = this._lexer.token;
+    const description = this.parseDescription();
+    this.expectKeyword("func");
+    const name = this.parseName();
+    return this.parseOperationDefinitionBody(start, name, description);
+  }
+
   /**
    * InterfaceTypeDefinition :
    *   - Description? interface Name Annotations[Const]? FieldsDefinition?
@@ -891,30 +905,7 @@ class Parser {
   parseInterfaceDefinition(): InterfaceDefinition {
     const start = this._lexer.token;
     const description = this.parseDescription();
-    this.expectKeyword("interface"); // TODO
-    const annotations = this.parseAnnotations();
-    const iOperations = this.reverse(
-      TokenKind.BRACE_L,
-      this.parseOperationDefinition,
-      TokenKind.BRACE_R,
-      false
-    );
-    return new InterfaceDefinition(
-      this.loc(start),
-      description,
-      iOperations as OperationDefinition[],
-      annotations
-    );
-  }
-
-  /**
-   * InterfaceTypeDefinition :
-   *   - Description? interface Name Annotations[Const]? FieldsDefinition?
-   */
-  parseRoleDefinition(): RoleDefinition {
-    const start = this._lexer.token;
-    const description = this.parseDescription();
-    this.expectKeyword("role");
+    this.expectKeyword("interface");
     const name = this.parseName();
     const annotations = this.parseAnnotations();
     const iOperations = this.reverse(
@@ -923,7 +914,7 @@ class Parser {
       TokenKind.BRACE_R,
       false
     );
-    return new RoleDefinition(
+    return new InterfaceDefinition(
       this.loc(start),
       name,
       description,

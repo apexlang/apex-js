@@ -20,7 +20,6 @@ import { validationError } from "../error/index.js";
 const validLocationNames = new Set([
   "NAMESPACE",
   "INTERFACE",
-  "ROLE",
   "OPERATION",
   "PARAMETER",
   "TYPE",

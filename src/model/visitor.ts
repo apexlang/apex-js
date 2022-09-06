@@ -18,7 +18,6 @@ import {
   Namespace,
   AnyType,
   Interface,
-  Role,
   Enum,
   Union,
   Parameter,
@@ -42,12 +41,12 @@ import {
   DirectiveDefinition,
   AliasDefinition,
   InterfaceDefinition,
-  RoleDefinition,
   TypeDefinition,
   EnumDefinition,
   UnionDefinition,
   Named,
   Name,
+  OperationDefinition,
 } from "../ast/index.js";
 import autoBind from "../auto-bind.js";
 import { ApexError } from "../error/index.js";
@@ -79,8 +78,7 @@ interface NamedParameters {
   namespace?: Namespace;
   directive?: Directive;
   alias?: Alias;
-  interfaceDef?: Interface;
-  role?: Role;
+  interface?: Interface;
   type?: MObject;
   operations?: Operation[];
   operation?: Operation;
@@ -126,7 +124,6 @@ export class Context {
   directive: Directive = dummyValue<Directive>("directive");
   alias: Alias = dummyValue<Alias>("alias");
   interface: Interface = dummyValue<Interface>("interface");
-  role: Role = dummyValue<Role>("role");
   type: MObject = dummyValue<MObject>("type");
   operations: Operation[] = dummyValue<Operation[]>("operations");
   operation: Operation = dummyValue<Operation>("operation");
@@ -195,8 +192,7 @@ export class Context {
     namespace,
     directive,
     alias,
-    interfaceDef,
-    role,
+    interface: iface,
     type,
     operations,
     operation,
@@ -218,8 +214,7 @@ export class Context {
     context.namespacePos = this.namespacePos;
     context.directive = directive || this.directive;
     context.alias = alias || this.alias;
-    context.interface = interfaceDef || this.interface;
-    context.role = role || this.role;
+    context.interface = iface || this.interface;
     context.type = type || this.type;
     context.operations = operations || this.operations;
     context.operation = operation || this.operation;
@@ -326,21 +321,21 @@ export class Context {
             }
           );
           break;
+        case Kind.OperationDefinition:
+          new Operation(
+            this.getType.bind(this),
+            value as OperationDefinition,
+            (r: Operation) => {
+              this.namespace.functions[r.name] = r;
+            }
+          );
+          break;
         case Kind.InterfaceDefinition:
           new Interface(
             this.getType.bind(this),
             value as InterfaceDefinition,
-            (i: Interface) => {
-              this.namespace.interfaces.push(i);
-            }
-          );
-          break;
-        case Kind.RoleDefinition:
-          new Role(
-            this.getType.bind(this),
-            value as RoleDefinition,
-            (r: Role) => {
-              this.namespace.roles[r.name] = r;
+            (r: Interface) => {
+              this.namespace.interfaces[r.name] = r;
             }
           );
           break;
@@ -511,11 +506,14 @@ export interface Visitor {
   visitAliasesAfter(context: Context): void;
 
   visitAllOperationsBefore(context: Context): void;
+  visitFunctionsBefore(context: Context): void;
+  visitFunctionBefore(context: Context): void;
+  visitFunction(context: Context): void;
+  visitFunctionAfter(context: Context): void;
+  visitFunctionsAfter(context: Context): void;
+  visitInterfacesBefore(context: Context): void;
   visitInterfaceBefore(context: Context): void;
   visitInterface(context: Context): void;
-  visitRolesBefore(context: Context): void;
-  visitRoleBefore(context: Context): void;
-  visitRole(context: Context): void;
   visitOperationsBefore(context: Context): void;
   visitOperationBefore(context: Context): void;
   visitOperation(context: Context): void;
@@ -525,8 +523,7 @@ export interface Visitor {
   visitOperationAfter(context: Context): void;
   visitOperationsAfter(context: Context): void;
   visitInterfaceAfter(context: Context): void;
-  visitRoleAfter(context: Context): void;
-  visitRolesAfter(context: Context): void;
+  visitInterfacesAfter(context: Context): void;
   visitAllOperationsAfter(context: Context): void;
 
   visitTypesBefore(context: Context): void;
@@ -726,6 +723,42 @@ export abstract class AbstractVisitor implements Visitor {
   public triggerAllOperationsBefore(context: Context): void {
     this.triggerCallbacks(context, "AllOperationsBefore");
   }
+  public visitFunctionsBefore(context: Context): void {
+    this.triggerFunctionsBefore(context);
+  }
+  public triggerFunctionsBefore(context: Context): void {
+    this.triggerCallbacks(context, "FunctionsBefore");
+  }
+  public visitFunctionBefore(context: Context): void {
+    this.triggerFunctionBefore(context);
+  }
+  public triggerFunctionBefore(context: Context): void {
+    this.triggerCallbacks(context, "FunctionBefore");
+  }
+  public visitFunction(context: Context): void {
+    this.triggerFunction(context);
+  }
+  public triggerFunction(context: Context): void {
+    this.triggerCallbacks(context, "Function");
+  }
+  public visitFunctionAfter(context: Context): void {
+    this.triggerFunctionAfter(context);
+  }
+  public triggerFunctionAfter(context: Context): void {
+    this.triggerCallbacks(context, "FunctionAfter");
+  }
+  public visitFunctionsAfter(context: Context): void {
+    this.triggerFunctionsAfter(context);
+  }
+  public triggerFunctionsAfter(context: Context): void {
+    this.triggerCallbacks(context, "FunctionsAfter");
+  }
+  public visitInterfacesBefore(context: Context): void {
+    this.triggerInterfacesBefore(context);
+  }
+  public triggerInterfacesBefore(context: Context): void {
+    this.triggerCallbacks(context, "InterfacesBefore");
+  }
   public visitInterfaceBefore(context: Context): void {
     this.triggerInterfaceBefore(context);
   }
@@ -737,24 +770,6 @@ export abstract class AbstractVisitor implements Visitor {
   }
   public triggerInterface(context: Context): void {
     this.triggerCallbacks(context, "Interface");
-  }
-  public visitRolesBefore(context: Context): void {
-    this.triggerRolesBefore(context);
-  }
-  public triggerRolesBefore(context: Context): void {
-    this.triggerCallbacks(context, "RolesBefore");
-  }
-  public visitRoleBefore(context: Context): void {
-    this.triggerRoleBefore(context);
-  }
-  public triggerRoleBefore(context: Context): void {
-    this.triggerCallbacks(context, "RoleBefore");
-  }
-  public visitRole(context: Context): void {
-    this.triggerRole(context);
-  }
-  public triggerRole(context: Context): void {
-    this.triggerCallbacks(context, "Role");
   }
   public visitOperationsBefore(context: Context): void {
     this.triggerOperationsBefore(context);
@@ -810,17 +825,11 @@ export abstract class AbstractVisitor implements Visitor {
   public triggerInterfaceAfter(context: Context): void {
     this.triggerCallbacks(context, "InterfaceAfter");
   }
-  public visitRoleAfter(context: Context): void {
-    this.triggerRoleAfter(context);
+  public visitInterfacesAfter(context: Context): void {
+    this.triggerInterfacesAfter(context);
   }
-  public triggerRoleAfter(context: Context): void {
-    this.triggerCallbacks(context, "RoleAfter");
-  }
-  public visitRolesAfter(context: Context): void {
-    this.triggerRolesAfter(context);
-  }
-  public triggerRolesAfter(context: Context): void {
-    this.triggerCallbacks(context, "RolesAfter");
+  public triggerInterfacesAfter(context: Context): void {
+    this.triggerCallbacks(context, "InterfacesAfter");
   }
   public visitAllOperationsAfter(context: Context): void {
     this.triggerAllOperationsAfter(context);
@@ -1126,6 +1135,11 @@ export class MultiVisitor extends AbstractVisitor {
       visitor.visitAllOperationsBefore(context);
     });
   }
+  public visitInterfacesBefore(context: Context): void {
+    this.visitors.map((visitor) => {
+      visitor.visitInterfacesBefore(context);
+    });
+  }
   public visitInterfaceBefore(context: Context): void {
     this.visitors.map((visitor) => {
       visitor.visitInterfaceBefore(context);
@@ -1134,21 +1148,6 @@ export class MultiVisitor extends AbstractVisitor {
   public visitInterface(context: Context): void {
     this.visitors.map((visitor) => {
       visitor.visitInterface(context);
-    });
-  }
-  public visitRolesBefore(context: Context): void {
-    this.visitors.map((visitor) => {
-      visitor.visitRolesBefore(context);
-    });
-  }
-  public visitRoleBefore(context: Context): void {
-    this.visitors.map((visitor) => {
-      visitor.visitRoleBefore(context);
-    });
-  }
-  public visitRole(context: Context): void {
-    this.visitors.map((visitor) => {
-      visitor.visitRole(context);
     });
   }
   public visitOperationsBefore(context: Context): void {
@@ -1196,14 +1195,9 @@ export class MultiVisitor extends AbstractVisitor {
       visitor.visitInterfaceAfter(context);
     });
   }
-  public visitRoleAfter(context: Context): void {
+  public visitInterfacesAfter(context: Context): void {
     this.visitors.map((visitor) => {
-      visitor.visitRoleAfter(context);
-    });
-  }
-  public visitRolesAfter(context: Context): void {
-    this.visitors.map((visitor) => {
-      visitor.visitRolesAfter(context);
+      visitor.visitInterfacesAfter(context);
     });
   }
   public visitAllOperationsAfter(context: Context): void {

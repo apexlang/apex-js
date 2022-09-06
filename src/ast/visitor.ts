@@ -18,7 +18,6 @@ import {
   NamespaceDefinition,
   TypeDefinition,
   InterfaceDefinition,
-  RoleDefinition,
   EnumDefinition,
   UnionDefinition,
   ParameterDefinition,
@@ -54,8 +53,7 @@ interface NamedParameters {
   importDef?: ImportDefinition;
   directive?: DirectiveDefinition;
   alias?: AliasDefinition;
-  interfaceDef?: InterfaceDefinition;
-  role?: RoleDefinition;
+  interface?: InterfaceDefinition;
   type?: TypeDefinition;
   operations?: OperationDefinition[];
   operation?: OperationDefinition;
@@ -94,8 +92,8 @@ export class Context {
   directives: DirectiveDefinition[];
   directiveMap: Map<string, DirectiveDefinition>;
   aliases: AliasDefinition[];
+  functions: OperationDefinition[];
   interfaces: InterfaceDefinition[];
-  roles: RoleDefinition[];
   types: TypeDefinition[];
   enums: EnumDefinition[];
   unions: UnionDefinition[];
@@ -111,7 +109,6 @@ export class Context {
   directive?: DirectiveDefinition;
   alias?: AliasDefinition;
   interface?: InterfaceDefinition;
-  role?: RoleDefinition;
   type?: TypeDefinition;
   operations?: OperationDefinition[];
   operation?: OperationDefinition;
@@ -142,8 +139,8 @@ export class Context {
       this.directives = other.directives;
       this.directiveMap = other.directiveMap;
       this.aliases = other.aliases;
+      this.functions = other.functions;
       this.interfaces = other.interfaces;
-      this.roles = other.roles;
       this.enums = other.enums;
       this.types = other.types;
       this.unions = other.unions;
@@ -163,8 +160,8 @@ export class Context {
       this.directiveMap = new Map<string, DirectiveDefinition>();
       this.imports = new Array<ImportDefinition>();
       this.aliases = new Array<AliasDefinition>();
+      this.functions = new Array<OperationDefinition>();
       this.interfaces = new Array<InterfaceDefinition>();
-      this.roles = new Array<RoleDefinition>();
       this.enums = new Array<EnumDefinition>();
       this.types = new Array<TypeDefinition>();
       this.unions = new Array<UnionDefinition>();
@@ -190,8 +187,7 @@ export class Context {
     importDef,
     directive,
     alias,
-    interfaceDef,
-    role,
+    interface: iface,
     type,
     operations,
     operation,
@@ -214,8 +210,7 @@ export class Context {
     context.import = importDef || this.import;
     context.directive = directive || this.directive;
     context.alias = alias || this.alias;
-    context.interface = interfaceDef || this.interface;
-    context.role = role || this.role;
+    context.interface = iface || this.interface;
     context.type = type || this.type;
     context.operations = operations || this.operations;
     context.operation = operation || this.operation;
@@ -256,13 +251,13 @@ export class Context {
           this.aliases.push(alias);
           this.allTypes.set(alias.name.value, alias);
           break;
+        case Kind.OperationDefinition:
+          const oper = value as OperationDefinition;
+          this.functions.push(oper);
+          break;
         case Kind.InterfaceDefinition:
           const iface = value as InterfaceDefinition;
           this.interfaces.push(iface);
-          break;
-        case Kind.RoleDefinition:
-          const role = value as RoleDefinition;
-          this.roles.push(role);
           break;
         case Kind.TypeDefinition:
           const type = value as TypeDefinition;
@@ -316,11 +311,14 @@ export interface Visitor {
   visitAliasesAfter(context: Context): void;
 
   visitAllOperationsBefore(context: Context): void;
+  visitFunctionsBefore(context: Context): void;
+  visitFunctionBefore(context: Context): void;
+  visitFunction(context: Context): void;
+  visitFunctionAfter(context: Context): void;
+  visitFunctionsAfter(context: Context): void;
+  visitInterfacesBefore(context: Context): void;
   visitInterfaceBefore(context: Context): void;
   visitInterface(context: Context): void;
-  visitRolesBefore(context: Context): void;
-  visitRoleBefore(context: Context): void;
-  visitRole(context: Context): void;
   visitOperationsBefore(context: Context): void;
   visitOperationBefore(context: Context): void;
   visitOperation(context: Context): void;
@@ -330,8 +328,7 @@ export interface Visitor {
   visitOperationAfter(context: Context): void;
   visitOperationsAfter(context: Context): void;
   visitInterfaceAfter(context: Context): void;
-  visitRoleAfter(context: Context): void;
-  visitRolesAfter(context: Context): void;
+  visitInterfacesAfter(context: Context): void;
   visitAllOperationsAfter(context: Context): void;
 
   visitTypesBefore(context: Context): void;
@@ -512,6 +509,42 @@ export abstract class AbstractVisitor implements Visitor {
   public triggerAllOperationsBefore(context: Context): void {
     this.triggerCallbacks(context, "AllOperationsBefore");
   }
+  public visitFunctionsBefore(context: Context): void {
+    this.triggerFunctionsBefore(context);
+  }
+  public triggerFunctionsBefore(context: Context): void {
+    this.triggerCallbacks(context, "FunctionsBefore");
+  }
+  public visitFunctionBefore(context: Context): void {
+    this.triggerFunctionBefore(context);
+  }
+  public triggerFunctionBefore(context: Context): void {
+    this.triggerCallbacks(context, "FunctionBefore");
+  }
+  public visitFunction(context: Context): void {
+    this.triggerFunction(context);
+  }
+  public triggerFunction(context: Context): void {
+    this.triggerCallbacks(context, "Function");
+  }
+  public visitFunctionAfter(context: Context): void {
+    this.triggerFunctionAfter(context);
+  }
+  public triggerFunctionAfter(context: Context): void {
+    this.triggerCallbacks(context, "FunctionAfter");
+  }
+  public visitFunctionsAfter(context: Context): void {
+    this.triggerFunctionsAfter(context);
+  }
+  public triggerFunctionsAfter(context: Context): void {
+    this.triggerCallbacks(context, "FunctionsAfter");
+  }
+  public visitInterfacesBefore(context: Context): void {
+    this.triggerInterfacesBefore(context);
+  }
+  public triggerInterfacesBefore(context: Context): void {
+    this.triggerCallbacks(context, "InterfacesBefore");
+  }
   public visitInterfaceBefore(context: Context): void {
     this.triggerInterfaceBefore(context);
   }
@@ -523,24 +556,6 @@ export abstract class AbstractVisitor implements Visitor {
   }
   public triggerInterface(context: Context): void {
     this.triggerCallbacks(context, "Interface");
-  }
-  public visitRolesBefore(context: Context): void {
-    this.triggerRolesBefore(context);
-  }
-  public triggerRolesBefore(context: Context): void {
-    this.triggerCallbacks(context, "RolesBefore");
-  }
-  public visitRoleBefore(context: Context): void {
-    this.triggerRoleBefore(context);
-  }
-  public triggerRoleBefore(context: Context): void {
-    this.triggerCallbacks(context, "RoleBefore");
-  }
-  public visitRole(context: Context): void {
-    this.triggerRole(context);
-  }
-  public triggerRole(context: Context): void {
-    this.triggerCallbacks(context, "Role");
   }
   public visitOperationsBefore(context: Context): void {
     this.triggerOperationsBefore(context);
@@ -596,17 +611,11 @@ export abstract class AbstractVisitor implements Visitor {
   public triggerInterfaceAfter(context: Context): void {
     this.triggerCallbacks(context, "InterfaceAfter");
   }
-  public visitRoleAfter(context: Context): void {
-    this.triggerRoleAfter(context);
+  public visitInterfacesAfter(context: Context): void {
+    this.triggerInterfacesAfter(context);
   }
-  public triggerRoleAfter(context: Context): void {
-    this.triggerCallbacks(context, "RoleAfter");
-  }
-  public visitRolesAfter(context: Context): void {
-    this.triggerRolesAfter(context);
-  }
-  public triggerRolesAfter(context: Context): void {
-    this.triggerCallbacks(context, "RolesAfter");
+  public triggerInterfacesAfter(context: Context): void {
+    this.triggerCallbacks(context, "InterfacesAfter");
   }
   public visitAllOperationsAfter(context: Context): void {
     this.triggerAllOperationsAfter(context);
@@ -914,6 +923,11 @@ export class MultiVisitor extends AbstractVisitor {
       visitor.visitAllOperationsBefore(context);
     });
   }
+  public visitInterfacesBefore(context: Context): void {
+    this.visitors.map((visitor) => {
+      visitor.visitInterfacesBefore(context);
+    });
+  }
   public visitInterfaceBefore(context: Context): void {
     this.visitors.map((visitor) => {
       visitor.visitInterfaceBefore(context);
@@ -924,19 +938,29 @@ export class MultiVisitor extends AbstractVisitor {
       visitor.visitInterface(context);
     });
   }
-  public visitRolesBefore(context: Context): void {
+  public visitFunctionsBefore(context: Context): void {
     this.visitors.map((visitor) => {
-      visitor.visitRolesBefore(context);
+      visitor.visitFunctionsBefore(context);
     });
   }
-  public visitRoleBefore(context: Context): void {
+  public visitFunctionBefore(context: Context): void {
     this.visitors.map((visitor) => {
-      visitor.visitRoleBefore(context);
+      visitor.visitFunctionBefore(context);
     });
   }
-  public visitRole(context: Context): void {
+  public visitFunction(context: Context): void {
     this.visitors.map((visitor) => {
-      visitor.visitRole(context);
+      visitor.visitFunction(context);
+    });
+  }
+  public visitFunctionAfter(context: Context): void {
+    this.visitors.map((visitor) => {
+      visitor.visitFunctionAfter(context);
+    });
+  }
+  public visitFunctionsAfter(context: Context): void {
+    this.visitors.map((visitor) => {
+      visitor.visitFunctionsAfter(context);
     });
   }
   public visitOperationsBefore(context: Context): void {
@@ -984,14 +1008,9 @@ export class MultiVisitor extends AbstractVisitor {
       visitor.visitInterfaceAfter(context);
     });
   }
-  public visitRoleAfter(context: Context): void {
+  public visitInterfacesAfter(context: Context): void {
     this.visitors.map((visitor) => {
-      visitor.visitRoleAfter(context);
-    });
-  }
-  public visitRolesAfter(context: Context): void {
-    this.visitors.map((visitor) => {
-      visitor.visitRolesAfter(context);
+      visitor.visitInterfacesAfter(context);
     });
   }
   public visitAllOperationsAfter(context: Context): void {

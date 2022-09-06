@@ -55,15 +55,19 @@ export class Document extends AbstractNode {
     visitor.visitAliasesAfter(context);
 
     visitor.visitAllOperationsBefore(context);
-    context.interfaces.map((iface) => {
-      iface.accept(context.clone({ interfaceDef: iface }), visitor);
-    });
 
-    visitor.visitRolesBefore(context);
-    context.roles.map((role) => {
-      role.accept(context.clone({ role: role }), visitor);
+    visitor.visitFunctionsBefore(context);
+    context.functions.map((func) => {
+      func.accept(context.clone({ operation: func }), visitor);
     });
-    visitor.visitRolesAfter(context);
+    visitor.visitFunctionsAfter(context);
+
+    visitor.visitInterfacesBefore(context);
+    context.interfaces.map((iface) => {
+      iface.accept(context.clone({ interface: iface }), visitor);
+    });
+    visitor.visitInterfacesAfter(context);
+
     visitor.visitAllOperationsAfter(context);
 
     visitor.visitTypesBefore(context);

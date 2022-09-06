@@ -22,11 +22,7 @@ export class UniqueOperationNames extends AbstractVisitor {
   private operationNames: Set<string> = new Set<string>();
 
   visitInterfaceBefore(context: Context): void {
-    this.parentName = "interface";
-    this.operationNames = new Set<string>();
-  }
-  visitRoleBefore(context: Context): void {
-    this.parentName = `role "${context.role!.name.value}"`;
+    this.parentName = `interface "${context.interface!.name.value}"`;
     this.operationNames = new Set<string>();
   }
   visitOperation(context: Context): void {

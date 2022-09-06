@@ -17,11 +17,11 @@ limitations under the License.
 import { Visitor } from "../ast/index.js";
 import { NamespaceFirst } from "./namespace_first.js";
 import { SingleNamespaceDefined } from "./single_namespace_defined.js";
-import { SingleInterfaceDefined } from "./single_interface_defined.js";
 //import { CamelCaseDirectiveNames } from "./camel_case_directive_names.js";
 import { PascalCaseTypeNames } from "./pascal_case_type_names.js";
 import { UniqueDirectiveNames } from "./unique_directive_names.js";
 import { UniqueObjectNames } from "./unique_object_names.js";
+import { UniqueFunctionNames } from "./unique_function_names.js";
 import { UniqueOperationNames } from "./unique_operation_names.js";
 import { UniqueParameterNames } from "./unique_parameter_names.js";
 import { UniqueTypeFieldNames } from "./unique_type_field_names.js";
@@ -42,11 +42,11 @@ export interface ValidationRule {
 export const CommonRules: Array<ValidationRule> = [
   NamespaceFirst,
   SingleNamespaceDefined,
-  SingleInterfaceDefined,
   //CamelCaseDirectiveNames,
   PascalCaseTypeNames,
   UniqueDirectiveNames,
   UniqueObjectNames,
+  UniqueFunctionNames,
   UniqueOperationNames,
   UniqueParameterNames,
   UniqueTypeFieldNames,

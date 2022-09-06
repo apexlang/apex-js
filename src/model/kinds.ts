@@ -20,7 +20,6 @@ export enum Kind {
   Import = "Import",
   Alias = "Alias",
   Interface = "Interface",
-  Role = "Role",
   Operation = "Operation",
   Parameter = "Parameter",
   Type = "Type",

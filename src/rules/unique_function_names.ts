@@ -14,19 +14,21 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { AbstractVisitor, Context, Node } from "../ast/index.js";
+import { AbstractVisitor, Context } from "../ast/index.js";
 import { validationError } from "../error/index.js";
 
-export class SingleInterfaceDefined extends AbstractVisitor {
-  private found: boolean = false;
+export class UniqueFunctionNames extends AbstractVisitor {
+  private operationNames: Set<string> = new Set<string>();
 
-  visitInterface(context: Context): void {
-    if (this.found) {
-      const iface = context.interface!;
+  visitFunction(context: Context): void {
+    const oper = context.operation!;
+    const operName = oper.name.value;
+    if (this.operationNames.has(operName)) {
       context.reportError(
-        validationError(iface, `only one interface can be defined`)
+        validationError(oper.name, `duplicate function "${operName}"`)
       );
+    } else {
+      this.operationNames.add(operName);
     }
-    this.found = true;
   }
 }

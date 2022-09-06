@@ -243,17 +243,20 @@ export class InterfaceDefinition
   extends AbstractNode
   implements Definition, Annotated
 {
+  name: Name;
   description?: StringValue;
   operations: OperationDefinition[];
   annotations: Annotation[];
 
   constructor(
-    loc?: Location,
+    loc: Location | undefined,
+    name: Name,
     desc?: StringValue,
     op?: OperationDefinition[],
     annotations?: Annotation[]
   ) {
     super(Kind.InterfaceDefinition, loc);
+    this.name = name;
     this.description = desc;
     this.operations = op || [];
     this.annotations = annotations || [];
@@ -279,52 +282,6 @@ export class InterfaceDefinition
 
     visitAnnotations(context, visitor, this.annotations);
     visitor.visitInterfaceAfter(context);
-  }
-}
-
-export class RoleDefinition
-  extends AbstractNode
-  implements Definition, Annotated
-{
-  name: Name;
-  description?: StringValue;
-  operations: OperationDefinition[];
-  annotations: Annotation[];
-
-  constructor(
-    loc: Location | undefined,
-    name: Name,
-    desc?: StringValue,
-    op?: OperationDefinition[],
-    annotations?: Annotation[]
-  ) {
-    super(Kind.RoleDefinition, loc);
-    this.name = name;
-    this.description = desc;
-    this.operations = op || [];
-    this.annotations = annotations || [];
-  }
-
-  annotation(
-    name: string,
-    callback?: (annotation: Annotation) => void
-  ): Annotation | undefined {
-    return getAnnotation(name, this.annotations, callback);
-  }
-
-  public accept(context: Context, visitor: Visitor): void {
-    visitor.visitRoleBefore(context);
-    visitor.visitRole(context);
-
-    context = context.clone({ operations: context.role!.operations });
-    visitor.visitOperationsBefore(context);
-    context.operations!.map((operation) => {
-      operation.accept(context.clone({ operation: operation }), visitor);
-    });
-    visitor.visitOperationsAfter(context);
-
-    visitAnnotations(context, visitor, this.annotations);
-    visitor.visitRoleAfter(context);
   }
 }
 
@@ -384,8 +341,13 @@ export class OperationDefinition extends AbstractNode implements Annotated {
   }
 
   public accept(context: Context, visitor: Visitor): void {
-    visitor.visitOperationBefore(context);
-    visitor.visitOperation(context);
+    if (context.interface != undefined) {
+      visitor.visitOperationBefore(context);
+      visitor.visitOperation(context);
+    } else {
+      visitor.visitFunctionBefore(context);
+      visitor.visitFunction(context);
+    }
 
     context = context.clone({ parameters: context.operation!.parameters });
     visitor.visitParametersBefore(context);
@@ -398,7 +360,11 @@ export class OperationDefinition extends AbstractNode implements Annotated {
     visitor.visitParametersAfter(context);
 
     visitAnnotations(context, visitor, this.annotations);
-    visitor.visitOperationAfter(context);
+    if (context.interface) {
+      visitor.visitOperationAfter(context);
+    } else {
+      visitor.visitFunctionAfter(context);
+    }
   }
 }
 

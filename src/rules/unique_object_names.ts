@@ -23,8 +23,8 @@ export class UniqueObjectNames extends AbstractVisitor {
   visitNamespace(context: Context): void {
     this.typeNames = new Set<string>();
   }
-  visitRole(context: Context): void {
-    this.check(context, context.role!.name.value, context.role!.name);
+  visitInterface(context: Context): void {
+    this.check(context, context.interface!.name.value, context.interface!.name);
   }
   visitType(context: Context): void {
     this.check(context, context.type!.name.value, context.type!.name);

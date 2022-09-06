@@ -28,11 +28,6 @@ export class ValidAnnotationLocations extends AbstractVisitor {
     this.check(context, def.annotations, "INTERFACE");
   }
 
-  visitRole(context: Context): void {
-    const def = context.role!;
-    this.check(context, def.annotations, "ROLE");
-  }
-
   visitOperation(context: Context): void {
     const def = context.operation!;
     this.check(context, def.annotations, "OPERATION");
@@ -126,18 +121,11 @@ export class ValidAnnotationLocations extends AbstractVisitor {
             }
           case "INTERFACE":
             if (
+              context.interface != undefined &&
               findAnnotation(
                 req.directive.value,
                 context.interface!.annotations
               )
-            ) {
-              found = true;
-              break;
-            }
-          case "ROLE":
-            if (
-              context.role != undefined &&
-              findAnnotation(req.directive.value, context.role!.annotations)
             ) {
               found = true;
               break;

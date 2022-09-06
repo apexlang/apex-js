@@ -25,7 +25,6 @@ import {
   ValuedDefinition,
   ParameterDefinition,
   InterfaceDefinition,
-  RoleDefinition,
   OperationDefinition,
   UnionDefinition,
   EnumDefinition,
@@ -186,8 +185,8 @@ export class Namespace extends Annotated {
 
   readonly directives: { [name: string]: Directive };
   readonly aliases: { [name: string]: Alias };
-  readonly interfaces: Interface[];
-  readonly roles: { [name: string]: Role };
+  readonly functions: { [name: string]: Operation };
+  readonly interfaces: { [name: string]: Interface };
   readonly types: { [name: string]: Type };
   readonly enums: { [name: string]: Enum };
   readonly unions: { [name: string]: Union };
@@ -199,8 +198,8 @@ export class Namespace extends Annotated {
     this.name = node.name.value;
     this.description = node.description?.value;
     this.directives = {};
-    this.interfaces = [];
-    this.roles = {};
+    this.functions = {};
+    this.interfaces = {};
     this.types = {};
     this.enums = {};
     this.unions = {};
@@ -231,16 +230,19 @@ export class Namespace extends Annotated {
 
     visitor.visitAllOperationsBefore(context);
 
-    this.interfaces.map((iface) => {
-      iface.accept(context.clone({ interfaceDef: iface }), visitor);
-    });
-
-    visitor.visitRolesBefore(context);
-    for (let name in this.roles) {
-      const item = this.roles[name];
-      item.accept(context.clone({ role: item }), visitor);
+    visitor.visitFunctionsBefore(context);
+    for (let name in this.functions) {
+      const item = this.functions[name];
+      item.accept(context.clone({ operation: item }), visitor);
     }
-    visitor.visitRolesAfter(context);
+    visitor.visitFunctionsAfter(context);
+
+    visitor.visitInterfacesBefore(context);
+    for (let name in this.interfaces) {
+      const item = this.interfaces[name];
+      item.accept(context.clone({ interface: item }), visitor);
+    }
+    visitor.visitInterfacesAfter(context);
 
     visitor.visitAllOperationsAfter(context);
 
@@ -363,8 +365,9 @@ export class Field extends Valued {
   }
 }
 
-export class Interface extends Annotated {
+export class Interface extends Annotated implements Named {
   readonly node: InterfaceDefinition;
+  readonly name: string;
   readonly description?: string;
   readonly operations: Operation[];
 
@@ -375,6 +378,7 @@ export class Interface extends Annotated {
   ) {
     super(Kind.Interface, node.annotations);
     this.node = node;
+    this.name = node.name.value;
     this.description = node.description?.value;
     if (register) {
       register(this);
@@ -397,42 +401,6 @@ export class Interface extends Annotated {
   }
 }
 
-export class Role extends Annotated implements Named {
-  readonly node: InterfaceDefinition;
-  readonly name: string;
-  readonly description?: string;
-  readonly operations: Operation[];
-
-  constructor(
-    tr: TypeResolver,
-    node: RoleDefinition,
-    register?: (r: Role) => void
-  ) {
-    super(Kind.Role, node.annotations);
-    this.node = node;
-    this.name = node.name.value;
-    this.description = node.description?.value;
-    if (register) {
-      register(this);
-    }
-    this.operations = node.operations.map((v) => new Operation(tr, v));
-  }
-
-  public accept(context: Context, visitor: Visitor): void {
-    visitor.visitRoleBefore(context);
-    visitor.visitRole(context);
-
-    context = context.clone({ operations: this.operations });
-    visitor.visitOperationsBefore(context);
-    context.operations!.map((operation) => {
-      operation.accept(context.clone({ operation: operation }), visitor);
-    });
-
-    visitor.visitOperationsAfter(context);
-    visitor.visitRoleAfter(context);
-  }
-}
-
 export class Operation extends Annotated implements Named {
   readonly node: OperationDefinition;
   readonly name: string;
@@ -441,11 +409,18 @@ export class Operation extends Annotated implements Named {
   readonly type: AnyType;
   readonly unary: boolean;
 
-  constructor(tr: TypeResolver, node: OperationDefinition) {
+  constructor(
+    tr: TypeResolver,
+    node: OperationDefinition,
+    register?: (r: Operation) => void
+  ) {
     super(Kind.Operation, node.annotations);
     this.node = node;
     this.name = node.name.value;
     this.description = node.description?.value;
+    if (register) {
+      register(this);
+    }
     this.parameters = node.parameters.map((v) => new Parameter(tr, v));
     this.type = tr(node.type);
     this.unary = node.unary;

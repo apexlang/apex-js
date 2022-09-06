@@ -46,7 +46,6 @@ export enum Kind {
   ImportDefinition = "ImportDefinition",
   AliasDefinition = "AliasDefinition",
   InterfaceDefinition = "InterfaceDefinition",
-  RoleDefinition = "RoleDefinition",
   OperationDefinition = "OperationDefinition",
   ParameterDefinition = "ParameterDefinition",
   TypeDefinition = "TypeDefinition",
