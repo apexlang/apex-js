@@ -52,6 +52,20 @@ const floatBuiltInTypeNames = new Set(["f32", "f64"]);
 export class ValidAnnotationArguments extends AbstractVisitor {
   visitAnnotation(context: Context): void {
     const a = context.annotation!;
+
+    const foundArgNames = new Set<string>();
+    a.arguments.forEach((v) => {
+      if (foundArgNames.has(v.name.value)) {
+        context.reportError(
+          validationError(
+            v,
+            `duplicate argument "${v.name.value}" in annotation "${a.name.value}"`
+          )
+        );
+      }
+      foundArgNames.add(v.name.value)
+    })
+
     const dir = context.directiveMap.get(a.name.value);
     if (dir == undefined) {
       return;
