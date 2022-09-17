@@ -19,7 +19,7 @@
     "lint:fix": "npm run lint -- --fix"
   },
   "dependencies": {
-    "@apexlang/core": "^0.0.20"
+    "@apexlang/core": "^0.1.0"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^4.22.0",

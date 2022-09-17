@@ -1,2 +1,2 @@
-name: local
+name: '@apexlang/local'
 description: Add custom generators to a project by running `apex init local`
