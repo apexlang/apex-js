@@ -835,7 +835,8 @@ class Parser {
     }
     //this._lexer.advance();
     throw new Error(
-      "for Argument Definitions, expect a ( or [ got " + getTokenDesc(this._lexer.token)
+      "for Argument Definitions, expect a ( or [ got " +
+        getTokenDesc(this._lexer.token)
     );
   }
 

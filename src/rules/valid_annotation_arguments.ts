@@ -63,8 +63,8 @@ export class ValidAnnotationArguments extends AbstractVisitor {
           )
         );
       }
-      foundArgNames.add(v.name.value)
-    })
+      foundArgNames.add(v.name.value);
+    });
 
     const dir = context.directiveMap.get(a.name.value);
     if (dir == undefined) {

@@ -1,6 +1,6 @@
 {
   "name": "@apexlang/core",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Apex language JavaScript support",
   "keywords": [
     "apex",
@@ -44,6 +44,7 @@
   ],
   "sideEffects": false,
   "scripts": {
+    "devbuild": "npm run format:fix && npm run build && apex install file:.",
     "prebuild": "npm run clean",
     "build": "tsc",
     "watch": "tsc -w",

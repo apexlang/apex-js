@@ -435,20 +435,29 @@ export class Operation extends Annotated implements Named {
   }
 
   public accept(context: Context, visitor: Visitor): void {
-    visitor.visitOperationBefore(context);
-    visitor.visitOperation(context);
+    if (context.interface) {
+      visitor.visitOperationBefore(context);
+      visitor.visitOperation(context);
+    } else {
+      visitor.visitFunctionBefore(context);
+      visitor.visitFunction(context);
+    }
 
     context = context.clone({ parameters: this.parameters });
     visitor.visitParametersBefore(context);
-    context.parameters!.map((parameter, index) => {
+    context.parameters.map((parameter, index) => {
       parameter.accept(
         context.clone({ parameter: parameter, parameterIndex: index }),
         visitor
       );
     });
-
     visitor.visitParametersAfter(context);
-    visitor.visitOperationAfter(context);
+
+    if (context.interface) {
+      visitor.visitOperationAfter(context);
+    } else {
+      visitor.visitFunctionAfter(context);
+    }
   }
 }
 
