@@ -33,8 +33,8 @@ import {
   EnumValue,
   FieldDefinition,
   IntValue,
-} from "../ast/index.js";
-import { validationError } from "../error/index.js";
+} from "../ast/index.ts";
+import { validationError } from "../error/index.ts";
 
 const integerBuiltInTypeNames = new Set([
   "i8",

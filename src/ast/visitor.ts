@@ -27,12 +27,12 @@ import {
   DirectiveDefinition,
   ImportDefinition,
   AliasDefinition,
-} from "./definitions.js";
-import { Document } from "./document.js";
-import { Annotation, Name } from "./nodes.js";
-import autoBind from "../auto-bind.js";
-import { ApexError } from "../error/index.js";
-import { Kind } from "./kinds.js";
+} from "./definitions.ts";
+import { Document } from "./document.ts";
+import { Annotation, Name } from "./nodes.ts";
+import autoBind from "../auto-bind.ts";
+import { ApexError } from "../error/index.ts";
+import { Kind } from "./kinds.ts";
 
 export class Writer {
   private code: string = "";

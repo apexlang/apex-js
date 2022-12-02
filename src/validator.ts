@@ -14,9 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { Context, Document, MultiVisitor } from "./ast/index.js";
-import { ApexError } from "./error/index.js";
-import { ValidationRule } from "./rules/index.js";
+import { Context, Document, MultiVisitor } from "./ast/index.ts";
+import { ApexError } from "./error/index.ts";
+import { ValidationRule } from "./rules/index.ts";
 
 export function validate(
   doc: Document,

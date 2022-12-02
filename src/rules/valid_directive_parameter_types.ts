@@ -24,8 +24,8 @@ import {
   MapType,
   ListType,
   Named,
-} from "../ast/index.js";
-import { validationError } from "../error/index.js";
+} from "../ast/index.ts";
+import { validationError } from "../error/index.ts";
 
 const validTypes = new Set([Kind.TypeDefinition, Kind.EnumDefinition]);
 

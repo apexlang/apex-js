@@ -14,8 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { AbstractVisitor, Context, Node } from "../ast/index.js";
-import { validationError } from "../error/index.js";
+import { AbstractVisitor, Context, Node } from "../ast/index.ts";
+import { validationError } from "../error/index.ts";
 
 export class SingleNamespaceDefined extends AbstractVisitor {
   private found: boolean = false;

@@ -14,26 +14,26 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { Visitor } from "../ast/index.js";
-import { NamespaceFirst } from "./namespace_first.js";
-import { SingleNamespaceDefined } from "./single_namespace_defined.js";
-//import { CamelCaseDirectiveNames } from "./camel_case_directive_names.js";
-import { PascalCaseTypeNames } from "./pascal_case_type_names.js";
-import { UniqueDirectiveNames } from "./unique_directive_names.js";
-import { UniqueObjectNames } from "./unique_object_names.js";
-import { UniqueFunctionNames } from "./unique_function_names.js";
-import { UniqueOperationNames } from "./unique_operation_names.js";
-import { UniqueParameterNames } from "./unique_parameter_names.js";
-import { UniqueTypeFieldNames } from "./unique_type_field_names.js";
-import { UniqueEnumValueNames } from "./unique_enum_value_names.js";
-import { UniqueEnumValueIndexes } from "./unique_enum_value_indexes.js";
-import { ValidEnumValueIndexes } from "./valid_enum_value_indexes.js";
-import { KnownTypes } from "./known_types.js";
-import { ValidDirectiveParameterTypes } from "./valid_directive_parameter_types.js";
-import { ValidDirectiveRequires } from "./valid_directive_requires.js";
-import { ValidDirectiveLocations } from "./valid_directive_locations.js";
-import { ValidAnnotationArguments } from "./valid_annotation_arguments.js";
-import { ValidAnnotationLocations } from "./valid_annotation_locations.js";
+import { Visitor } from "../ast/index.ts";
+import { NamespaceFirst } from "./namespace_first.ts";
+import { SingleNamespaceDefined } from "./single_namespace_defined.ts";
+//import { CamelCaseDirectiveNames } from "./camel_case_directive_names.ts";
+import { PascalCaseTypeNames } from "./pascal_case_type_names.ts";
+import { UniqueDirectiveNames } from "./unique_directive_names.ts";
+import { UniqueObjectNames } from "./unique_object_names.ts";
+import { UniqueFunctionNames } from "./unique_function_names.ts";
+import { UniqueOperationNames } from "./unique_operation_names.ts";
+import { UniqueParameterNames } from "./unique_parameter_names.ts";
+import { UniqueTypeFieldNames } from "./unique_type_field_names.ts";
+import { UniqueEnumValueNames } from "./unique_enum_value_names.ts";
+import { UniqueEnumValueIndexes } from "./unique_enum_value_indexes.ts";
+import { ValidEnumValueIndexes } from "./valid_enum_value_indexes.ts";
+import { KnownTypes } from "./known_types.ts";
+import { ValidDirectiveParameterTypes } from "./valid_directive_parameter_types.ts";
+import { ValidDirectiveRequires } from "./valid_directive_requires.ts";
+import { ValidDirectiveLocations } from "./valid_directive_locations.ts";
+import { ValidAnnotationArguments } from "./valid_annotation_arguments.ts";
+import { ValidAnnotationLocations } from "./valid_annotation_locations.ts";
 
 export interface ValidationRule {
   new (): Visitor;

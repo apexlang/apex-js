@@ -18,10 +18,10 @@ limitations under the License.
 
 //import { syntaxError } from '../error/syntaxError';
 
-import { Token, Source } from "./ast/index.js";
-import { dedentBlockStringValue } from "./blockstring.js";
-import { TokenDescription, TokenKind } from "./token_kind.js";
-import { syntaxError } from "./error/index.js";
+import { Token, Source } from "./ast/index.ts";
+import { dedentBlockStringValue } from "./blockstring.ts";
+import { TokenDescription, TokenKind } from "./token_kind.ts";
+import { syntaxError } from "./error/index.ts";
 /**
  * Given a Source object, creates a Lexer for that source.
  * A Lexer is a stateful stream generator in that every time

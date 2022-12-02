@@ -14,9 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { AbstractVisitor, Context, Node } from "../ast/index.js";
-import { validationError } from "../error/index.js";
-import { camelCase } from "./case.js";
+import { AbstractVisitor, Context, Node } from "../ast/index.ts";
+import { validationError } from "../error/index.ts";
+import { camelCase } from "./case.ts";
 
 export class CamelCaseDirectiveNames extends AbstractVisitor {
   visitDirective(context: Context): void {

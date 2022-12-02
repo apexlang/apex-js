@@ -14,10 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { TokenKind } from "./token_kind.js";
-import { Lexer, getTokenDesc, getTokenKindDesc } from "./lexer.js";
-import { importError, syntaxError, ApexError } from "./error/index.js";
-import autoBind from "./auto-bind.js";
+import { TokenKind } from "./token_kind.ts";
+import { Lexer, getTokenDesc, getTokenKindDesc } from "./lexer.ts";
+import { importError, syntaxError, ApexError } from "./error/index.ts";
+import autoBind from "./auto-bind.ts";
 import {
   Location,
   Token,
@@ -58,7 +58,7 @@ import {
   ImportName,
   Kind,
   Stream,
-} from "./ast/index.js";
+} from "./ast/index.ts";
 
 type parseFunction = () => Node;
 /**

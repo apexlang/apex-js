@@ -14,8 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { AbstractVisitor, Annotation, Context, Kind } from "../ast/index.js";
-import { validationError } from "../error/index.js";
+import { AbstractVisitor, Annotation, Context, Kind } from "../ast/index.ts";
+import { validationError } from "../error/index.ts";
 
 export class ValidAnnotationLocations extends AbstractVisitor {
   visitNamespace(context: Context): void {

@@ -14,8 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { AbstractVisitor, Context, Kind, Node } from "../ast/index.js";
-import { validationError } from "../error/index.js";
+import { AbstractVisitor, Context, Kind, Node } from "../ast/index.ts";
+import { validationError } from "../error/index.ts";
 
 export class NamespaceFirst extends AbstractVisitor {
   visitNamespace(context: Context): void {

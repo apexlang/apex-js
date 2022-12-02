@@ -14,10 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { Context, Visitor } from "./visitor.js";
-import { Location } from "./location.js";
-import { Kind } from "./kinds.js";
-import { Value } from "./values.js";
+import { Context, Visitor } from "./visitor.ts";
+import { Location } from "./location.ts";
+import { Kind } from "./kinds.ts";
+import { Value } from "./values.ts";
 
 export interface Node {
   getKind(): Kind;

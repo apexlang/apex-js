@@ -14,18 +14,18 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { Kind } from "./kinds.js";
-import { IntValue, StringValue, Value } from "./values.js";
+import { Kind } from "./kinds.ts";
+import { IntValue, StringValue, Value } from "./values.ts";
 import {
   AbstractNode,
   Name,
   Annotation,
   DirectiveRequire,
   ImportName,
-} from "./nodes.js";
-import { Named, Type } from "./types.js";
-import { Location } from "./location.js";
-import { Context, Visitor } from "./visitor.js";
+} from "./nodes.ts";
+import { Named, Type } from "./types.ts";
+import { Location } from "./location.ts";
+import { Context, Visitor } from "./visitor.ts";
 
 export interface Definition {
   getKind(): Kind;

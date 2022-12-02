@@ -31,15 +31,15 @@ import {
   EnumValueDefinition,
   DirectiveDefinition,
   DirectiveRequire,
-} from "../ast/index.js";
-import { Kind } from "./kinds.js";
-import { Context, Visitor } from "./visitor.js";
+} from "../ast/index.ts";
+import { Kind } from "./kinds.ts";
+import { Context, Visitor } from "./visitor.ts";
 import {
   Type as ASTType,
   ListType as ASTListType,
   MapType as ASTMapType,
   Optional as ASTOptional,
-} from "../ast/index.js";
+} from "../ast/index.ts";
 
 class Base {
   readonly kind: Kind;

@@ -33,7 +33,7 @@ import {
   Stream,
   primitives,
   VoidValue,
-} from "./model.js";
+} from "./model.ts";
 import {
   Document,
   Annotation,
@@ -47,10 +47,10 @@ import {
   Named,
   Name,
   OperationDefinition,
-} from "../ast/index.js";
-import autoBind from "../auto-bind.js";
-import { ApexError } from "../error/index.js";
-import { Kind } from "../ast/index.js";
+} from "../ast/index.ts";
+import autoBind from "../auto-bind.ts";
+import { ApexError } from "../error/index.ts";
+import { Kind } from "../ast/index.ts";
 import {
   Type as ASTType,
   Kind as ASTKind,
@@ -58,7 +58,7 @@ import {
   MapType as ASTMapType,
   Optional as ASTOptional,
   Stream as ASTStream,
-} from "../ast/index.js";
+} from "../ast/index.ts";
 
 export class Writer {
   private code: string = "";

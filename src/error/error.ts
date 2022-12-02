@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { Node, Source } from "../ast/index.js";
+import { Node, Source } from "../ast/index.ts";
 
 export class ApexError extends Error {
   nodes: Array<Node> | Node | undefined;
