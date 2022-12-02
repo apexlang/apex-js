@@ -1,3 +1,4 @@
+// deno-lint-ignore-file no-unused-vars
 /*
 Copyright 2022 The Apex Authors.
 
@@ -14,9 +15,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { AbstractVisitor, Context, Node } from "../ast/index.js";
-import { validationError } from "../error/index.js";
-import { camelCase } from "./case.js";
+import { AbstractVisitor, Context, Node } from "../ast/mod.ts";
+import { validationError } from "../error/mod.ts";
+import { camelCase } from "./case.ts";
 
 export class CamelCaseDirectiveNames extends AbstractVisitor {
   visitDirective(context: Context): void {
@@ -26,8 +27,8 @@ export class CamelCaseDirectiveNames extends AbstractVisitor {
       context.reportError(
         validationError(
           directive.name,
-          `directive "${name}" should be camel case`
-        )
+          `directive "${name}" should be camel case`,
+        ),
       );
     }
   }

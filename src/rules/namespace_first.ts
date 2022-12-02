@@ -1,3 +1,4 @@
+// deno-lint-ignore-file no-unused-vars
 /*
 Copyright 2022 The Apex Authors.
 
@@ -14,12 +15,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { AbstractVisitor, Context, Kind, Node } from "../ast/index.js";
-import { validationError } from "../error/index.js";
+import { AbstractVisitor, Context, Kind, Node } from "../ast/mod.ts";
+import { validationError } from "../error/mod.ts";
 
 export class NamespaceFirst extends AbstractVisitor {
   visitNamespace(context: Context): void {
-    var firstNonImportPos = 0;
+    let firstNonImportPos = 0;
     const definitions = context.document!.definitions;
     for (let i = 0; i < definitions.length; i++) {
       const def = definitions[i];
@@ -32,8 +33,8 @@ export class NamespaceFirst extends AbstractVisitor {
       context.reportError(
         validationError(
           context.namespace,
-          `namespace must be defined before any other definition`
-        )
+          `namespace must be defined before any other definition`,
+        ),
       );
     }
   }

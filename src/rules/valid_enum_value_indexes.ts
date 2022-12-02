@@ -14,11 +14,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { AbstractVisitor, Context } from "../ast/index.js";
-import { validationError } from "../error/index.js";
+import { AbstractVisitor, Context } from "../ast/mod.ts";
+import { validationError } from "../error/mod.ts";
 
 export class ValidEnumValueIndexes extends AbstractVisitor {
-  private parentName: string = "";
+  private parentName = "";
 
   visitEnum(context: Context): void {
     this.parentName = context.enum!.name.value;
@@ -30,8 +30,8 @@ export class ValidEnumValueIndexes extends AbstractVisitor {
       context.reportError(
         validationError(
           enumValue.index,
-          `value index "${enumValue.index.value}" in enum "${this.parentName}" must be a non-negative integer`
-        )
+          `value index "${enumValue.index.value}" in enum "${this.parentName}" must be a non-negative integer`,
+        ),
       );
     }
   }

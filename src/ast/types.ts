@@ -14,9 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { AbstractNode, Name, Node } from "./nodes.js";
-import { Kind } from "./kinds.js";
-import { Location } from "./location.js";
+import { AbstractNode, Name, Node } from "./nodes.ts";
+import { Kind } from "./kinds.ts";
+import { Location } from "./location.ts";
 
 export interface Type extends Node {
   string(): string;

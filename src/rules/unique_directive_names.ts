@@ -14,8 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { AbstractVisitor, Context } from "../ast/index.js";
-import { validationError } from "../error/index.js";
+import { AbstractVisitor, Context } from "../ast/mod.ts";
+import { validationError } from "../error/mod.ts";
 
 export class UniqueDirectiveNames extends AbstractVisitor {
   private names: Set<string> = new Set<string>();
@@ -25,7 +25,7 @@ export class UniqueDirectiveNames extends AbstractVisitor {
     const dirName = dir.name.value;
     if (this.names.has(dirName)) {
       context.reportError(
-        validationError(dir.name, `duplicate directive "${dirName}"`)
+        validationError(dir.name, `duplicate directive "${dirName}"`),
       );
     } else {
       this.names.add(dirName);

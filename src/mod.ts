@@ -14,14 +14,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-export * from "./parser.js";
-export * from "./validator.js";
+export * from "./parser.ts";
+export * from "./validator.ts";
 
 // Expose `Apex.ast` for the browser
-export * as ast from "./ast/index.js";
+export * as ast from "./ast/mod.ts";
 
 // Expose `Apex.error` for the browser
-export * as error from "./error/index.js";
+export * as error from "./error/mod.ts";
 
 // Expose `Apex.rules` for the browser
-export * as rules from "./rules/index.js";
+export * as rules from "./rules/mod.ts";

@@ -17,14 +17,14 @@ limitations under the License.
 import {
   AbstractVisitor,
   Context,
-  Type,
-  Named,
   Kind,
-  Optional,
-  MapType,
   ListType,
-} from "../ast/index.js";
-import { validationError } from "../error/index.js";
+  MapType,
+  Named,
+  Optional,
+  Type,
+} from "../ast/mod.ts";
+import { validationError } from "../error/mod.ts";
 
 const builtInTypeNames = new Set([
   "i8",
@@ -63,7 +63,7 @@ export class KnownTypes extends AbstractVisitor {
       context,
       `return`,
       oper.name.value,
-      oper.type // return type
+      oper.type, // return type
     );
   }
   visitParameter(context: Context): void {
@@ -73,7 +73,7 @@ export class KnownTypes extends AbstractVisitor {
       context,
       `parameter "${param.name.value}"`,
       `${oper.name.value}`,
-      param.type
+      param.type,
     );
   }
 
@@ -84,7 +84,7 @@ export class KnownTypes extends AbstractVisitor {
       context,
       `field "${field.name.value}"`,
       `${type.name.value}`,
-      field.type
+      field.type,
     );
   }
 
@@ -95,7 +95,7 @@ export class KnownTypes extends AbstractVisitor {
         context,
         `union "${union.name.value}"`,
         `${union.name.value}`,
-        t
+        t,
       );
     });
   }
@@ -107,7 +107,7 @@ export class KnownTypes extends AbstractVisitor {
       context,
       `parameter "${param.name.value}"`,
       `${directive.name.value}`,
-      param.type
+      param.type,
     );
   }
 
@@ -115,7 +115,7 @@ export class KnownTypes extends AbstractVisitor {
     context: Context,
     forName: string,
     parentName: string,
-    t: Type
+    t: Type,
   ) {
     switch (t.getKind()) {
       case Kind.Named:
@@ -129,8 +129,8 @@ export class KnownTypes extends AbstractVisitor {
             context.reportError(
               validationError(
                 named,
-                `invalid built-in type "${named.name.value}" for ${forName} in "${parentName}"`
-              )
+                `invalid built-in type "${named.name.value}" for ${forName} in "${parentName}"`,
+              ),
             );
           }
         } else {
@@ -139,8 +139,8 @@ export class KnownTypes extends AbstractVisitor {
             context.reportError(
               validationError(
                 named,
-                `unknown type "${named.name.value}" for ${forName} in "${parentName}"`
-              )
+                `unknown type "${named.name.value}" for ${forName} in "${parentName}"`,
+              ),
             );
           }
         }

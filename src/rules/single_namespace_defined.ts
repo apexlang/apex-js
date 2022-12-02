@@ -1,3 +1,4 @@
+// deno-lint-ignore-file no-unused-vars
 /*
 Copyright 2022 The Apex Authors.
 
@@ -14,17 +15,17 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { AbstractVisitor, Context, Node } from "../ast/index.js";
-import { validationError } from "../error/index.js";
+import { AbstractVisitor, Context, Node } from "../ast/mod.ts";
+import { validationError } from "../error/mod.ts";
 
 export class SingleNamespaceDefined extends AbstractVisitor {
-  private found: boolean = false;
+  private found = false;
 
   visitNamespace(context: Context): void {
     if (this.found) {
       const namespace = context.namespace;
       context.reportError(
-        validationError(namespace, `only one namespace can be defined`)
+        validationError(namespace, `only one namespace can be defined`),
       );
     }
     this.found = true;

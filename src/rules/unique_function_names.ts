@@ -14,8 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { AbstractVisitor, Context } from "../ast/index.js";
-import { validationError } from "../error/index.js";
+import { AbstractVisitor, Context } from "../ast/mod.ts";
+import { validationError } from "../error/mod.ts";
 
 export class UniqueFunctionNames extends AbstractVisitor {
   private operationNames: Set<string> = new Set<string>();
@@ -25,7 +25,7 @@ export class UniqueFunctionNames extends AbstractVisitor {
     const operName = oper.name.value;
     if (this.operationNames.has(operName)) {
       context.reportError(
-        validationError(oper.name, `duplicate function "${operName}"`)
+        validationError(oper.name, `duplicate function "${operName}"`),
       );
     } else {
       this.operationNames.add(operName);

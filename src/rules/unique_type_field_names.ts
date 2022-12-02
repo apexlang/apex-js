@@ -14,11 +14,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { AbstractVisitor, Context } from "../ast/index.js";
-import { validationError } from "../error/index.js";
+import { AbstractVisitor, Context } from "../ast/mod.ts";
+import { validationError } from "../error/mod.ts";
 
 export class UniqueTypeFieldNames extends AbstractVisitor {
-  private parentName: string = "";
+  private parentName = "";
   private names: Set<string> = new Set<string>();
 
   visitTypeBefore(context: Context): void {
@@ -33,8 +33,8 @@ export class UniqueTypeFieldNames extends AbstractVisitor {
       context.reportError(
         validationError(
           field.name,
-          `duplicate field "${fieldName}" in type "${this.parentName}"`
-        )
+          `duplicate field "${fieldName}" in type "${this.parentName}"`,
+        ),
       );
     } else {
       this.names.add(fieldName);
