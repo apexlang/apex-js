@@ -35,6 +35,9 @@ export class UniqueObjectNames extends AbstractVisitor {
   visitEnum(context: Context): void {
     this.check(context, context.enum!.name.value, context.enum!.name);
   }
+  visitAlias(context: Context): void {
+    this.check(context, context.alias!.name.value, context.alias!.name);
+  }
   private check(context: Context, name: string, node: Node): void {
     if (this.typeNames.has(name)) {
       context.reportError(validationError(node, `duplicate object "${name}"`));
