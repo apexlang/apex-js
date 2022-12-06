@@ -103,6 +103,7 @@ export class ValidAnnotationLocations extends AbstractVisitor {
       return;
     }
 
+    dirRequiresLoop:
     for (let req of dir.requires) {
       let found = false;
       for (let loc of req.locations) {
@@ -110,14 +111,14 @@ export class ValidAnnotationLocations extends AbstractVisitor {
           case "SELF":
             if (findAnnotation(req.directive.value, annotations)) {
               found = true;
-              break;
+              break dirRequiresLoop;
             }
           case "NAMESPACE":
             if (
               findAnnotation(req.directive.value, context.namespace.annotations)
             ) {
               found = true;
-              break;
+              break dirRequiresLoop;
             }
           case "INTERFACE":
             if (
@@ -128,7 +129,7 @@ export class ValidAnnotationLocations extends AbstractVisitor {
               )
             ) {
               found = true;
-              break;
+              break dirRequiresLoop;
             }
           case "PARAMETER":
             if (
@@ -139,7 +140,7 @@ export class ValidAnnotationLocations extends AbstractVisitor {
               )
             ) {
               found = true;
-              break;
+              break dirRequiresLoop;
             }
           case "TYPE":
             if (
@@ -147,7 +148,7 @@ export class ValidAnnotationLocations extends AbstractVisitor {
               findAnnotation(req.directive.value, context.type!.annotations)
             ) {
               found = true;
-              break;
+              break dirRequiresLoop;
             }
           case "FIELD":
             if (
@@ -155,7 +156,7 @@ export class ValidAnnotationLocations extends AbstractVisitor {
               findAnnotation(req.directive.value, context.field!.annotations)
             ) {
               found = true;
-              break;
+              break dirRequiresLoop;
             }
           case "ENUM":
             if (
@@ -163,7 +164,7 @@ export class ValidAnnotationLocations extends AbstractVisitor {
               findAnnotation(req.directive.value, context.enum!.annotations)
             ) {
               found = true;
-              break;
+              break dirRequiresLoop;
             }
           case "ENUM_VALUE":
             if (
@@ -174,7 +175,7 @@ export class ValidAnnotationLocations extends AbstractVisitor {
               )
             ) {
               found = true;
-              break;
+              break dirRequiresLoop;
             }
           case "UNION":
             if (
@@ -182,7 +183,7 @@ export class ValidAnnotationLocations extends AbstractVisitor {
               findAnnotation(req.directive.value, context.union!.annotations)
             ) {
               found = true;
-              break;
+              break dirRequiresLoop;
             }
           case "ALIAS":
             if (
@@ -190,7 +191,7 @@ export class ValidAnnotationLocations extends AbstractVisitor {
               findAnnotation(req.directive.value, context.alias!.annotations)
             ) {
               found = true;
-              break;
+              break dirRequiresLoop;
             }
         }
       }

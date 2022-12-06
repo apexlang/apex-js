@@ -135,7 +135,7 @@ export class ValidAnnotationArguments extends AbstractVisitor {
                 value,
                 `invalid value "${value.getValue()}" in annotation "${
                   annotation.name.value
-                }": expected a string`
+                }": expected a integer`
               )
             );
             return;

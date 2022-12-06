@@ -21,12 +21,13 @@ export class UniqueParameterNames extends AbstractVisitor {
   private parentName: string = "";
   private paramNames: Set<string> = new Set<string>();
 
-  visitFunction(context: Context): void {
-    this.parentName = "func " + context.operation!.name.value;
+  visitFunctionBefore(context: Context): void {
+    this.parentName = `func "${context.operation!.name.value}"`;
     this.paramNames = new Set<string>();
   }
 
   visitOperationBefore(context: Context): void {
+    this.parentName = `operation "${context.operation!.name.value}"`;
     this.parentName = context.operation!.name.value;
     this.paramNames = new Set<string>();
   }
@@ -38,7 +39,7 @@ export class UniqueParameterNames extends AbstractVisitor {
       context.reportError(
         validationError(
           param.name,
-          `duplicate parameter "${paramName}" in operation "${this.parentName}"`
+          `duplicate parameter "${paramName}" in ${this.parentName}`
         )
       );
     } else {
