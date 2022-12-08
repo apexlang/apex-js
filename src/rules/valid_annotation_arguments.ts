@@ -110,12 +110,12 @@ export class ValidAnnotationArguments extends AbstractVisitor {
     annotation: Annotation,
   ) {
     switch (type.getKind()) {
-      case Kind.Optional:
+      case Kind.Optional: {
         const optional = type as Optional;
         this.check(context, optional.type, value, annotation);
         break;
-
-      case Kind.Named:
+      }
+      case Kind.Named: {
         const named = type as Named;
         if (named.name.value == "string") {
           if (!value.isKind(Kind.StringValue)) {
@@ -205,10 +205,10 @@ export class ValidAnnotationArguments extends AbstractVisitor {
             const type = definition as TypeDefinition;
             const obj = value as ObjectValue;
 
-            let fields = new Map<string, FieldDefinition>();
+            const fields = new Map<string, FieldDefinition>();
             type.fields.map((field) => fields.set(field.name.value, field));
 
-            for (let field of obj.fields) {
+            for (const field of obj.fields) {
               const f = fields.get(field.name.value);
               if (f == undefined) {
                 context.reportError(
@@ -224,7 +224,7 @@ export class ValidAnnotationArguments extends AbstractVisitor {
               // Validate types
               this.check(context, f.type, field.value, annotation);
             }
-            fields.forEach((field, name) => {
+            fields.forEach((field) => {
               if (!field.type.isKind(Kind.Optional)) {
                 context.reportError(
                   validationError(
@@ -244,8 +244,8 @@ export class ValidAnnotationArguments extends AbstractVisitor {
           }
         }
         break;
-
-      case Kind.ListType:
+      }
+      case Kind.ListType: {
         const list = type as ListType;
         if (!value.isKind(Kind.ListValue)) {
           context.reportError(
@@ -257,12 +257,12 @@ export class ValidAnnotationArguments extends AbstractVisitor {
           return;
         }
         const listValue = value as ListValue;
-        for (let value of listValue.value) {
+        for (const value of listValue.value) {
           this.check(context, list.type, value, annotation);
         }
         break;
-
-      case Kind.MapType:
+      }
+      case Kind.MapType: {
         const map = type as MapType;
         if (!value.isKind(Kind.ObjectValue)) {
           context.reportError(
@@ -274,10 +274,11 @@ export class ValidAnnotationArguments extends AbstractVisitor {
           return;
         }
         const objectValue = value as ObjectValue;
-        for (let field of objectValue.fields) {
+        for (const field of objectValue.fields) {
           this.check(context, map.valueType, field.value, annotation);
         }
         break;
+      }
     }
   }
 }
