@@ -24,7 +24,8 @@ jobs:
         with:
           node-version: 12
           registry-url: https://registry.npmjs.org/
-      - run: deno bundle src/mod.ts bundle.js
+      - name: Bundle module and dependencies
+        run: deno bundle src/mod.ts bundle.js
       # - run: npm run test
       # - run: npm run lint
       # - run: npm run build
