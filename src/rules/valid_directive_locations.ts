@@ -14,8 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { AbstractVisitor, Context } from "../ast/index.js";
-import { validationError } from "../error/index.js";
+import { AbstractVisitor, Context } from "../ast/mod.ts";
+import { validationError } from "../error/mod.ts";
 
 const validLocationNames = new Set([
   "NAMESPACE",
@@ -36,43 +36,43 @@ export class ValidDirectiveLocations extends AbstractVisitor {
     const dirName = dir.name.value;
     const locationNames = new Set<string>();
 
-    for (let loc of dir.locations) {
+    for (const loc of dir.locations) {
       if (!validLocationNames.has(loc.value)) {
         context.reportError(
           validationError(
             loc,
-            `invalid directive location "${loc.value}" on "${dirName}"`
-          )
+            `invalid directive location "${loc.value}" on "${dirName}"`,
+          ),
         );
       }
       if (locationNames.has(loc.value)) {
         context.reportError(
           validationError(
             loc,
-            `duplicate directive location "${loc.value}" on "${dirName}"`
-          )
+            `duplicate directive location "${loc.value}" on "${dirName}"`,
+          ),
         );
       }
       locationNames.add(loc.value);
     }
 
-    for (let req of dir.requires) {
+    for (const req of dir.requires) {
       const requireLocationNames = new Set<string>();
-      for (let loc of req.locations) {
+      for (const loc of req.locations) {
         if (loc.value != "SELF" && !validLocationNames.has(loc.value)) {
           context.reportError(
             validationError(
               loc,
-              `invalid directive location "${loc.value}" on "${dirName}"`
-            )
+              `invalid directive location "${loc.value}" on "${dirName}"`,
+            ),
           );
         }
         if (requireLocationNames.has(loc.value)) {
           context.reportError(
             validationError(
               loc,
-              `duplicate directive location "${loc.value}" on "${dirName}"`
-            )
+              `duplicate directive location "${loc.value}" on "${dirName}"`,
+            ),
           );
         }
         requireLocationNames.add(loc.value);

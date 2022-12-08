@@ -15,53 +15,53 @@ limitations under the License.
 */
 
 import {
-  Namespace,
-  AnyType,
-  Interface,
-  Enum,
-  Union,
-  Parameter,
-  Field,
-  Operation,
-  EnumValue,
-  Directive,
   Alias,
-  Type as MObject,
-  Optional,
+  AnyType,
+  Directive,
+  Enum,
+  EnumValue,
+  Field,
+  Interface,
   List,
   Map,
-  Stream,
+  Namespace,
+  Operation,
+  Optional,
+  Parameter,
   primitives,
+  Stream,
+  Type as MObject,
+  Union,
   VoidValue,
-} from "./model.js";
+} from "./model.ts";
 import {
-  Document,
-  Annotation,
-  NamespaceDefinition,
-  DirectiveDefinition,
   AliasDefinition,
-  InterfaceDefinition,
-  TypeDefinition,
+  Annotation,
+  DirectiveDefinition,
+  Document,
   EnumDefinition,
-  UnionDefinition,
-  Named,
+  InterfaceDefinition,
   Name,
+  Named,
+  NamespaceDefinition,
   OperationDefinition,
-} from "../ast/index.js";
-import autoBind from "../auto-bind.js";
-import { ApexError } from "../error/index.js";
-import { Kind } from "../ast/index.js";
+  TypeDefinition,
+  UnionDefinition,
+} from "../ast/mod.ts";
+import autoBind from "../auto-bind.ts";
+import { ApexError } from "../error/mod.ts";
+import { Kind } from "../ast/mod.ts";
 import {
-  Type as ASTType,
   Kind as ASTKind,
   ListType as ASTListType,
   MapType as ASTMapType,
   Optional as ASTOptional,
   Stream as ASTStream,
-} from "../ast/index.js";
+  Type as ASTType,
+} from "../ast/mod.ts";
 
 export class Writer {
-  private code: string = "";
+  private code = "";
 
   write(source: string) {
     this.code += source;
@@ -72,6 +72,7 @@ export class Writer {
   }
 }
 
+// deno-lint-ignore no-explicit-any
 export type ObjectMap<T = any> = { [key: string]: T };
 
 interface NamedParameters {
@@ -107,7 +108,7 @@ class ErrorHolder {
   }
 }
 
-function dummyValue<T>(fieldName: string): T {
+function dummyValue<T>(_fieldName: string): T {
   return undefined as unknown as T;
 }
 
@@ -157,8 +158,8 @@ export class Context {
       new NamespaceDefinition(
         undefined,
         new Name(undefined, "undefined"),
-        undefined
-      )
+        undefined,
+      ),
     );
 
     if (other != undefined) {
@@ -208,7 +209,7 @@ export class Context {
     union,
     annotation,
   }: NamedParameters): Context {
-    var context = new Context(this.config, undefined, this);
+    const context = new Context(this.config, undefined, this);
 
     context.namespace = namespace || this.namespace;
     context.namespacePos = this.namespacePos;
@@ -240,7 +241,7 @@ export class Context {
         case Kind.NamespaceDefinition:
           const namespace = new Namespace(
             this.getType.bind(this),
-            value as NamespaceDefinition
+            value as NamespaceDefinition,
           );
           this.namespaces.push(namespace);
           this.namespace = namespace;
@@ -318,7 +319,7 @@ export class Context {
             value as DirectiveDefinition,
             (d: Directive) => {
               this.namespace.directives[d.name] = d;
-            }
+            },
           );
           break;
         case Kind.OperationDefinition:
@@ -327,7 +328,7 @@ export class Context {
             value as OperationDefinition,
             (r: Operation) => {
               this.namespace.functions[r.name] = r;
-            }
+            },
           );
           break;
         case Kind.InterfaceDefinition:
@@ -336,7 +337,7 @@ export class Context {
             value as InterfaceDefinition,
             (r: Interface) => {
               this.namespace.interfaces[r.name] = r;
-            }
+            },
           );
           break;
       }
@@ -420,7 +421,7 @@ export class Context {
               (a: Alias) => {
                 this.namespace.aliases[a.name] = a;
                 this.namespace.allTypes[a.name] = a;
-              }
+              },
             );
           case ASTKind.TypeDefinition:
             return new MObject(
@@ -429,7 +430,7 @@ export class Context {
               (t: MObject) => {
                 this.namespace.types[t.name] = t;
                 this.namespace.allTypes[t.name] = t;
-              }
+              },
             );
           case ASTKind.UnionDefinition:
             return new Union(
@@ -438,7 +439,7 @@ export class Context {
               (u: Union) => {
                 this.namespace.unions[u.name] = u;
                 this.namespace.allTypes[u.name] = u;
-              }
+              },
             );
           case ASTKind.EnumDefinition:
             return new Enum(
@@ -447,7 +448,7 @@ export class Context {
               (e: Enum) => {
                 this.namespace.enums[e.name] = e;
                 this.namespace.allTypes[e.name] = e;
-              }
+              },
             );
         }
 
@@ -565,7 +566,7 @@ export abstract class AbstractVisitor implements Visitor {
   callbacks: Callbacks = {};
 
   setCallback(phase: string, purpose: string, callback: VisitorCallback): void {
-    var purposes = this.callbacks[phase];
+    let purposes = this.callbacks[phase];
     if (purposes == undefined) {
       purposes = {};
       this.callbacks[phase] = purposes;
@@ -574,11 +575,11 @@ export abstract class AbstractVisitor implements Visitor {
   }
 
   triggerCallbacks(context: Context, phase: string): void {
-    var purposes = this.callbacks[phase];
+    const purposes = this.callbacks[phase];
     if (purposes == undefined) {
       return;
     }
-    for (let name of Object.keys(purposes)) {
+    for (const name of Object.keys(purposes)) {
       const callback = purposes[name];
       callback(context);
     }

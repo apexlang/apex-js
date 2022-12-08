@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { Node, Source } from "../ast/index.js";
+import { Node, Source } from "../ast/mod.ts";
 
 export class ApexError extends Error {
   nodes: Array<Node> | Node | undefined;
@@ -27,7 +27,7 @@ export class ApexError extends Error {
     nodes: Array<Node> | Node | undefined,
     source: Source | undefined,
     positions: Array<number> | undefined,
-    path: Array<string | number> | undefined
+    path: Array<string | number> | undefined,
   ) {
     super(message);
     this.nodes = nodes;
@@ -40,20 +40,20 @@ export class ApexError extends Error {
 export function syntaxError(
   source: Source,
   position: number,
-  description: string
+  description: string,
 ): ApexError {
   return new ApexError(
     `Syntax Error: ${description}`,
     undefined,
     source,
     [position],
-    undefined
+    undefined,
   );
 }
 
 export function importError(node: Node, description: string): ApexError {
   const loc = node.getLoc();
-  var source: Source | undefined;
+  let source: Source | undefined;
   if (loc != undefined) {
     source = loc.source;
   }
@@ -62,13 +62,13 @@ export function importError(node: Node, description: string): ApexError {
     node,
     source,
     undefined,
-    undefined
+    undefined,
   );
 }
 
 export function validationError(node: Node, description: string): ApexError {
   const loc = node.getLoc();
-  var source: Source | undefined;
+  let source: Source | undefined;
   if (loc != undefined) {
     source = loc.source;
   }
@@ -77,6 +77,6 @@ export function validationError(node: Node, description: string): ApexError {
     node,
     source,
     undefined,
-    undefined
+    undefined,
   );
 }

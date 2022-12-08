@@ -1,3 +1,4 @@
+// deno-lint-ignore-file no-unused-vars
 /*
 Copyright 2022 The Apex Authors.
 
@@ -14,8 +15,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { AbstractVisitor, Annotation, Context, Kind } from "../ast/index.js";
-import { validationError } from "../error/index.js";
+import { AbstractVisitor, Annotation, Context, Kind } from "../ast/mod.ts";
+import { validationError } from "../error/mod.ts";
 
 export class ValidAnnotationLocations extends AbstractVisitor {
   visitNamespace(context: Context): void {
@@ -69,7 +70,7 @@ export class ValidAnnotationLocations extends AbstractVisitor {
   }
 
   private check(context: Context, annotations: Annotation[], location: string) {
-    for (let annotation of annotations) {
+    for (const annotation of annotations) {
       this.checkAnnotation(context, annotations, annotation, location);
     }
   }
@@ -78,14 +79,14 @@ export class ValidAnnotationLocations extends AbstractVisitor {
     context: Context,
     annotations: Annotation[],
     annotation: Annotation,
-    location: string
+    location: string,
   ) {
     const dir = context.directiveMap.get(annotation.name.value);
     if (dir == undefined) {
       return;
     }
     let found = false;
-    for (let loc of dir.locations) {
+    for (const loc of dir.locations) {
       if (loc.value == location) {
         found = true;
         break;
@@ -95,24 +96,27 @@ export class ValidAnnotationLocations extends AbstractVisitor {
       context.reportError(
         validationError(
           annotation,
-          `annotation "${annotation.name.value}" is not valid on a ${location
-            .toLowerCase()
-            .replace("_", " ")}`
-        )
+          `annotation "${annotation.name.value}" is not valid on a ${
+            location
+              .toLowerCase()
+              .replace("_", " ")
+          }`,
+        ),
       );
       return;
     }
 
     dirRequiresLoop:
-    for (let req of dir.requires) {
+    for (const req of dir.requires) {
       let found = false;
-      for (let loc of req.locations) {
+      for (const loc of req.locations) {
         switch (loc.value) {
           case "SELF":
             if (findAnnotation(req.directive.value, annotations)) {
               found = true;
               break dirRequiresLoop;
             }
+            break;
           case "NAMESPACE":
             if (
               findAnnotation(req.directive.value, context.namespace.annotations)
@@ -120,28 +124,31 @@ export class ValidAnnotationLocations extends AbstractVisitor {
               found = true;
               break dirRequiresLoop;
             }
+            break;
           case "INTERFACE":
             if (
               context.interface != undefined &&
               findAnnotation(
                 req.directive.value,
-                context.interface!.annotations
+                context.interface!.annotations,
               )
             ) {
               found = true;
               break dirRequiresLoop;
             }
+            break;
           case "PARAMETER":
             if (
               context.parameter != undefined &&
               findAnnotation(
                 req.directive.value,
-                context.parameter!.annotations
+                context.parameter!.annotations,
               )
             ) {
               found = true;
               break dirRequiresLoop;
             }
+            break;
           case "TYPE":
             if (
               context.type != undefined &&
@@ -150,6 +157,7 @@ export class ValidAnnotationLocations extends AbstractVisitor {
               found = true;
               break dirRequiresLoop;
             }
+            break;
           case "FIELD":
             if (
               context.field != undefined &&
@@ -158,6 +166,7 @@ export class ValidAnnotationLocations extends AbstractVisitor {
               found = true;
               break dirRequiresLoop;
             }
+            break;
           case "ENUM":
             if (
               context.enum != undefined &&
@@ -166,17 +175,19 @@ export class ValidAnnotationLocations extends AbstractVisitor {
               found = true;
               break dirRequiresLoop;
             }
+            break;
           case "ENUM_VALUE":
             if (
               context.enumValue != undefined &&
               findAnnotation(
                 req.directive.value,
-                context.enumValue!.annotations
+                context.enumValue!.annotations,
               )
             ) {
               found = true;
               break dirRequiresLoop;
             }
+            break;
           case "UNION":
             if (
               context.union != undefined &&
@@ -185,6 +196,7 @@ export class ValidAnnotationLocations extends AbstractVisitor {
               found = true;
               break dirRequiresLoop;
             }
+            break;
           case "ALIAS":
             if (
               context.alias != undefined &&
@@ -193,6 +205,7 @@ export class ValidAnnotationLocations extends AbstractVisitor {
               found = true;
               break dirRequiresLoop;
             }
+            break;
         }
       }
       if (!found) {
@@ -202,8 +215,8 @@ export class ValidAnnotationLocations extends AbstractVisitor {
         context.reportError(
           validationError(
             annotation,
-            `annotation "${annotation.name.value}" requires "${req.directive.value}" to exist on relative ${locations}`
-          )
+            `annotation "${annotation.name.value}" requires "${req.directive.value}" to exist on relative ${locations}`,
+          ),
         );
       }
     }
@@ -211,7 +224,7 @@ export class ValidAnnotationLocations extends AbstractVisitor {
 }
 
 function findAnnotation(name: string, annotations: Annotation[]): boolean {
-  for (let annotation of annotations) {
+  for (const annotation of annotations) {
     if (annotation.name.value == name) {
       return true;
     }

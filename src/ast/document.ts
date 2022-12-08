@@ -14,11 +14,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { Kind } from "./kinds.js";
-import { AbstractNode } from "./nodes.js";
-import { Location } from "./location.js";
-import { Definition } from "./definitions.js";
-import { Context, Visitor } from "./visitor.js";
+import { Kind } from "./kinds.ts";
+import { AbstractNode } from "./nodes.ts";
+import { Location } from "./location.ts";
+import { Definition } from "./definitions.ts";
+import { Context, Visitor } from "./visitor.ts";
 
 export class Document extends AbstractNode {
   definitions: Definition[];

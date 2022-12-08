@@ -17,21 +17,25 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
+      - uses: denoland/setup-deno@v1
+        with:
+          deno-version: v1.x
       - uses: actions/setup-node@v1
         with:
           node-version: 12
           registry-url: https://registry.npmjs.org/
-      - run: npm install
-      - run: npm run test
-      #- run: npm run lint
-      - run: npm run build
+      - name: Bundle module and dependencies
+        run: deno bundle src/mod.ts bundle.js
+      # - run: npm run test
+      # - run: npm run lint
+      # - run: npm run build
 
-      - name: Is Release?
-        if: startswith(github.ref, 'refs/tags/v')
-        run: echo "DEPLOY_PACKAGE=true" >> $GITHUB_ENV
+      # - name: Is Release?
+      #   if: startswith(github.ref, 'refs/tags/v')
+      #   run: echo "DEPLOY_PACKAGE=true" >> $GITHUB_ENV
 
-      - name: Publish to npm
-        if: env.DEPLOY_PACKAGE == 'true'
-        run: npm pack && npm publish --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
+      # - name: Publish to npm
+      #   if: env.DEPLOY_PACKAGE == 'true'
+      #   run: npm pack && npm publish --access public
+      #   env:
+      #     NODE_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}

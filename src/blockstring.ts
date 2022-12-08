@@ -94,13 +94,13 @@ function isBlank(str: string) {
 export function printBlockString(
   value: string,
   indentation: string = "",
-  preferMultipleLines: boolean = false
+  preferMultipleLines: boolean = false,
 ): string {
   const isSingleLine = value.indexOf("\n") === -1;
   const hasLeadingSpace = value[0] === " " || value[0] === "\t";
   const hasTrailingQuote = value[value.length - 1] === '"';
-  const printAsMultipleLines =
-    !isSingleLine || hasTrailingQuote || preferMultipleLines;
+  const printAsMultipleLines = !isSingleLine || hasTrailingQuote ||
+    preferMultipleLines;
 
   let result = "";
   // Format a multi-line block quote to account for leading space.

@@ -48,7 +48,7 @@ export class Token {
     start: number,
     end: number,
     prev: Token | null,
-    value?: string
+    value?: string,
   ) {
     this.kind = kind;
     this.start = start;

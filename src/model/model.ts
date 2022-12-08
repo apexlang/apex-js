@@ -15,31 +15,31 @@ limitations under the License.
 */
 
 import {
-  NamespaceDefinition,
+  AliasDefinition,
   Annotation as AnnotationDef,
   Argument as ArgumentDef,
-  AliasDefinition,
-  TypeDefinition,
-  FieldDefinition,
-  Value,
-  ValuedDefinition,
-  ParameterDefinition,
-  InterfaceDefinition,
-  OperationDefinition,
-  UnionDefinition,
-  EnumDefinition,
-  EnumValueDefinition,
   DirectiveDefinition,
   DirectiveRequire,
-} from "../ast/index.js";
-import { Kind } from "./kinds.js";
-import { Context, Visitor } from "./visitor.js";
+  EnumDefinition,
+  EnumValueDefinition,
+  FieldDefinition,
+  InterfaceDefinition,
+  NamespaceDefinition,
+  OperationDefinition,
+  ParameterDefinition,
+  TypeDefinition,
+  UnionDefinition,
+  Value,
+  ValuedDefinition,
+} from "../ast/mod.ts";
+import { Kind } from "./kinds.ts";
+import { Context, Visitor } from "./visitor.ts";
 import {
-  Type as ASTType,
   ListType as ASTListType,
   MapType as ASTMapType,
   Optional as ASTOptional,
-} from "../ast/index.js";
+  Type as ASTType,
+} from "../ast/mod.ts";
 
 class Base {
   readonly kind: Kind;
@@ -170,7 +170,7 @@ export abstract class Annotated extends Base {
 
   annotation(
     name: string,
-    callback?: (annotation: Annotation) => void
+    callback?: (annotation: Annotation) => void,
   ): Annotation | undefined {
     return getAnnotation(name, this.annotations, callback);
   }
@@ -192,7 +192,7 @@ export class Namespace extends Annotated {
   readonly unions: { [name: string]: Union };
   readonly allTypes: { [name: string]: AnyType };
 
-  constructor(tr: TypeResolver, node: NamespaceDefinition) {
+  constructor(_tr: TypeResolver, node: NamespaceDefinition) {
     super(Kind.Namespace, node.annotations);
     this.node = node;
     this.name = node.name.value;
@@ -213,14 +213,14 @@ export class Namespace extends Annotated {
     visitor.visitNamespace(context);
 
     visitor.visitDirectivesBefore(context);
-    for (let name in this.directives) {
+    for (const name in this.directives) {
       const item = this.directives[name];
       item.accept(context.clone({ directive: item }), visitor);
     }
     visitor.visitDirectivesAfter(context);
 
     visitor.visitAliasesBefore(context);
-    for (let name in this.aliases) {
+    for (const name in this.aliases) {
       const item = this.aliases[name];
       if (!item.annotation("novisit")) {
         item.accept(context.clone({ alias: item }), visitor);
@@ -231,14 +231,14 @@ export class Namespace extends Annotated {
     visitor.visitAllOperationsBefore(context);
 
     visitor.visitFunctionsBefore(context);
-    for (let name in this.functions) {
+    for (const name in this.functions) {
       const item = this.functions[name];
       item.accept(context.clone({ operation: item }), visitor);
     }
     visitor.visitFunctionsAfter(context);
 
     visitor.visitInterfacesBefore(context);
-    for (let name in this.interfaces) {
+    for (const name in this.interfaces) {
       const item = this.interfaces[name];
       item.accept(context.clone({ interface: item }), visitor);
     }
@@ -247,7 +247,7 @@ export class Namespace extends Annotated {
     visitor.visitAllOperationsAfter(context);
 
     visitor.visitTypesBefore(context);
-    for (let name in this.types) {
+    for (const name in this.types) {
       const item = this.types[name];
       if (!item.annotation("novisit")) {
         item.accept(context.clone({ type: item }), visitor);
@@ -256,7 +256,7 @@ export class Namespace extends Annotated {
     visitor.visitTypesAfter(context);
 
     visitor.visitUnionsBefore(context);
-    for (let name in this.unions) {
+    for (const name in this.unions) {
       const item = this.unions[name];
       if (!item.annotation("novisit")) {
         item.accept(context.clone({ union: item }), visitor);
@@ -265,7 +265,7 @@ export class Namespace extends Annotated {
     visitor.visitUnionsAfter(context);
 
     visitor.visitEnumsBefore(context);
-    for (let name in this.enums) {
+    for (const name in this.enums) {
       const item = this.enums[name];
       if (!item.annotation("novisit")) {
         item.accept(context.clone({ enumDef: item }), visitor);
@@ -286,7 +286,7 @@ export class Alias extends Annotated implements Named {
   constructor(
     tr: TypeResolver,
     node: AliasDefinition,
-    register?: (a: Alias) => void
+    register?: (a: Alias) => void,
   ) {
     super(Kind.Alias, node.annotations);
     this.node = node;
@@ -312,7 +312,7 @@ export class Type extends Annotated implements Named {
   constructor(
     tr: TypeResolver,
     node: TypeDefinition,
-    register?: (a: Type) => void
+    register?: (a: Type) => void,
   ) {
     super(Kind.Type, node.annotations);
     this.node = node;
@@ -374,7 +374,7 @@ export class Interface extends Annotated implements Named {
   constructor(
     tr: TypeResolver,
     node: InterfaceDefinition,
-    register?: (r: Interface) => void
+    register?: (r: Interface) => void,
   ) {
     super(Kind.Interface, node.annotations);
     this.node = node;
@@ -412,7 +412,7 @@ export class Operation extends Annotated implements Named {
   constructor(
     tr: TypeResolver,
     node: OperationDefinition,
-    register?: (r: Operation) => void
+    register?: (r: Operation) => void,
   ) {
     super(Kind.Operation, node.annotations);
     this.node = node;
@@ -448,7 +448,7 @@ export class Operation extends Annotated implements Named {
     context.parameters.map((parameter, index) => {
       parameter.accept(
         context.clone({ parameter: parameter, parameterIndex: index }),
-        visitor
+        visitor,
       );
     });
     visitor.visitParametersAfter(context);
@@ -487,7 +487,7 @@ export class Union extends Annotated implements Named {
   constructor(
     tr: TypeResolver,
     node: UnionDefinition,
-    register?: (a: Union) => void
+    register?: (a: Union) => void,
   ) {
     super(Kind.Union, node.annotations);
     this.node = node;
@@ -513,7 +513,7 @@ export class Enum extends Annotated implements Named {
   constructor(
     tr: TypeResolver,
     node: EnumDefinition,
-    register?: (e: Enum) => void
+    register?: (e: Enum) => void,
   ) {
     super(Kind.Enum, node.annotations);
     this.node = node;
@@ -547,7 +547,7 @@ export class EnumValue extends Annotated implements Named {
   readonly index: number;
   readonly display?: string;
 
-  constructor(tr: TypeResolver, node: EnumValueDefinition) {
+  constructor(_tr: TypeResolver, node: EnumValueDefinition) {
     super(Kind.EnumValue, node.annotations);
     this.node = node;
     this.name = node.name.value;
@@ -572,7 +572,7 @@ export class Directive extends Base implements Named {
   constructor(
     tr: TypeResolver,
     node: DirectiveDefinition,
-    register?: (r: Directive) => void
+    register?: (r: Directive) => void,
   ) {
     super(Kind.Directive);
     this.node = node;
@@ -587,7 +587,7 @@ export class Directive extends Base implements Named {
   }
 
   public hasLocation(location: string): boolean {
-    for (let l of this.locations) {
+    for (const l of this.locations) {
       if (l == location) {
         return true;
       }
@@ -604,7 +604,7 @@ export class Directive extends Base implements Named {
     context.parameters!.map((parameter, index) => {
       parameter.accept(
         context.clone({ parameter: parameter, parameterIndex: index }),
-        visitor
+        visitor,
       );
     });
 
@@ -618,7 +618,7 @@ export class Require extends Base {
   readonly directive: string;
   readonly locations: string[];
 
-  constructor(tr: TypeResolver, node: DirectiveRequire) {
+  constructor(_tr: TypeResolver, node: DirectiveRequire) {
     super(Kind.Require);
     this.node = node;
     this.directive = node.directive.value;
@@ -626,7 +626,7 @@ export class Require extends Base {
   }
 
   public hasLocation(location: string): boolean {
-    for (let l of this.locations) {
+    for (const l of this.locations) {
       if (l == location) {
         return true;
       }
@@ -648,7 +648,8 @@ export class Annotation extends Base implements Named {
   }
 
   convert<T>(): T {
-    let obj: { [k: string]: any } = {};
+    // deno-lint-ignore no-explicit-any
+    const obj: { [k: string]: any } = {};
     this.arguments.map((arg) => {
       obj[arg.name] = arg.value.getValue();
     });
@@ -676,12 +677,12 @@ export class Argument extends Base implements Named {
 function getAnnotation(
   name: string,
   annotations?: Annotation[],
-  callback?: (annotation: Annotation) => void
+  callback?: (annotation: Annotation) => void,
 ): Annotation | undefined {
   if (annotations == undefined) {
     return undefined;
   }
-  for (let a of annotations!) {
+  for (const a of annotations!) {
     if (a.name === name) {
       if (callback != undefined) {
         callback(a);

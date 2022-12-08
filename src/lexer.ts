@@ -18,10 +18,10 @@ limitations under the License.
 
 //import { syntaxError } from '../error/syntaxError';
 
-import { Token, Source } from "./ast/index.js";
-import { dedentBlockStringValue } from "./blockstring.js";
-import { TokenDescription, TokenKind } from "./token_kind.js";
-import { syntaxError } from "./error/index.js";
+import { Source, Token } from "./ast/mod.ts";
+import { dedentBlockStringValue } from "./blockstring.ts";
+import { TokenDescription, TokenKind } from "./token_kind.ts";
+import { syntaxError } from "./error/mod.ts";
 /**
  * Given a Source object, creates a Lexer for that source.
  * A Lexer is a stateful stream generator in that every time
@@ -116,11 +116,11 @@ function printCharCode(code: number) {
     // NaN/undefined represents access beyond the end of the file.
     isNaN(code)
       ? TokenKind.EOF
-      : // Trust JSON for ASCII.
-      code < 0x007f
+      // Trust JSON for ASCII.
+      : code < 0x007f
       ? JSON.stringify(String.fromCharCode(code))
-      : // Otherwise print the escaped form.
-        `"\\u${("00" + code.toString(16).toUpperCase()).slice(-4)}"`
+      // Otherwise print the escaped form.
+      : `"\\u${("00" + code.toString(16).toUpperCase()).slice(-4)}"`
   );
 }
 
@@ -304,7 +304,7 @@ function unexpectedCharacterMessage(code: number) {
 function positionAfterWhitespace(
   body: string,
   startPosition: number,
-  lexer: Lexer
+  lexer: Lexer,
 ): number {
   const bodyLength = body.length;
   let position = startPosition;
@@ -344,7 +344,7 @@ function readComment(
   start: number,
   line: number,
   col: number,
-  prev: Token
+  prev: Token,
 ): Token {
   const body = source.body;
   let code;
@@ -363,7 +363,7 @@ function readComment(
     start,
     position,
     prev,
-    body.slice(start + 1, position)
+    body.slice(start + 1, position),
   );
 }
 
@@ -380,7 +380,7 @@ function readNumber(
   firstCode: number,
   line: number,
   col: number,
-  prev: Token
+  prev: Token,
 ): Token {
   const body = source.body;
   let code = firstCode;
@@ -445,7 +445,7 @@ function readNumber(
     start,
     position,
     prev,
-    body.slice(start, position)
+    body.slice(start, position),
   );
 }
 
@@ -483,7 +483,7 @@ function readString(
   start: number,
   line: number,
   col: number,
-  prev: Token
+  prev: Token,
 ): Token {
   const body = source.body;
   let position = start + 1;
@@ -493,7 +493,7 @@ function readString(
 
   while (
     position < body.length &&
-    !isNaN((code = body.charCodeAt(position))) &&
+    !isNaN(code = body.charCodeAt(position)) &&
     // not LineTerminator
     code !== 0x000a &&
     code !== 0x000d
@@ -552,7 +552,7 @@ function readString(
             body.charCodeAt(position + 1),
             body.charCodeAt(position + 2),
             body.charCodeAt(position + 3),
-            body.charCodeAt(position + 4)
+            body.charCodeAt(position + 4),
           );
           if (charCode < 0) {
             const invalidSequence = body.slice(position + 1, position + 5);
@@ -571,9 +571,9 @@ function readString(
           throw syntaxError(
             source,
             position,
-            "Invalid character escape sequence"
+            "Invalid character escape sequence",
           );
-        /*throw syntaxError(
+          /*throw syntaxError(
             source,
             position,
             `Invalid character escape sequence: \\${String.fromCharCode(
@@ -600,7 +600,7 @@ function readBlockString(
   line: number,
   col: number,
   prev: Token,
-  lexer: Lexer
+  lexer: Lexer,
 ): Token {
   const body = source.body;
   let position = start + 3;
@@ -608,7 +608,7 @@ function readBlockString(
   let code = 0;
   let rawValue = "";
 
-  while (position < body.length && !isNaN((code = body.charCodeAt(position)))) {
+  while (position < body.length && !isNaN(code = body.charCodeAt(position))) {
     // Closing Triple-Quote (""")
     if (
       code === 34 &&
@@ -621,7 +621,7 @@ function readBlockString(
         start,
         position + 3,
         prev,
-        dedentBlockStringValue(rawValue)
+        dedentBlockStringValue(rawValue),
       );
     }
 
@@ -635,7 +635,7 @@ function readBlockString(
       throw syntaxError(
         source,
         position,
-        "Invalid character within String: ${printCharCode(code)}"
+        "Invalid character within String: ${printCharCode(code)}",
       );
       /*
       throw syntaxError(
@@ -723,7 +723,7 @@ function readName(
   start: number,
   line: number,
   col: number,
-  prev: Token
+  prev: Token,
 ): Token {
   const body = source.body;
   const bodyLength = body.length;
@@ -731,7 +731,7 @@ function readName(
   let code = 0;
   while (
     position !== bodyLength &&
-    !isNaN((code = body.charCodeAt(position))) &&
+    !isNaN(code = body.charCodeAt(position)) &&
     (code === 95 || // _
       (code >= 48 && code <= 57) || // 0-9
       (code >= 65 && code <= 90) || // A-Z
@@ -744,7 +744,7 @@ function readName(
     start,
     position,
     prev,
-    body.slice(start, position)
+    body.slice(start, position),
   );
 }
 

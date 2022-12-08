@@ -14,11 +14,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { AbstractVisitor, Context } from "../ast/index.js";
-import { validationError } from "../error/index.js";
+import { AbstractVisitor, Context } from "../ast/mod.ts";
+import { validationError } from "../error/mod.ts";
 
 export class UniqueParameterNames extends AbstractVisitor {
-  private parentName: string = "";
+  private parentName = "";
   private paramNames: Set<string> = new Set<string>();
 
   visitFunctionBefore(context: Context): void {
@@ -39,8 +39,8 @@ export class UniqueParameterNames extends AbstractVisitor {
       context.reportError(
         validationError(
           param.name,
-          `duplicate parameter "${paramName}" in ${this.parentName}`
-        )
+          `duplicate parameter "${paramName}" in ${this.parentName}`,
+        ),
       );
     } else {
       this.paramNames.add(paramName);

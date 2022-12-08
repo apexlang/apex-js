@@ -14,8 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { AbstractVisitor, Context } from "../ast/index.js";
-import { validationError } from "../error/index.js";
+import { AbstractVisitor, Context } from "../ast/mod.ts";
+import { validationError } from "../error/mod.ts";
 
 const validLocationNames = new Set([
   "NAMESPACE",
@@ -35,13 +35,13 @@ export class ValidDirectiveRequires extends AbstractVisitor {
     const dir = context.directive!;
     const dirName = dir.name.value;
 
-    for (let req of dir.requires) {
+    for (const req of dir.requires) {
       if (!context.directiveMap.has(req.directive.value)) {
         context.reportError(
           validationError(
             req.directive,
-            `unknown required directive "${req.directive.value}" on "${dirName}"`
-          )
+            `unknown required directive "${req.directive.value}" on "${dirName}"`,
+          ),
         );
       }
     }

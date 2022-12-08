@@ -14,51 +14,51 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { TokenKind } from "./token_kind.js";
-import { Lexer, getTokenDesc, getTokenKindDesc } from "./lexer.js";
-import { importError, syntaxError, ApexError } from "./error/index.js";
-import autoBind from "./auto-bind.js";
+import { TokenKind } from "./token_kind.ts";
+import { getTokenDesc, getTokenKindDesc, Lexer } from "./lexer.ts";
+import { ApexError, importError, syntaxError } from "./error/mod.ts";
+import autoBind from "./auto-bind.ts";
 import {
-  Location,
-  Token,
-  Name,
-  Document,
-  OperationDefinition,
-  FieldDefinition,
-  ObjectField,
+  AliasDefinition,
+  Annotation,
   Argument,
-  Value,
   BooleanValue,
+  Definition,
+  DirectiveDefinition,
+  DirectiveRequire,
+  Document,
+  EnumDefinition,
   EnumValue,
   EnumValueDefinition,
+  FieldDefinition,
   FloatValue,
-  ParameterDefinition,
-  IntValue,
-  ListValue,
-  ObjectValue,
-  StringValue,
-  Type,
-  ListType,
-  MapType,
-  Annotation,
-  Named,
-  Node,
-  NamespaceDefinition,
   ImportDefinition,
-  TypeDefinition,
-  AliasDefinition,
-  InterfaceDefinition,
-  UnionDefinition,
-  EnumDefinition,
-  DirectiveDefinition,
-  Optional,
-  Source,
-  DirectiveRequire,
-  Definition,
   ImportName,
+  InterfaceDefinition,
+  IntValue,
   Kind,
+  ListType,
+  ListValue,
+  Location,
+  MapType,
+  Name,
+  Named,
+  NamespaceDefinition,
+  Node,
+  ObjectField,
+  ObjectValue,
+  OperationDefinition,
+  Optional,
+  ParameterDefinition,
+  Source,
   Stream,
-} from "./ast/index.js";
+  StringValue,
+  Token,
+  Type,
+  TypeDefinition,
+  UnionDefinition,
+  Value,
+} from "./ast/mod.ts";
 
 type parseFunction = () => Node;
 /**
@@ -87,7 +87,7 @@ export type Resolver = (location: string, from: string) => string;
 export function parse(
   source: string,
   resolver?: Resolver,
-  options?: ParseOptions
+  options?: ParseOptions,
 ): Document {
   const parser = new Parser(source, resolver, options);
   return parser.parseDocument();
@@ -217,7 +217,7 @@ class Parser {
             if (def == undefined) {
               throw importError(
                 n,
-                `could not find "${n.name.value}" in "${imp.from.value}"`
+                `could not find "${n.name.value}" in "${imp.from.value}"`,
               );
             }
             const name = n.alias || n.name;
@@ -230,7 +230,7 @@ class Parser {
                   type.description,
                   type.interfaces,
                   type.annotations,
-                  type.fields
+                  type.fields,
                 );
                 renamedType.imported = true;
                 defs.push(renamedType);
@@ -242,7 +242,7 @@ class Parser {
                   name,
                   enumDef.description,
                   enumDef.annotations,
-                  enumDef.values
+                  enumDef.values,
                 );
                 renamedEnum.imported = true;
                 defs.push(renamedEnum);
@@ -254,7 +254,7 @@ class Parser {
                   name,
                   unionDef.description,
                   unionDef.annotations,
-                  unionDef.types
+                  unionDef.types,
                 );
                 renamedUnion.imported = true;
                 defs.push(renamedUnion);
@@ -267,7 +267,7 @@ class Parser {
                   directive.description,
                   directive.parameters,
                   directive.locations,
-                  directive.requires
+                  directive.requires,
                 );
                 renamedDirective.imported = true;
                 defs.push(renamedDirective);
@@ -279,7 +279,7 @@ class Parser {
                   name,
                   alias.description,
                   alias.type,
-                  alias.annotations
+                  alias.annotations,
                 );
                 renamedAlias.imported = true;
                 defs.push(renamedAlias);
@@ -343,7 +343,7 @@ class Parser {
   private parseOperationDefinitionBody(
     start: Token,
     name: Name,
-    description: StringValue | undefined
+    description: StringValue | undefined,
   ) {
     const [parameters, isUnary] = this.parseParameterDefinitions(true);
     const colon = this.expectOptionalToken(TokenKind.COLON);
@@ -366,7 +366,7 @@ class Parser {
       type,
       annotations,
       isUnary,
-      parameters
+      parameters,
     );
   }
 
@@ -513,7 +513,7 @@ class Parser {
     const item = () => this.parseValueLiteral(isConst);
     return new ListValue(
       this.loc(start),
-      this.any(TokenKind.BRACKET_L, item, TokenKind.BRACKET_R)
+      this.any(TokenKind.BRACKET_L, item, TokenKind.BRACKET_R),
     );
   }
 
@@ -527,7 +527,7 @@ class Parser {
     const item = () => this.parseObjectField(isConst);
     return new ObjectValue(
       this.loc(start),
-      this.any(TokenKind.BRACE_L, item, TokenKind.BRACE_R)
+      this.any(TokenKind.BRACE_L, item, TokenKind.BRACE_R),
     );
   }
 
@@ -551,7 +551,7 @@ class Parser {
     return new ObjectField(
       this.loc(start),
       name,
-      this.parseValueLiteral(isConst)
+      this.parseValueLiteral(isConst),
     );
   }
 
@@ -657,7 +657,7 @@ class Parser {
       this.loc(start),
       name,
       description,
-      annotations
+      annotations,
     );
   }
 
@@ -675,7 +675,7 @@ class Parser {
       names = this.many(
         TokenKind.BRACE_L,
         this.parseImportName,
-        TokenKind.BRACE_R
+        TokenKind.BRACE_R,
       );
     } else {
       throw this.unexpected();
@@ -691,7 +691,7 @@ class Parser {
       all,
       names,
       from,
-      annotations
+      annotations,
     );
   }
 
@@ -720,7 +720,7 @@ class Parser {
       name,
       description,
       type,
-      annotations
+      annotations,
     );
   }
 
@@ -754,7 +754,7 @@ class Parser {
       TokenKind.BRACE_L,
       this.parseFieldDefinition,
       TokenKind.BRACE_R,
-      false
+      false,
     );
     return new TypeDefinition(
       this.loc(start),
@@ -762,7 +762,7 @@ class Parser {
       description,
       interfaces,
       annotations,
-      iFields as Array<FieldDefinition>
+      iFields as Array<FieldDefinition>,
     );
   }
 
@@ -805,7 +805,7 @@ class Parser {
       description,
       type,
       defVal,
-      annotations
+      annotations,
     );
   }
 
@@ -813,7 +813,7 @@ class Parser {
    * ParameterDefinition : ( InputValueDefinition+ )
    */
   parseParameterDefinitions(
-    unary: boolean
+    unary: boolean,
   ): [Array<ParameterDefinition>, boolean] {
     if (this.peek(TokenKind.PAREN_L)) {
       // arguments operation
@@ -821,7 +821,7 @@ class Parser {
         TokenKind.PAREN_L,
         this.parseParameterDefinition,
         TokenKind.PAREN_R,
-        true
+        true,
       );
       return [inputValDefs as Array<ParameterDefinition>, false];
     } else if (unary && this.peek(TokenKind.BRACKET_L)) {
@@ -836,7 +836,7 @@ class Parser {
     //this._lexer.advance();
     throw new Error(
       "for Argument Definitions, expect a ( or [ got " +
-        getTokenDesc(this._lexer.token)
+        getTokenDesc(this._lexer.token),
     );
   }
 
@@ -866,7 +866,7 @@ class Parser {
       description,
       type,
       defaultValue,
-      annotations
+      annotations,
     );
   }
 
@@ -874,7 +874,7 @@ class Parser {
     openKind: number,
     parseFn: parseFunction,
     closeKind: number,
-    zinteger: boolean
+    zinteger: boolean,
   ): Array<Node> {
     this.expectToken(openKind);
     var nodeArr = [];
@@ -913,14 +913,14 @@ class Parser {
       TokenKind.BRACE_L,
       this.parseOperationDefinition,
       TokenKind.BRACE_R,
-      false
+      false,
     );
     return new InterfaceDefinition(
       this.loc(start),
       name,
       description,
       iOperations as OperationDefinition[],
-      annotations
+      annotations,
     );
   }
 
@@ -941,7 +941,7 @@ class Parser {
       name,
       description,
       annotations,
-      types
+      types,
     );
   }
 
@@ -973,7 +973,7 @@ class Parser {
       TokenKind.BRACE_L,
       this.parseEnumValueDefinition,
       TokenKind.BRACE_R,
-      false
+      false,
     ) as Array<EnumValueDefinition>;
 
     return new EnumDefinition(
@@ -981,7 +981,7 @@ class Parser {
       name,
       description,
       annotations,
-      iEnumValueDefs
+      iEnumValueDefs,
     );
   }
 
@@ -1010,7 +1010,7 @@ class Parser {
       description,
       index,
       display,
-      annotations
+      annotations,
     );
   }
 
@@ -1023,7 +1023,7 @@ class Parser {
     const params = this.optionalMany(
       TokenKind.PAREN_L,
       this.parseParameterDefinition,
-      TokenKind.PAREN_R
+      TokenKind.PAREN_R,
     );
     this.expectKeyword("on");
     const locs = this.parseDirectiveLocations();
@@ -1042,7 +1042,7 @@ class Parser {
       description,
       params,
       locs,
-      reqs
+      reqs,
     );
   }
 
@@ -1141,7 +1141,7 @@ class Parser {
     throw syntaxError(
       this._lexer.source,
       token.start,
-      `Expected ${getTokenKindDesc(kind)}, found ${getTokenDesc(token)}.`
+      `Expected ${getTokenKindDesc(kind)}, found ${getTokenDesc(token)}.`,
     );
   }
 
@@ -1170,7 +1170,7 @@ class Parser {
       throw syntaxError(
         this._lexer.source,
         token.start,
-        `Expected "${value}", found ${getTokenDesc(token)}.`
+        `Expected "${value}", found ${getTokenDesc(token)}.`,
       );
     }
   }
@@ -1197,7 +1197,7 @@ class Parser {
     return syntaxError(
       this._lexer.source,
       token.start,
-      `Unexpected ${getTokenDesc(token)}.`
+      `Unexpected ${getTokenDesc(token)}.`,
     );
   }
 
@@ -1226,7 +1226,7 @@ class Parser {
   optionalMany<T>(
     openKind: number,
     parseFn: () => T,
-    closeKind: number
+    closeKind: number,
   ): Array<T> {
     if (this.expectOptionalToken(openKind)) {
       const nodes = [];

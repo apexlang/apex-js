@@ -14,18 +14,18 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { Kind } from "./kinds.js";
-import { IntValue, StringValue, Value } from "./values.js";
+import { Kind } from "./kinds.ts";
+import { IntValue, StringValue, Value } from "./values.ts";
 import {
   AbstractNode,
-  Name,
   Annotation,
   DirectiveRequire,
   ImportName,
-} from "./nodes.js";
-import { Named, Type } from "./types.js";
-import { Location } from "./location.js";
-import { Context, Visitor } from "./visitor.js";
+  Name,
+} from "./nodes.ts";
+import { Named, Type } from "./types.ts";
+import { Location } from "./location.ts";
+import { Context, Visitor } from "./visitor.ts";
 
 export interface Definition {
   getKind(): Kind;
@@ -37,7 +37,7 @@ export interface Definition {
 export interface Annotated {
   annotation(
     name: string,
-    callback?: (annotation: Annotation) => void
+    callback?: (annotation: Annotation) => void,
   ): Annotation | undefined;
 }
 
@@ -50,7 +50,7 @@ export class NamespaceDefinition extends AbstractNode implements Annotated {
     loc: Location | undefined,
     name: Name,
     desc: StringValue | undefined,
-    annotations?: Annotation[]
+    annotations?: Annotation[],
   ) {
     super(Kind.NamespaceDefinition, loc);
     this.description = desc;
@@ -60,7 +60,7 @@ export class NamespaceDefinition extends AbstractNode implements Annotated {
 
   annotation(
     name: string,
-    callback?: (annotation: Annotation) => void
+    callback?: (annotation: Annotation) => void,
   ): Annotation | undefined {
     return getAnnotation(name, this.annotations, callback);
   }
@@ -82,7 +82,7 @@ export class AliasDefinition extends AbstractNode implements Annotated {
     name: Name,
     description: StringValue | undefined,
     type: Type,
-    annotations?: Annotation[]
+    annotations?: Annotation[],
   ) {
     super(Kind.AliasDefinition, loc);
     this.name = name;
@@ -93,7 +93,7 @@ export class AliasDefinition extends AbstractNode implements Annotated {
 
   annotation(
     name: string,
-    callback?: (annotation: Annotation) => void
+    callback?: (annotation: Annotation) => void,
   ): Annotation | undefined {
     return getAnnotation(name, this.annotations, callback);
   }
@@ -117,7 +117,7 @@ export class ImportDefinition extends AbstractNode implements Annotated {
     all: boolean,
     names: ImportName[],
     from: StringValue,
-    annotations?: Annotation[]
+    annotations?: Annotation[],
   ) {
     super(Kind.ImportDefinition, loc);
     this.description = description;
@@ -129,7 +129,7 @@ export class ImportDefinition extends AbstractNode implements Annotated {
 
   annotation(
     name: string,
-    callback?: (annotation: Annotation) => void
+    callback?: (annotation: Annotation) => void,
   ): Annotation | undefined {
     return getAnnotation(name, this.annotations, callback);
   }
@@ -153,7 +153,7 @@ export class TypeDefinition extends AbstractNode implements Annotated {
     desc: StringValue | undefined,
     interfaces: Named[],
     annotations: Annotation[],
-    fields: FieldDefinition[]
+    fields: FieldDefinition[],
   ) {
     super(Kind.TypeDefinition, loc);
     this.name = name;
@@ -165,7 +165,7 @@ export class TypeDefinition extends AbstractNode implements Annotated {
 
   annotation(
     name: string,
-    callback?: (annotation: Annotation) => void
+    callback?: (annotation: Annotation) => void,
   ): Annotation | undefined {
     return getAnnotation(name, this.annotations, callback);
   }
@@ -186,10 +186,8 @@ export class TypeDefinition extends AbstractNode implements Annotated {
   }
 }
 
-export abstract class ValuedDefinition
-  extends AbstractNode
-  implements Annotated
-{
+export abstract class ValuedDefinition extends AbstractNode
+  implements Annotated {
   name: Name;
   description?: StringValue;
   type: Type;
@@ -203,7 +201,7 @@ export abstract class ValuedDefinition
     desc: StringValue | undefined,
     type: Type,
     defaultVal: Value | undefined,
-    annotations: Annotation[]
+    annotations: Annotation[],
   ) {
     super(kind, loc);
     this.name = name;
@@ -215,7 +213,7 @@ export abstract class ValuedDefinition
 
   annotation(
     name: string,
-    callback?: (annotation: Annotation) => void
+    callback?: (annotation: Annotation) => void,
   ): Annotation | undefined {
     return getAnnotation(name, this.annotations, callback);
   }
@@ -228,7 +226,7 @@ export class FieldDefinition extends ValuedDefinition {
     desc: StringValue | undefined,
     type: Type,
     defaultVal: Value | undefined,
-    annotations: Annotation[]
+    annotations: Annotation[],
   ) {
     super(Kind.FieldDefinition, loc, name, desc, type, defaultVal, annotations);
   }
@@ -239,10 +237,8 @@ export class FieldDefinition extends ValuedDefinition {
   }
 }
 
-export class InterfaceDefinition
-  extends AbstractNode
-  implements Definition, Annotated
-{
+export class InterfaceDefinition extends AbstractNode
+  implements Definition, Annotated {
   name: Name;
   description?: StringValue;
   operations: OperationDefinition[];
@@ -253,7 +249,7 @@ export class InterfaceDefinition
     name: Name,
     desc?: StringValue,
     op?: OperationDefinition[],
-    annotations?: Annotation[]
+    annotations?: Annotation[],
   ) {
     super(Kind.InterfaceDefinition, loc);
     this.name = name;
@@ -264,7 +260,7 @@ export class InterfaceDefinition
 
   annotation(
     name: string,
-    callback?: (annotation: Annotation) => void
+    callback?: (annotation: Annotation) => void,
   ): Annotation | undefined {
     return getAnnotation(name, this.annotations, callback);
   }
@@ -300,7 +296,7 @@ export class OperationDefinition extends AbstractNode implements Annotated {
     type: Type,
     annotations: Annotation[],
     unary: boolean,
-    parameters: ParameterDefinition[]
+    parameters: ParameterDefinition[],
   ) {
     super(Kind.OperationDefinition, loc);
     this.name = name;
@@ -320,9 +316,9 @@ export class OperationDefinition extends AbstractNode implements Annotated {
   }
 
   mapTypeToTranslation(
-    typeTranslation: (inp: Type) => string
-  ): Map<String, String> {
-    const mp = new Map<String, String>();
+    typeTranslation: (inp: Type) => string,
+  ): Map<string, string> {
+    const mp = new Map<string, string>();
     if (this.unary) {
       mp.set(this.unaryOp().name.value, typeTranslation(this.unaryOp().type));
     } else {
@@ -335,7 +331,7 @@ export class OperationDefinition extends AbstractNode implements Annotated {
 
   annotation(
     name: string,
-    callback?: (annotation: Annotation) => void
+    callback?: (annotation: Annotation) => void,
   ): Annotation | undefined {
     return getAnnotation(name, this.annotations, callback);
   }
@@ -354,7 +350,7 @@ export class OperationDefinition extends AbstractNode implements Annotated {
     context.parameters!.map((parameter, index) => {
       parameter.accept(
         context.clone({ parameter: parameter, parameterIndex: index }),
-        visitor
+        visitor,
       );
     });
     visitor.visitParametersAfter(context);
@@ -375,7 +371,7 @@ export class ParameterDefinition extends ValuedDefinition {
     desc: StringValue | undefined,
     type: Type,
     defaultVal: Value | undefined,
-    annotations: Annotation[]
+    annotations: Annotation[],
   ) {
     super(
       Kind.ParameterDefinition,
@@ -384,7 +380,7 @@ export class ParameterDefinition extends ValuedDefinition {
       desc,
       type,
       defaultVal,
-      annotations
+      annotations,
     );
   }
 
@@ -398,10 +394,8 @@ export class ParameterDefinition extends ValuedDefinition {
   }
 }
 
-export class UnionDefinition
-  extends AbstractNode
-  implements Definition, Annotated
-{
+export class UnionDefinition extends AbstractNode
+  implements Definition, Annotated {
   name: Name;
   description?: StringValue;
   annotations: Annotation[];
@@ -412,7 +406,7 @@ export class UnionDefinition
     name: Name,
     desc: StringValue | undefined,
     annotations: Annotation[],
-    types: Type[]
+    types: Type[],
   ) {
     super(Kind.UnionDefinition, loc);
     this.name = name;
@@ -423,7 +417,7 @@ export class UnionDefinition
 
   annotation(
     name: string,
-    callback?: (annotation: Annotation) => void
+    callback?: (annotation: Annotation) => void,
   ): Annotation | undefined {
     return getAnnotation(name, this.annotations, callback);
   }
@@ -434,10 +428,8 @@ export class UnionDefinition
   }
 }
 
-export class EnumDefinition
-  extends AbstractNode
-  implements Definition, Annotated
-{
+export class EnumDefinition extends AbstractNode
+  implements Definition, Annotated {
   name: Name;
   description?: StringValue;
   annotations: Annotation[];
@@ -448,7 +440,7 @@ export class EnumDefinition
     name: Name,
     desc: StringValue | undefined,
     annotations: Annotation[],
-    values: EnumValueDefinition[]
+    values: EnumValueDefinition[],
   ) {
     super(Kind.EnumDefinition, loc);
     this.name = name;
@@ -459,7 +451,7 @@ export class EnumDefinition
 
   annotation(
     name: string,
-    callback?: (annotation: Annotation) => void
+    callback?: (annotation: Annotation) => void,
   ): Annotation | undefined {
     return getAnnotation(name, this.annotations, callback);
   }
@@ -480,10 +472,8 @@ export class EnumDefinition
   }
 }
 
-export class EnumValueDefinition
-  extends AbstractNode
-  implements Definition, Annotated
-{
+export class EnumValueDefinition extends AbstractNode
+  implements Definition, Annotated {
   name: Name;
   description?: StringValue;
   annotations: Annotation[];
@@ -496,7 +486,7 @@ export class EnumValueDefinition
     desc: StringValue | undefined,
     index: IntValue,
     display: StringValue | undefined,
-    annotations: Annotation[]
+    annotations: Annotation[],
   ) {
     super(Kind.EnumValueDefinition, loc);
     this.name = name;
@@ -509,7 +499,7 @@ export class EnumValueDefinition
 
   annotation(
     name: string,
-    callback?: (annotation: Annotation) => void
+    callback?: (annotation: Annotation) => void,
   ): Annotation | undefined {
     return getAnnotation(name, this.annotations, callback);
   }
@@ -533,7 +523,7 @@ export class DirectiveDefinition extends AbstractNode implements Definition {
     description: StringValue | undefined,
     parameters: ParameterDefinition[],
     locations: Name[],
-    requires?: DirectiveRequire[]
+    requires?: DirectiveRequire[],
   ) {
     super(Kind.DirectiveDefinition, loc);
     this.name = name;
@@ -544,7 +534,7 @@ export class DirectiveDefinition extends AbstractNode implements Definition {
   }
 
   public hasLocation(location: string): boolean {
-    for (let l of this.locations) {
+    for (const l of this.locations) {
       if (l.value == location) {
         return true;
       }
@@ -561,7 +551,7 @@ export class DirectiveDefinition extends AbstractNode implements Definition {
     context.parameters!.map((parameter, index) => {
       parameter.accept(
         context.clone({ parameter: parameter, parameterIndex: index }),
-        visitor
+        visitor,
       );
     });
     visitor.visitDirectiveParametersAfter(context);
@@ -573,7 +563,7 @@ export class DirectiveDefinition extends AbstractNode implements Definition {
 function visitAnnotations(
   context: Context,
   visitor: Visitor,
-  annotations?: Annotation[]
+  annotations?: Annotation[],
 ) {
   if (annotations == undefined) {
     return;
@@ -592,12 +582,12 @@ function visitAnnotations(
 function getAnnotation(
   name: string,
   annotations?: Annotation[],
-  callback?: (annotation: Annotation) => void
+  callback?: (annotation: Annotation) => void,
 ): Annotation | undefined {
   if (annotations == undefined) {
     return undefined;
   }
-  for (let a of annotations!) {
+  for (const a of annotations!) {
     if (a.name.value === name) {
       if (callback != undefined) {
         callback(a);

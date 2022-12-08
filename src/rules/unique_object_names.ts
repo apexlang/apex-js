@@ -14,13 +14,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { AbstractVisitor, Context, Node } from "../ast/index.js";
-import { validationError } from "../error/index.js";
+import { AbstractVisitor, Context, Node } from "../ast/mod.ts";
+import { validationError } from "../error/mod.ts";
 
 export class UniqueObjectNames extends AbstractVisitor {
   private typeNames: Set<string> = new Set<string>();
 
-  visitNamespace(context: Context): void {
+  visitNamespace(_context: Context): void {
     this.typeNames = new Set<string>();
   }
   visitInterface(context: Context): void {

@@ -17,15 +17,15 @@ limitations under the License.
 import {
   AbstractVisitor,
   Context,
-  Type,
-  Kind,
   DirectiveDefinition,
-  Optional,
-  MapType,
+  Kind,
   ListType,
+  MapType,
   Named,
-} from "../ast/index.js";
-import { validationError } from "../error/index.js";
+  Optional,
+  Type,
+} from "../ast/mod.ts";
+import { validationError } from "../error/mod.ts";
 
 const validTypes = new Set([Kind.TypeDefinition, Kind.EnumDefinition]);
 
@@ -54,8 +54,8 @@ export class ValidDirectiveParameterTypes extends AbstractVisitor {
           context.reportError(
             validationError(
               type,
-              `invalid type used in directive "${dir.name.value}": only Types, Enums and built-in types are allowed`
-            )
+              `invalid type used in directive "${dir.name.value}": only Types, Enums and built-in types are allowed`,
+            ),
           );
         }
         break;

@@ -19,22 +19,22 @@ import {
   Annotation,
   Argument,
   Context,
-  Kind,
-  ListType,
-  ListValue,
-  Named,
-  ObjectValue,
-  Type,
-  Value,
-  MapType,
-  Optional,
-  TypeDefinition,
   EnumDefinition,
   EnumValue,
   FieldDefinition,
   IntValue,
-} from "../ast/index.js";
-import { validationError } from "../error/index.js";
+  Kind,
+  ListType,
+  ListValue,
+  MapType,
+  Named,
+  ObjectValue,
+  Optional,
+  Type,
+  TypeDefinition,
+  Value,
+} from "../ast/mod.ts";
+import { validationError } from "../error/mod.ts";
 
 const integerBuiltInTypeNames = new Set([
   "i8",
@@ -59,8 +59,8 @@ export class ValidAnnotationArguments extends AbstractVisitor {
         context.reportError(
           validationError(
             v,
-            `duplicate argument "${v.name.value}" in annotation "${a.name.value}"`
-          )
+            `duplicate argument "${v.name.value}" in annotation "${a.name.value}"`,
+          ),
         );
       }
       foundArgNames.add(v.name.value);
@@ -71,18 +71,18 @@ export class ValidAnnotationArguments extends AbstractVisitor {
       return;
     }
 
-    let args = new Map<string, Argument>();
+    const args = new Map<string, Argument>();
     a.arguments.map((arg) => args.set(arg.name.value, arg));
 
-    for (let param of dir.parameters) {
+    for (const param of dir.parameters) {
       const arg = args.get(param.name.value);
       if (arg == undefined) {
         if (!param.type.isKind(Kind.Optional)) {
           context.reportError(
             validationError(
               a,
-              `missing required argument "${param.name.value}" in annotation "${a.name.value}"`
-            )
+              `missing required argument "${param.name.value}" in annotation "${a.name.value}"`,
+            ),
           );
         }
         continue;
@@ -97,8 +97,8 @@ export class ValidAnnotationArguments extends AbstractVisitor {
       context.reportError(
         validationError(
           arg,
-          `unknown parameter "${arg.name.value}" in directive "${dir.name.value}`
-        )
+          `unknown parameter "${arg.name.value}" in directive "${dir.name.value}`,
+        ),
       );
     });
   }
@@ -107,25 +107,23 @@ export class ValidAnnotationArguments extends AbstractVisitor {
     context: Context,
     type: Type,
     value: Value,
-    annotation: Annotation
+    annotation: Annotation,
   ) {
     switch (type.getKind()) {
-      case Kind.Optional:
+      case Kind.Optional: {
         const optional = type as Optional;
         this.check(context, optional.type, value, annotation);
         break;
-
-      case Kind.Named:
+      }
+      case Kind.Named: {
         const named = type as Named;
         if (named.name.value == "string") {
           if (!value.isKind(Kind.StringValue)) {
             context.reportError(
               validationError(
                 value,
-                `invalid value "${value.getValue()}" in annotation "${
-                  annotation.name.value
-                }": expected a string`
-              )
+                `invalid value "${value.getValue()}" in annotation "${annotation.name.value}": expected a string`,
+              ),
             );
           }
         } else if (integerBuiltInTypeNames.has(named.name.value)) {
@@ -133,10 +131,8 @@ export class ValidAnnotationArguments extends AbstractVisitor {
             context.reportError(
               validationError(
                 value,
-                `invalid value "${value.getValue()}" in annotation "${
-                  annotation.name.value
-                }": expected a integer`
-              )
+                `invalid value "${value.getValue()}" in annotation "${annotation.name.value}": expected a integer`,
+              ),
             );
             return;
           }
@@ -145,8 +141,8 @@ export class ValidAnnotationArguments extends AbstractVisitor {
             context.reportError(
               validationError(
                 value,
-                `invalid value "${intValue.value}" in annotation "${annotation.name.value}": expected a non-negative integer`
-              )
+                `invalid value "${intValue.value}" in annotation "${annotation.name.value}": expected a non-negative integer`,
+              ),
             );
           }
         } else if (floatBuiltInTypeNames.has(named.name.value)) {
@@ -154,10 +150,8 @@ export class ValidAnnotationArguments extends AbstractVisitor {
             context.reportError(
               validationError(
                 value,
-                `invalid value "${value.getValue()}" in annotation "${
-                  annotation.name.value
-                }": expected a float`
-              )
+                `invalid value "${value.getValue()}" in annotation "${annotation.name.value}": expected a float`,
+              ),
             );
           }
         } else if (named.name.value == "bool") {
@@ -165,10 +159,8 @@ export class ValidAnnotationArguments extends AbstractVisitor {
             context.reportError(
               validationError(
                 value,
-                `invalid value "${value.getValue()}" in annotation "${
-                  annotation.name.value
-                }": expected a boolean`
-              )
+                `invalid value "${value.getValue()}" in annotation "${annotation.name.value}": expected a boolean`,
+              ),
             );
           }
         } else {
@@ -182,10 +174,8 @@ export class ValidAnnotationArguments extends AbstractVisitor {
               context.reportError(
                 validationError(
                   value,
-                  `invalid value "${value.getValue()}" in annotation "${
-                    annotation.name.value
-                  }": expected an enum value`
-                )
+                  `invalid value "${value.getValue()}" in annotation "${annotation.name.value}": expected an enum value`,
+                ),
               );
               return;
             }
@@ -198,8 +188,8 @@ export class ValidAnnotationArguments extends AbstractVisitor {
               context.reportError(
                 validationError(
                   value,
-                  `unknown enum value "${expectedEnumValue.value}" in annotation "${annotation.name.value}": expected value from "${enumDef.name.value}"`
-                )
+                  `unknown enum value "${expectedEnumValue.value}" in annotation "${annotation.name.value}": expected value from "${enumDef.name.value}"`,
+                ),
               );
             }
           } else if (definition.isKind(Kind.TypeDefinition)) {
@@ -207,27 +197,25 @@ export class ValidAnnotationArguments extends AbstractVisitor {
               context.reportError(
                 validationError(
                   value,
-                  `invalid value "${value.getValue()}" in annotation "${
-                    annotation.name.value
-                  }": expected an object`
-                )
+                  `invalid value "${value.getValue()}" in annotation "${annotation.name.value}": expected an object`,
+                ),
               );
               return;
             }
             const type = definition as TypeDefinition;
             const obj = value as ObjectValue;
 
-            let fields = new Map<string, FieldDefinition>();
+            const fields = new Map<string, FieldDefinition>();
             type.fields.map((field) => fields.set(field.name.value, field));
 
-            for (let field of obj.fields) {
+            for (const field of obj.fields) {
               const f = fields.get(field.name.value);
               if (f == undefined) {
                 context.reportError(
                   validationError(
                     field.name,
-                    `unknown field "${field.name.value}" for type "${type.name.value}" in annotation "${annotation.name.value}"`
-                  )
+                    `unknown field "${field.name.value}" for type "${type.name.value}" in annotation "${annotation.name.value}"`,
+                  ),
                 );
                 continue;
               }
@@ -236,13 +224,13 @@ export class ValidAnnotationArguments extends AbstractVisitor {
               // Validate types
               this.check(context, f.type, field.value, annotation);
             }
-            fields.forEach((field, name) => {
+            fields.forEach((field) => {
               if (!field.type.isKind(Kind.Optional)) {
                 context.reportError(
                   validationError(
                     obj,
-                    `missing required field "${field.name.value}" for type "${type.name.value}" in annotation "${annotation.name.value}"`
-                  )
+                    `missing required field "${field.name.value}" for type "${type.name.value}" in annotation "${annotation.name.value}"`,
+                  ),
                 );
               }
             });
@@ -250,52 +238,47 @@ export class ValidAnnotationArguments extends AbstractVisitor {
             context.reportError(
               validationError(
                 value,
-                `invalid value "${value.getValue()}" in annotation "${
-                  annotation.name.value
-                }": expected an object`
-              )
+                `invalid value "${value.getValue()}" in annotation "${annotation.name.value}": expected an object`,
+              ),
             );
           }
         }
         break;
-
-      case Kind.ListType:
+      }
+      case Kind.ListType: {
         const list = type as ListType;
         if (!value.isKind(Kind.ListValue)) {
           context.reportError(
             validationError(
               value,
-              `invalid value "${value.getValue()}" in annotation "${
-                annotation.name.value
-              }": expected a list`
-            )
+              `invalid value "${value.getValue()}" in annotation "${annotation.name.value}": expected a list`,
+            ),
           );
           return;
         }
         const listValue = value as ListValue;
-        for (let value of listValue.value) {
+        for (const value of listValue.value) {
           this.check(context, list.type, value, annotation);
         }
         break;
-
-      case Kind.MapType:
+      }
+      case Kind.MapType: {
         const map = type as MapType;
         if (!value.isKind(Kind.ObjectValue)) {
           context.reportError(
             validationError(
               value,
-              `invalid value "${value.getValue()}" in annotation "${
-                annotation.name.value
-              }": expected a map`
-            )
+              `invalid value "${value.getValue()}" in annotation "${annotation.name.value}": expected a map`,
+            ),
           );
           return;
         }
         const objectValue = value as ObjectValue;
-        for (let field of objectValue.fields) {
+        for (const field of objectValue.fields) {
           this.check(context, map.valueType, field.value, annotation);
         }
         break;
+      }
     }
   }
 }

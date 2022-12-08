@@ -14,11 +14,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { AbstractVisitor, Context } from "../ast/index.js";
-import { validationError } from "../error/index.js";
+import { AbstractVisitor, Context } from "../ast/mod.ts";
+import { validationError } from "../error/mod.ts";
 
 export class UniqueOperationNames extends AbstractVisitor {
-  private parentName: string = "";
+  private parentName = "";
   private operationNames: Set<string> = new Set<string>();
 
   visitInterfaceBefore(context: Context): void {
@@ -32,8 +32,8 @@ export class UniqueOperationNames extends AbstractVisitor {
       context.reportError(
         validationError(
           oper.name,
-          `duplicate operation "${operName}" in ${this.parentName}`
-        )
+          `duplicate operation "${operName}" in ${this.parentName}`,
+        ),
       );
     } else {
       this.operationNames.add(operName);

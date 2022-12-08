@@ -14,8 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { AbstractVisitor, Context } from "../ast/index.js";
-import { validationError } from "../error/index.js";
+import { AbstractVisitor, Context } from "../ast/mod.ts";
+import { validationError } from "../error/mod.ts";
 
 const pascalMatcher = /[A-Z][A-Za-z0-9]*/;
 
@@ -25,7 +25,7 @@ export class PascalCaseTypeNames extends AbstractVisitor {
     const name = alias.name.value;
     if (!pascalMatcher.test(name)) {
       context.reportError(
-        validationError(alias.name, `alias "${name}" should be pascal case`)
+        validationError(alias.name, `alias "${name}" should be pascal case`),
       );
     }
   }
@@ -35,7 +35,7 @@ export class PascalCaseTypeNames extends AbstractVisitor {
     const name = type.name.value;
     if (!pascalMatcher.test(name)) {
       context.reportError(
-        validationError(type.name, `type "${name}" should be pascal case`)
+        validationError(type.name, `type "${name}" should be pascal case`),
       );
     }
   }
@@ -45,7 +45,7 @@ export class PascalCaseTypeNames extends AbstractVisitor {
     const name = enumDef.name.value;
     if (!pascalMatcher.test(name)) {
       context.reportError(
-        validationError(enumDef.name, `enum "${name}" should be pascal case`)
+        validationError(enumDef.name, `enum "${name}" should be pascal case`),
       );
     }
   }
@@ -55,7 +55,7 @@ export class PascalCaseTypeNames extends AbstractVisitor {
     const name = union.name.value;
     if (!pascalMatcher.test(name)) {
       context.reportError(
-        validationError(union.name, `union "${name}" should be pascal case`)
+        validationError(union.name, `union "${name}" should be pascal case`),
       );
     }
   }

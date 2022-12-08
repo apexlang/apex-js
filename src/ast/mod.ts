@@ -14,4 +14,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-export * from "./rules.js";
+export * from "./location.ts";
+export * from "./token.ts";
+export * from "./definitions.ts";
+export * from "./document.ts";
+export * from "./kinds.ts";
+export * from "./nodes.ts";
+export * from "./definitions.ts";
+export * from "./types.ts";
+export * from "./values.ts";
+export * from "./visitor.ts";

@@ -15,27 +15,27 @@ limitations under the License.
 */
 
 import {
-  NamespaceDefinition,
-  TypeDefinition,
-  InterfaceDefinition,
-  EnumDefinition,
-  UnionDefinition,
-  ParameterDefinition,
-  FieldDefinition,
-  OperationDefinition,
-  EnumValueDefinition,
-  DirectiveDefinition,
-  ImportDefinition,
   AliasDefinition,
-} from "./definitions.js";
-import { Document } from "./document.js";
-import { Annotation, Name } from "./nodes.js";
-import autoBind from "../auto-bind.js";
-import { ApexError } from "../error/index.js";
-import { Kind } from "./kinds.js";
+  DirectiveDefinition,
+  EnumDefinition,
+  EnumValueDefinition,
+  FieldDefinition,
+  ImportDefinition,
+  InterfaceDefinition,
+  NamespaceDefinition,
+  OperationDefinition,
+  ParameterDefinition,
+  TypeDefinition,
+  UnionDefinition,
+} from "./definitions.ts";
+import { Document } from "./document.ts";
+import { Annotation, Name } from "./nodes.ts";
+import autoBind from "../auto-bind.ts";
+import { ApexError } from "../error/mod.ts";
+import { Kind } from "./kinds.ts";
 
 export class Writer {
-  private code: string = "";
+  private code = "";
 
   write(source: string) {
     this.code += source;
@@ -46,6 +46,7 @@ export class Writer {
   }
 }
 
+// deno-lint-ignore no-explicit-any
 export type ObjectMap<T = any> = { [key: string]: T };
 
 interface NamedParameters {
@@ -104,7 +105,7 @@ export class Context {
 
   // Drill-down definitions
   namespace: NamespaceDefinition;
-  namespacePos: number = 9999;
+  namespacePos = 9999;
   import?: ImportDefinition;
   directive?: DirectiveDefinition;
   alias?: AliasDefinition;
@@ -153,7 +154,7 @@ export class Context {
       this.namespace = new NamespaceDefinition(
         undefined,
         new Name(undefined, ""),
-        undefined
+        undefined,
       );
       this.namespaces = new Array<NamespaceDefinition>();
       this.directives = new Array<DirectiveDefinition>();
@@ -203,7 +204,7 @@ export class Context {
     union,
     annotation,
   }: NamedParameters): Context {
-    var context = new Context(this.config, undefined, this);
+    const context = new Context(this.config, undefined, this);
 
     context.namespace = namespace || this.namespace;
     context.namespacePos = this.namespacePos;
@@ -232,48 +233,57 @@ export class Context {
   private parseDocument(): void {
     this.document!.definitions.forEach((value, index) => {
       switch (value.getKind()) {
-        case Kind.NamespaceDefinition:
+        case Kind.NamespaceDefinition: {
           const namespace = value as NamespaceDefinition;
           this.namespaces.push(namespace);
           this.namespace = namespace;
           this.namespacePos = index;
           break;
-        case Kind.DirectiveDefinition:
+        }
+        case Kind.DirectiveDefinition: {
           const directive = value as DirectiveDefinition;
           this.directives.push(directive);
           this.directiveMap.set(directive.name.value, directive);
           break;
-        case Kind.ImportDefinition:
+        }
+        case Kind.ImportDefinition: {
           this.imports.push(value as ImportDefinition);
           break;
-        case Kind.AliasDefinition:
+        }
+        case Kind.AliasDefinition: {
           const alias = value as AliasDefinition;
           this.aliases.push(alias);
           this.allTypes.set(alias.name.value, alias);
           break;
-        case Kind.OperationDefinition:
+        }
+        case Kind.OperationDefinition: {
           const oper = value as OperationDefinition;
           this.functions.push(oper);
           break;
-        case Kind.InterfaceDefinition:
+        }
+        case Kind.InterfaceDefinition: {
           const iface = value as InterfaceDefinition;
           this.interfaces.push(iface);
           break;
-        case Kind.TypeDefinition:
+        }
+        case Kind.TypeDefinition: {
           const type = value as TypeDefinition;
           this.types.push(type);
           this.allTypes.set(type.name.value, type);
           break;
-        case Kind.EnumDefinition:
+        }
+        case Kind.EnumDefinition: {
           const enumDef = value as EnumDefinition;
           this.enums.push(enumDef);
           this.allTypes.set(enumDef.name.value, enumDef);
           break;
-        case Kind.UnionDefinition:
+        }
+        case Kind.UnionDefinition: {
           const union = value as UnionDefinition;
           this.unions.push(union);
           this.allTypes.set(union.name.value, union);
           break;
+        }
       }
     });
   }
@@ -372,7 +382,7 @@ export abstract class AbstractVisitor implements Visitor {
   callbacks: Callbacks = new Map<string, Map<string, VisitorCallback>>();
 
   setCallback(phase: string, purpose: string, callback: VisitorCallback): void {
-    var purposes = this.callbacks.get(phase);
+    let purposes = this.callbacks.get(phase);
     if (purposes == undefined) {
       purposes = new Map<string, VisitorCallback>();
       this.callbacks.set(phase, purposes);
@@ -381,7 +391,7 @@ export abstract class AbstractVisitor implements Visitor {
   }
 
   triggerCallbacks(context: Context, phase: string): void {
-    var purposes = this.callbacks.get(phase);
+    const purposes = this.callbacks.get(phase);
     if (purposes == undefined) {
       return;
     }

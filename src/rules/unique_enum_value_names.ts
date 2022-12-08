@@ -14,11 +14,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { AbstractVisitor, Context } from "../ast/index.js";
-import { validationError } from "../error/index.js";
+import { AbstractVisitor, Context } from "../ast/mod.ts";
+import { validationError } from "../error/mod.ts";
 
 export class UniqueEnumValueNames extends AbstractVisitor {
-  private parentName: string = "";
+  private parentName = "";
   private names: Set<string> = new Set<string>();
 
   visitEnum(context: Context): void {
@@ -32,8 +32,8 @@ export class UniqueEnumValueNames extends AbstractVisitor {
       context.reportError(
         validationError(
           enumValue.name,
-          `duplicate value name "${name}" in enum "${this.parentName}"`
-        )
+          `duplicate value name "${name}" in enum "${this.parentName}"`,
+        ),
       );
     } else {
       this.names.add(name);

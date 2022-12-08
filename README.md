@@ -1,6 +1,7 @@
 # Apex Language Parser
 
-This library will parse `.apex` files into an AST. Refer to the docs [docs](https://docs.apexlang.io) for more information.
+This library will parse `.apex` files into an AST. Refer to the docs
+[docs](https://docs.apexlang.io) for more information.
 
 ## Installation
 
@@ -11,9 +12,9 @@ $ npm install @apexlang/core
 ## Usage (node v12+)
 
 ```js
-import { parse, validate } from '@apexlang/core/index.js';
-import { CommonRules } from '@apexlang/core/rules/index.js';
-import { Context, Writer, AbstractVisitor } from '@apexlang/core/ast/index.js';
+import { parse, validate } from "@apexlang/core/index.js";
+import { CommonRules } from "@apexlang/core/rules/index.js";
+import { AbstractVisitor, Context, Writer } from "@apexlang/core/ast/index.js";
 
 const source = `
 namespace "mandelbrot"
@@ -26,12 +27,12 @@ const doc = parse(source, undefined, { noLocation: true });
 const errors = validate(doc, ...CommonRules);
 
 if (errors.length > 0) {
-  errors.map(e => console.log(e.message));
+  errors.map((e) => console.log(e.message));
 } else {
   const context = new Context({});
   const writer = new Writer();
   const visitor = new AbstractVisitor();
-  visitor.setCallback("Operation", "", function(context) {
+  visitor.setCallback("Operation", "", function (context) {
     const oper = context.operation;
     if (oper == undefined || oper.name.value != "update") {
       return;
