@@ -238,7 +238,7 @@ export class Context {
     this.document!.definitions.forEach((value, index) => {
       switch (value.getKind()) {
         // There is one namespace per document.
-        case Kind.NamespaceDefinition:
+        case Kind.NamespaceDefinition: {
           const namespace = new Namespace(
             this.getType.bind(this),
             value as NamespaceDefinition,
@@ -247,22 +247,27 @@ export class Context {
           this.namespace = namespace;
           this.namespacePos = index;
           break;
-        case Kind.AliasDefinition:
+        }
+        case Kind.AliasDefinition: {
           const aliasDef = value as AliasDefinition;
           this.typeMap[aliasDef.name.value] = aliasDef;
           break;
-        case Kind.TypeDefinition:
+        }
+        case Kind.TypeDefinition: {
           const typeDef = value as TypeDefinition;
           this.typeMap[typeDef.name.value] = typeDef;
           break;
-        case Kind.EnumDefinition:
+        }
+        case Kind.EnumDefinition: {
           const enumDef = value as EnumDefinition;
           this.typeMap[enumDef.name.value] = enumDef;
           break;
-        case Kind.UnionDefinition:
+        }
+        case Kind.UnionDefinition: {
           const unionDef = value as UnionDefinition;
           this.typeMap[unionDef.name.value] = unionDef;
           break;
+        }
       }
     });
 
@@ -272,7 +277,7 @@ export class Context {
 
     this.document!.definitions.forEach((value) => {
       switch (value.getKind()) {
-        case Kind.AliasDefinition:
+        case Kind.AliasDefinition: {
           const aliasDef = value as AliasDefinition;
           if (!this.namespace.allTypes[aliasDef.name.value]) {
             new Alias(this.getType.bind(this), aliasDef, (a: Alias) => {
@@ -281,7 +286,8 @@ export class Context {
             });
           }
           break;
-        case Kind.TypeDefinition:
+        }
+        case Kind.TypeDefinition: {
           const typeDef = value as TypeDefinition;
           if (!this.namespace.allTypes[typeDef.name.value]) {
             new MObject(this.getType.bind(this), typeDef, (t: MObject) => {
@@ -290,7 +296,8 @@ export class Context {
             });
           }
           break;
-        case Kind.EnumDefinition:
+        }
+        case Kind.EnumDefinition: {
           const enumDef = value as EnumDefinition;
           if (!this.namespace.allTypes[enumDef.name.value]) {
             new Enum(this.getType.bind(this), enumDef, (e: Enum) => {
@@ -299,7 +306,8 @@ export class Context {
             });
           }
           break;
-        case Kind.UnionDefinition:
+        }
+        case Kind.UnionDefinition: {
           const unionDef = value as UnionDefinition;
           if (!this.namespace.allTypes[unionDef.name.value]) {
             new Union(this.getType.bind(this), unionDef, (u: Union) => {
@@ -308,6 +316,7 @@ export class Context {
             });
           }
           break;
+        }
       }
     });
 
@@ -346,7 +355,7 @@ export class Context {
     // Reorder all types per the contents of the spec document.
     this.document!.definitions.forEach((value) => {
       switch (value.getKind()) {
-        case Kind.AliasDefinition:
+        case Kind.AliasDefinition: {
           const aliasDef = value as AliasDefinition;
           const a = this.namespace.aliases[aliasDef.name.value];
           delete this.namespace.aliases[a.name];
@@ -354,7 +363,8 @@ export class Context {
           this.namespace.aliases[a.name] = a;
           this.namespace.allTypes[a.name] = a;
           break;
-        case Kind.TypeDefinition:
+        }
+        case Kind.TypeDefinition: {
           const typeDef = value as TypeDefinition;
           const t = this.namespace.types[typeDef.name.value];
           delete this.namespace.types[t.name];
@@ -362,7 +372,8 @@ export class Context {
           this.namespace.types[t.name] = t;
           this.namespace.allTypes[t.name] = t;
           break;
-        case Kind.EnumDefinition:
+        }
+        case Kind.EnumDefinition: {
           const enumDef = value as EnumDefinition;
           const e = this.namespace.enums[enumDef.name.value];
           delete this.namespace.enums[e.name];
@@ -370,7 +381,8 @@ export class Context {
           this.namespace.enums[e.name] = e;
           this.namespace.allTypes[e.name] = e;
           break;
-        case Kind.UnionDefinition:
+        }
+        case Kind.UnionDefinition: {
           const unionDef = value as UnionDefinition;
           const u = this.namespace.unions[unionDef.name.value];
           delete this.namespace.unions[u.name];
@@ -378,6 +390,7 @@ export class Context {
           this.namespace.unions[u.name] = u;
           this.namespace.allTypes[u.name] = u;
           break;
+        }
       }
     });
   }
@@ -392,7 +405,7 @@ export class Context {
 
   getType(t: ASTType): AnyType {
     switch (t.getKind()) {
-      case ASTKind.Named:
+      case ASTKind.Named: {
         const name = (t as Named).name.value;
         if (name === "void") {
           return VoidValue;
@@ -453,18 +466,23 @@ export class Context {
         }
 
         break;
-      case ASTKind.Optional:
+      }
+      case ASTKind.Optional: {
         const optional = t as ASTOptional;
         return new Optional(this.getType.bind(this), optional);
-      case ASTKind.ListType:
+      }
+      case ASTKind.ListType: {
         const list = t as ASTListType;
         return new List(this.getType.bind(this), list);
-      case ASTKind.MapType:
+      }
+      case ASTKind.MapType: {
         const map = t as ASTMapType;
         return new Map(this.getType.bind(this), map);
-      case ASTKind.Stream:
+      }
+      case ASTKind.Stream: {
         const stream = t as ASTStream;
         return new Stream(this.getType.bind(this), stream);
+      }
     }
 
     throw new Error("could not resolve type: " + t);
@@ -706,7 +724,7 @@ export abstract class AbstractVisitor implements Visitor {
     this.triggerCallbacks(context, "Alias");
   }
   public visitAliasAfter(context: Context): void {
-    this.triggerAliasBefore(context);
+    this.triggerAliasAfter(context);
   }
   public triggerAliasAfter(context: Context): void {
     this.triggerCallbacks(context, "AliasAfter");

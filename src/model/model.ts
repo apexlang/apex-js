@@ -299,7 +299,9 @@ export class Alias extends Annotated implements Named {
   }
 
   public accept(context: Context, visitor: Visitor): void {
+    visitor.visitAliasBefore(context);
     visitor.visitAlias(context);
+    visitor.visitAliasAfter(context);
   }
 }
 
@@ -348,6 +350,7 @@ export abstract class Valued extends Annotated implements Named {
     super(kind, node.annotations);
     this.name = node.name.value;
     this.description = node.description?.value;
+    this.default = node.default;
     this.type = tr(node.type);
   }
 }
