@@ -298,6 +298,10 @@ export class Context {
 }
 
 export interface Visitor {
+  writeHead(context: Context): void;
+  writeTail(context: Context): void;
+  renderImports(context: Context): string;
+
   visitDocumentBefore(context: Context): void;
   visitNamespace(context: Context): void;
 
@@ -398,6 +402,23 @@ export abstract class AbstractVisitor implements Visitor {
     purposes.forEach((callback) => {
       callback(context);
     });
+  }
+
+  public writeHead(context: Context): void {
+    this.triggerHead(context);
+  }
+  public triggerHead(context: Context): void {
+    this.triggerCallbacks(context, "Head");
+  }
+
+  public writeTail(context: Context): void {
+    this.triggerTail(context);
+  }
+  public triggerTail(context: Context): void {
+    this.triggerCallbacks(context, "Tail");
+  }
+  public renderImports(_context: Context): string {
+    return "";
   }
 
   public visitDocumentBefore(context: Context): void {
