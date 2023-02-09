@@ -111,19 +111,6 @@ export function isPunctuatorTokenKind(kind: TokenKind): boolean {
   );
 }
 
-function printCharCode(code: number) {
-  return (
-    // NaN/undefined represents access beyond the end of the file.
-    isNaN(code)
-      ? TokenKind.EOF
-      // Trust JSON for ASCII.
-      : code < 0x007f
-      ? JSON.stringify(String.fromCharCode(code))
-      // Otherwise print the escaped form.
-      : `"\\u${("00" + code.toString(16).toUpperCase()).slice(-4)}"`
-  );
-}
-
 /**
  * Gets the next token from the source starting at the given position.
  *
@@ -282,22 +269,6 @@ function readToken(lexer: Lexer, prev: Token): Token {
 }
 
 /**
- * Report a message that an unexpected character was encountered.
- */
-function unexpectedCharacterMessage(code: number) {
-  if (code < 0x0020 && code !== 0x0009 && code !== 0x000a && code !== 0x000d) {
-    return `Cannot contain the invalid character ${printCharCode(code)}.`;
-  }
-
-  if (code === 39) {
-    // '
-    return "Unexpected single quote character ('), did you mean to use a double quote (\")?";
-  }
-
-  return `Cannot parse the unexpected character ${printCharCode(code)}.`;
-}
-
-/**
  * Reads from body starting at startPosition until it finds a non-whitespace
  * character, then returns the position of that character for lexing.
  */
@@ -342,8 +313,8 @@ function positionAfterWhitespace(
 function readComment(
   source: Source,
   start: number,
-  line: number,
-  col: number,
+  _line: number,
+  _col: number,
   prev: Token,
 ): Token {
   const body = source.body;
@@ -378,8 +349,8 @@ function readNumber(
   source: Source,
   start: number,
   firstCode: number,
-  line: number,
-  col: number,
+  _line: number,
+  _col: number,
   prev: Token,
 ): Token {
   const body = source.body;
@@ -481,8 +452,8 @@ function readDigits(source: Source, start: number, firstCode: number): number {
 function readString(
   source: Source,
   start: number,
-  line: number,
-  col: number,
+  _line: number,
+  _col: number,
   prev: Token,
 ): Token {
   const body = source.body;
@@ -555,7 +526,6 @@ function readString(
             body.charCodeAt(position + 4),
           );
           if (charCode < 0) {
-            const invalidSequence = body.slice(position + 1, position + 5);
             throw syntaxError(source, position, "invalid sequence");
             /*throw syntaxError(
               source,
@@ -597,8 +567,8 @@ function readString(
 function readBlockString(
   source: Source,
   start: number,
-  line: number,
-  col: number,
+  _line: number,
+  _col: number,
   prev: Token,
   lexer: Lexer,
 ): Token {
@@ -721,8 +691,8 @@ function char2hex(a: number) {
 function readName(
   source: Source,
   start: number,
-  line: number,
-  col: number,
+  _line: number,
+  _col: number,
   prev: Token,
 ): Token {
   const body = source.body;

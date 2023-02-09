@@ -100,7 +100,11 @@ export class Context {
   unions: UnionDefinition[];
   allTypes: Map<
     string,
-    TypeDefinition | EnumDefinition | UnionDefinition | AliasDefinition
+    | TypeDefinition
+    | EnumDefinition
+    | UnionDefinition
+    | AliasDefinition
+    | InterfaceDefinition
   >;
 
   // Drill-down definitions
@@ -264,6 +268,7 @@ export class Context {
         case Kind.InterfaceDefinition: {
           const iface = value as InterfaceDefinition;
           this.interfaces.push(iface);
+          this.allTypes.set(iface.name.value, iface);
           break;
         }
         case Kind.TypeDefinition: {

@@ -158,7 +158,8 @@ export type AnyType =
   | Map
   | Optional
   | Stream
-  | Void;
+  | Void
+  | Interface;
 
 export abstract class Annotated extends Base {
   readonly annotations: Annotation[];

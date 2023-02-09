@@ -129,7 +129,7 @@ class Parser {
   _lexer: Lexer;
 
   constructor(source: string, resolver?: Resolver, options?: ParseOptions) {
-    let src = new Source("apex");
+    const src = new Source("apex");
     src.setBody(source);
     this._resolver = resolver;
     this._lexer = new Lexer(src);
@@ -189,26 +189,31 @@ class Parser {
           const allDefs = new Map<string, Definition>();
           importDoc.definitions.map((def) => {
             switch (def.getKind()) {
-              case Kind.TypeDefinition:
+              case Kind.TypeDefinition: {
                 const type = def as TypeDefinition;
                 allDefs.set(type.name.value, type);
                 break;
-              case Kind.EnumDefinition:
+              }
+              case Kind.EnumDefinition: {
                 const enumDef = def as EnumDefinition;
                 allDefs.set(enumDef.name.value, enumDef);
                 break;
-              case Kind.UnionDefinition:
+              }
+              case Kind.UnionDefinition: {
                 const unionDef = def as UnionDefinition;
                 allDefs.set(unionDef.name.value, unionDef);
                 break;
-              case Kind.DirectiveDefinition:
+              }
+              case Kind.DirectiveDefinition: {
                 const directive = def as DirectiveDefinition;
                 allDefs.set(directive.name.value, directive);
                 break;
-              case Kind.AliasDefinition:
+              }
+              case Kind.AliasDefinition: {
                 const alias = def as AliasDefinition;
                 allDefs.set(alias.name.value, alias);
                 break;
+              }
             }
           });
 
@@ -222,7 +227,7 @@ class Parser {
             }
             const name = n.alias || n.name;
             switch (def.getKind()) {
-              case Kind.TypeDefinition:
+              case Kind.TypeDefinition: {
                 const type = def as TypeDefinition;
                 const renamedType = new TypeDefinition(
                   name.loc,
@@ -235,7 +240,8 @@ class Parser {
                 renamedType.imported = true;
                 defs.push(renamedType);
                 break;
-              case Kind.EnumDefinition:
+              }
+              case Kind.EnumDefinition: {
                 const enumDef = def as EnumDefinition;
                 const renamedEnum = new EnumDefinition(
                   name.loc,
@@ -247,7 +253,8 @@ class Parser {
                 renamedEnum.imported = true;
                 defs.push(renamedEnum);
                 break;
-              case Kind.UnionDefinition:
+              }
+              case Kind.UnionDefinition: {
                 const unionDef = def as UnionDefinition;
                 const renamedUnion = new UnionDefinition(
                   name.loc,
@@ -259,7 +266,8 @@ class Parser {
                 renamedUnion.imported = true;
                 defs.push(renamedUnion);
                 break;
-              case Kind.DirectiveDefinition:
+              }
+              case Kind.DirectiveDefinition: {
                 const directive = def as DirectiveDefinition;
                 const renamedDirective = new DirectiveDefinition(
                   name.loc,
@@ -272,7 +280,8 @@ class Parser {
                 renamedDirective.imported = true;
                 defs.push(renamedDirective);
                 break;
-              case Kind.AliasDefinition:
+              }
+              case Kind.AliasDefinition: {
                 const alias = def as AliasDefinition;
                 const renamedAlias = new AliasDefinition(
                   name.loc,
@@ -284,6 +293,7 @@ class Parser {
                 renamedAlias.imported = true;
                 defs.push(renamedAlias);
                 break;
+              }
             }
           });
         }
@@ -349,7 +359,6 @@ class Parser {
     const colon = this.expectOptionalToken(TokenKind.COLON);
     let type: Type = new Named(undefined, new Name(undefined, "void"));
     if (colon) {
-      const streamLoc = this.loc(this._lexer.token);
       const stream = this.expectOptionalKeyword("stream");
       type = this.parseType();
       if (stream) {
@@ -378,14 +387,15 @@ class Parser {
    */
   parseType(): Type {
     const start = this._lexer.token;
-    var keyType: Type | undefined;
-    var valueType: Type | undefined;
-    var ttype: Type | undefined;
+    let keyType: Type | undefined;
+    let valueType: Type | undefined;
+    let ttype: Type | undefined;
     // [ String? ]?
     switch (start.kind) {
       case TokenKind.BRACKET_L:
         this._lexer.advance();
         ttype = this.parseType();
+        /* falls through */
       case TokenKind.BRACKET_R:
         this._lexer.advance();
         ttype = new ListType(this.loc(start), ttype!);
@@ -395,6 +405,7 @@ class Parser {
         keyType = this.parseType();
         this.expectToken(TokenKind.COLON);
         valueType = this.parseType();
+        /* falls through */
       case TokenKind.BRACE_R:
         this._lexer.advance();
         ttype = new MapType(this.loc(start), keyType!, valueType!);
@@ -426,7 +437,7 @@ class Parser {
   parseArgument(): Argument {
     const start = this._lexer.token;
 
-    var name: Name;
+    let name: Name;
     if (!this.peek(TokenKind.NAME)) {
       name = new Name(undefined, "value");
     } else {
@@ -481,7 +492,8 @@ class Parser {
           case "false":
             return new BooleanValue(this.loc(token), false);
           case "null":
-          // TODO
+            // TODO
+            /* falls through */
           default:
             return new EnumValue(this.loc(token), token.value);
         }
@@ -556,7 +568,7 @@ class Parser {
   }
 
   parseAnnotations(): Array<Annotation> {
-    let directives = Array<Annotation>();
+    const directives = Array<Annotation>();
     while (this.peek(TokenKind.AT)) {
       this._lexer.advance();
       directives.push(this.parseAnnotation());
@@ -662,7 +674,7 @@ class Parser {
   }
 
   parseImportDefinition(): ImportDefinition {
-    let start = this._lexer.token;
+    const start = this._lexer.token;
     const description = this.parseDescription();
     this.expectKeyword("import");
     let all = false;
@@ -851,7 +863,7 @@ class Parser {
     this.expectToken(TokenKind.COLON);
     const streamLoc = this.loc(this._lexer.token);
     const stream = this.expectOptionalKeyword("stream");
-    var type = this.parseType();
+    let type = this.parseType();
     if (stream) {
       type = new Stream(streamLoc, type);
     }
@@ -874,10 +886,10 @@ class Parser {
     openKind: number,
     parseFn: parseFunction,
     closeKind: number,
-    zinteger: boolean,
+    _zinteger: boolean,
   ): Array<Node> {
     this.expectToken(openKind);
-    var nodeArr = [];
+    const nodeArr = [];
     while (true) {
       if (this.expectOptionalToken(closeKind)) {
         break;
@@ -1098,10 +1110,7 @@ class Parser {
    *   `INPUT_FIELD_DEFINITION`
    */
   parseDirectiveLocation(): Name {
-    const start = this._lexer.token;
-    const name = this.parseName();
-    return name;
-    throw this.unexpected(start);
+    return this.parseName();
   }
 
   // Core parsing utility functions

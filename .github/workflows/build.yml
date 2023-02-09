@@ -24,18 +24,17 @@ jobs:
         with:
           node-version: 12
           registry-url: https://registry.npmjs.org/
+
       - name: Bundle module and dependencies
-        run: deno bundle src/mod.ts bundle.js
-      # - run: npm run test
-      # - run: npm run lint
-      # - run: npm run build
+        run: deno run -A scripts/build_npm.ts ${GITHUB_REF##*/} && cat npm/package.json
 
-      # - name: Is Release?
-      #   if: startswith(github.ref, 'refs/tags/v')
-      #   run: echo "DEPLOY_PACKAGE=true" >> $GITHUB_ENV
+      - name: Is Release?
+        if: startswith(github.ref, 'refs/tags/v')
+        run: echo "DEPLOY_PACKAGE=true" >> $GITHUB_ENV
 
-      # - name: Publish to npm
-      #   if: env.DEPLOY_PACKAGE == 'true'
-      #   run: npm pack && npm publish --access public
-      #   env:
-      #     NODE_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
+      - name: Publish to npm
+        if: env.DEPLOY_PACKAGE == 'true'
+        working-directory: ./npm
+        run: npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}

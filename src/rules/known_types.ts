@@ -50,7 +50,16 @@ export class KnownTypes extends AbstractVisitor {
     const alias = context.alias!;
     this.checkType(context, `alias`, alias.name.value, alias.type);
   }
+
+  visitFunctionAfter(context: Context): void {
+    this.handleOperation(context);
+  }
+
   visitOperationAfter(context: Context): void {
+    this.handleOperation(context);
+  }
+
+  handleOperation(context: Context): void {
     const oper = context.operation!;
     // "void" is a special case for operations without a return.
     if (
@@ -118,10 +127,10 @@ export class KnownTypes extends AbstractVisitor {
     t: Type,
   ) {
     switch (t.getKind()) {
-      case Kind.Named:
+      case Kind.Named: {
         const named = t as Named;
         const name = named.name.value;
-        var first = name.charAt(0);
+        const first = name.charAt(0);
 
         if (first === first.toLowerCase()) {
           // Check for built-in types
@@ -145,22 +154,26 @@ export class KnownTypes extends AbstractVisitor {
           }
         }
         break;
+      }
 
-      case Kind.Optional:
+      case Kind.Optional: {
         const optional = t as Optional;
         this.checkType(context, forName, parentName, optional.type);
         break;
+      }
 
-      case Kind.MapType:
+      case Kind.MapType: {
         const map = t as MapType;
         this.checkType(context, forName, parentName, map.keyType);
         this.checkType(context, forName, parentName, map.valueType);
         break;
+      }
 
-      case Kind.ListType:
+      case Kind.ListType: {
         const list = t as ListType;
         this.checkType(context, forName, parentName, list.type);
         break;
+      }
     }
   }
 }

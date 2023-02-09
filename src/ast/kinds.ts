@@ -54,4 +54,5 @@ export enum Kind {
   EnumDefinition = "EnumDefinition",
   EnumValueDefinition = "EnumValueDefinition",
   DirectiveDefinition = "DirectiveDefinition",
+  FunctionDefinition = "FunctionDefinition",
 }

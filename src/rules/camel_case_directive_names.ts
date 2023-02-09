@@ -1,4 +1,3 @@
-// deno-lint-ignore-file no-unused-vars
 /*
 Copyright 2022 The Apex Authors.
 
@@ -15,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { AbstractVisitor, Context, Node } from "../ast/mod.ts";
+import { AbstractVisitor, Context } from "../ast/mod.ts";
 import { validationError } from "../error/mod.ts";
 import { camelCase } from "./case.ts";
 

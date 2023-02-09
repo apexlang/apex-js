@@ -29,7 +29,7 @@ export interface Node {
 export abstract class AbstractNode implements Node {
   kind: Kind;
   loc?: Location;
-  imported: boolean = false;
+  imported = false;
 
   constructor(kind: Kind, loc: Location | undefined) {
     this.kind = kind;
@@ -73,7 +73,8 @@ export class Annotation extends AbstractNode {
   }
 
   convert<T>(): T {
-    let obj: { [k: string]: any } = {};
+    // deno-lint-ignore no-explicit-any
+    const obj: { [k: string]: any } = {};
     this.arguments.map((arg) => {
       obj[arg.name.value] = arg.value.getValue();
     });
@@ -108,7 +109,7 @@ export class DirectiveRequire extends AbstractNode {
   }
 
   public hasLocation(location: string): boolean {
-    for (let l of this.locations) {
+    for (const l of this.locations) {
       if (l.value == location) {
         return true;
       }
