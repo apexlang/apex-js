@@ -17,6 +17,7 @@ limitations under the License.
 const CONSTRUCTOR = "constructor";
 
 interface IPrototype {
+  // deno-lint-ignore ban-types
   [key: string]: Function;
 }
 
@@ -46,7 +47,7 @@ export default function autobind(instance: unknown, proto?: unknown): void {
   if (!proto) {
     try {
       proto = Object.getPrototypeOf(instance);
-    } catch (error) {
+    } catch (_error) {
       throw new Error(`Cannot get prototype of ${instance}`);
     }
   }
@@ -85,10 +86,12 @@ function isExcluded(key: string): boolean {
   return REACT_EXCLUDE_METHODS[key] === true;
 }
 
+// deno-lint-ignore ban-types
 function isFunction(item: unknown): item is Function {
   return typeof item === "function";
 }
 
+// deno-lint-ignore ban-types
 export function isPrototype<T extends object>(value: unknown): value is T {
   return typeof value === "object";
 }

@@ -412,17 +412,26 @@ export class Context {
         }
 
         let namedType = this.namespace.allTypes[name];
-        if (namedType != undefined) {
+        if (namedType) {
           return namedType;
         }
 
         namedType = primitives[name];
-        if (namedType != undefined) {
+        if (namedType) {
           return namedType;
+        }
+
+        const ifaceType = this.namespace.interfaces[name];
+        if (ifaceType) {
+          return ifaceType;
         }
 
         const anyTypeDef = this.typeMap[name];
         if (!anyTypeDef) {
+          const at = this.lazyLoadType(name);
+          if (at) {
+            return at;
+          }
           throw new Error(`Unknown type ${name}`);
         }
 
@@ -494,6 +503,84 @@ export class Context {
       namespace.accept(context.clone({ namespace: namespace }), visitor);
     });
     visitor.visitContextAfter(context);
+  }
+
+  lazyLoadType(name: string): AnyType | undefined {
+    for (const value of this.document!.definitions) {
+      switch (value.getKind()) {
+        case Kind.AliasDefinition: {
+          const aliasDef = value as AliasDefinition;
+          if (
+            aliasDef.name.value === name &&
+            !this.namespace.allTypes[aliasDef.name.value]
+          ) {
+            return new Alias(this.getType.bind(this), aliasDef, (a: Alias) => {
+              this.namespace.aliases[a.name] = a;
+              this.namespace.allTypes[a.name] = a;
+            });
+          }
+          break;
+        }
+        case Kind.TypeDefinition: {
+          const typeDef = value as TypeDefinition;
+          if (
+            typeDef.name.value === name &&
+            !this.namespace.allTypes[typeDef.name.value]
+          ) {
+            return new MObject(
+              this.getType.bind(this),
+              typeDef,
+              (t: MObject) => {
+                this.namespace.types[t.name] = t;
+                this.namespace.allTypes[t.name] = t;
+              },
+            );
+          }
+          break;
+        }
+        case Kind.EnumDefinition: {
+          const enumDef = value as EnumDefinition;
+          if (
+            enumDef.name.value === name &&
+            !this.namespace.allTypes[enumDef.name.value]
+          ) {
+            return new Enum(this.getType.bind(this), enumDef, (e: Enum) => {
+              this.namespace.enums[e.name] = e;
+              this.namespace.allTypes[e.name] = e;
+            });
+          }
+          break;
+        }
+        case Kind.UnionDefinition: {
+          const unionDef = value as UnionDefinition;
+          if (
+            unionDef.name.value === name &&
+            !this.namespace.allTypes[unionDef.name.value]
+          ) {
+            return new Union(this.getType.bind(this), unionDef, (u: Union) => {
+              this.namespace.unions[u.name] = u;
+              this.namespace.allTypes[u.name] = u;
+            });
+          }
+          break;
+        }
+        case Kind.InterfaceDefinition: {
+          const ifaceDef = value as InterfaceDefinition;
+          if (
+            ifaceDef.name.value === name &&
+            !this.namespace.interfaces[ifaceDef.name.value]
+          ) {
+            return new Interface(
+              this.getType.bind(this),
+              ifaceDef,
+              (r: Interface) => {
+                this.namespace.interfaces[r.name] = r;
+              },
+            );
+          }
+        }
+      }
+    }
   }
 }
 

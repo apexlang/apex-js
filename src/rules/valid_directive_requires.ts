@@ -17,19 +17,6 @@ limitations under the License.
 import { AbstractVisitor, Context } from "../ast/mod.ts";
 import { validationError } from "../error/mod.ts";
 
-const validLocationNames = new Set([
-  "NAMESPACE",
-  "INTERFACE",
-  "OPERATION",
-  "PARAMETER",
-  "TYPE",
-  "FIELD",
-  "ENUM",
-  "ENUM_VALUE",
-  "UNION",
-  "ALIAS",
-]);
-
 export class ValidDirectiveRequires extends AbstractVisitor {
   visitDirective(context: Context): void {
     const dir = context.directive!;

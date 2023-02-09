@@ -1,3 +1,4 @@
+// deno-lint-ignore-file no-explicit-any
 /*
 Copyright 2022 The Apex Authors.
 
@@ -112,7 +113,7 @@ export class ObjectValue extends AbstractNode implements Value {
   }
 
   get(key: string): Value | undefined {
-    for (let field of this.fields) {
+    for (const field of this.fields) {
       if (field.name.value == key) {
         return field.value;
       }
@@ -121,7 +122,7 @@ export class ObjectValue extends AbstractNode implements Value {
   }
 
   getValue(): any {
-    let obj: { [k: string]: any } = {};
+    const obj: { [k: string]: any } = {};
     this.fields.map((field) => {
       obj[field.name.value] = field.value.getValue();
     });
