@@ -26,7 +26,7 @@ jobs:
           registry-url: https://registry.npmjs.org/
 
       - name: Bundle module and dependencies
-        run: deno run -A scripts/build_npm.ts ${GITHUB_REF##*/}
+        run: deno run -A scripts/build_npm.ts ${GITHUB_REF##*/} && cat npm/package.json
 
       - name: Is Release?
         if: startswith(github.ref, 'refs/tags/v')
