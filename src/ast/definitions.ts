@@ -399,20 +399,20 @@ export class UnionDefinition extends AbstractNode
   name: Name;
   description?: StringValue;
   annotations: Annotation[];
-  types: Type[];
+  members: UnionMemberDefinition[];
 
   constructor(
     loc: Location | undefined,
     name: Name,
     desc: StringValue | undefined,
     annotations: Annotation[],
-    types: Type[],
+    types: UnionMemberDefinition[],
   ) {
     super(Kind.UnionDefinition, loc);
     this.name = name;
     this.description = desc;
     this.annotations = annotations;
-    this.types = types;
+    this.members = types;
   }
 
   annotation(
@@ -424,6 +424,38 @@ export class UnionDefinition extends AbstractNode
 
   public accept(context: Context, visitor: Visitor): void {
     visitor.visitUnion(context);
+    visitAnnotations(context, visitor, this.annotations);
+  }
+}
+
+export class UnionMemberDefinition extends AbstractNode
+  implements Definition, Annotated {
+  description?: StringValue;
+  type: Type;
+  annotations: Annotation[];
+
+  constructor(
+    loc: Location | undefined,
+    desc: StringValue | undefined,
+    type: Type,
+    annotations: Annotation[],
+  ) {
+    super(Kind.UnionMemberDefinition, loc);
+    this.type = type;
+    this.description = desc;
+
+    this.annotations = annotations;
+  }
+
+  annotation(
+    name: string,
+    callback?: (annotation: Annotation) => void,
+  ): Annotation | undefined {
+    return getAnnotation(name, this.annotations, callback);
+  }
+
+  public accept(context: Context, visitor: Visitor): void {
+    visitor.visitUnionMember(context);
     visitAnnotations(context, visitor, this.annotations);
   }
 }

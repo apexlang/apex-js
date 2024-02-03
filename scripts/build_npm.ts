@@ -1,5 +1,5 @@
 // ex. scripts/build_npm.ts
-import { build, emptyDir } from "https://deno.land/x/dnt@0.33.1/mod.ts";
+import { build, emptyDir } from "https://deno.land/x/dnt@0.40.0/mod.ts";
 
 await emptyDir("./npm");
 
@@ -26,8 +26,9 @@ await build({
       url: "https://www.github.com/apexlang/apex-js/issues",
     },
   },
+  postBuild() {
+    // steps to run after building and before running the tests
+    Deno.copyFileSync("LICENSE", "npm/LICENSE");
+    Deno.copyFileSync("README.md", "npm/README.md");
+  },
 });
-
-// post build steps
-Deno.copyFileSync("LICENSE.txt", "npm/LICENSE.txt");
-Deno.copyFileSync("README.md", "npm/README.md");
