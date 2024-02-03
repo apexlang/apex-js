@@ -47,9 +47,9 @@ if (errors.length > 0) {
 
 ```html
 <script type="module">
-import { parse, validate } from 'https://cdn.jsdelivr.net/npm/@apexlang/core/dist/mod.js';
-import { CommonRules } from 'https://cdn.jsdelivr.net/npm/@apexlang/core/dist/rules/mod.js';
-import { Context, Writer, AbstractVisitor } from 'https://cdn.jsdelivr.net/npm/@apexlang/core/dist/ast/mod.js';
+import { parse, validate } from 'https://cdn.jsdelivr.net/npm/@apexlang/core/esm/mod.js';
+import { CommonRules } from 'https://cdn.jsdelivr.net/npm/@apexlang/core/esm/rules/mod.js';
+import { Context, Writer, AbstractVisitor } from 'https://cdn.jsdelivr.net/npm/@apexlang/core/esm/ast/mod.js';
 
 const source = `
 namespace "mandelbrot"
