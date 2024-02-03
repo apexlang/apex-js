@@ -1,5 +1,5 @@
 /*
-Copyright 2022 The Apex Authors.
+Copyright 2024 The Apex Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -16,12 +16,3 @@ limitations under the License.
 
 export * from "./parser.ts";
 export * from "./validator.ts";
-
-// Expose `Apex.ast` for the browser
-export * as ast from "./ast/mod.ts";
-
-// Expose `Apex.error` for the browser
-export * as error from "./error/mod.ts";
-
-// Expose `Apex.rules` for the browser
-export * as rules from "./rules/mod.ts";

@@ -14,27 +14,5 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-export enum Kind {
-  // Models
-  Namespace = "Namespace",
-  Import = "Import",
-  Alias = "Alias",
-  Interface = "Interface",
-  Operation = "Operation",
-  Parameter = "Parameter",
-  Type = "Type",
-  Field = "Field",
-  Union = "Union",
-  Enum = "Enum",
-  EnumValue = "EnumValue",
-  Directive = "Directive",
-  Require = "Require",
-  Annotation = "Annotation",
-  Argument = "Argument",
-  Void = "Void",
-  Primitive = "Primitive",
-  List = "List",
-  Map = "Map",
-  Optional = "Optional",
-  Stream = "Stream",
-}
+// For CommonJS
+export * from "./error/mod.ts";
