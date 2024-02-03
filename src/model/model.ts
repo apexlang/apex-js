@@ -29,6 +29,7 @@ import {
   ParameterDefinition,
   TypeDefinition,
   UnionDefinition,
+  UnionMemberDefinition,
   Value,
   ValuedDefinition,
 } from "../ast/mod.ts";
@@ -486,7 +487,7 @@ export class Union extends Annotated implements Named {
   readonly node: UnionDefinition;
   readonly name: string;
   readonly description?: string;
-  readonly types: AnyType[];
+  readonly members: UnionMember[];
 
   constructor(
     tr: TypeResolver,
@@ -500,11 +501,28 @@ export class Union extends Annotated implements Named {
     if (register) {
       register(this);
     }
-    this.types = node.types.map((v) => tr(v));
+    this.members = node.members.map((v) => new UnionMember(tr, v));
   }
 
   public accept(context: Context, visitor: Visitor): void {
     visitor.visitUnion(context);
+  }
+}
+
+export class UnionMember extends Annotated {
+  readonly node: UnionMemberDefinition;
+  readonly description?: string;
+  readonly type: AnyType;
+
+  constructor(tr: TypeResolver, node: UnionMemberDefinition) {
+    super(Kind.EnumValue, node.annotations);
+    this.node = node;
+    this.description = node.description?.value;
+    this.type = tr(node.type);
+  }
+
+  public accept(context: Context, visitor: Visitor): void {
+    visitor.visitEnumValue(context);
   }
 }
 

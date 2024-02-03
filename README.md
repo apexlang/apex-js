@@ -12,9 +12,9 @@ $ npm install @apexlang/core
 ## Usage (node v12+)
 
 ```js
-import { parse, validate } from "@apexlang/core/index.js";
-import { CommonRules } from "@apexlang/core/rules/index.js";
-import { AbstractVisitor, Context, Writer } from "@apexlang/core/ast/index.js";
+import { parse, validate } from "@apexlang/core/mod.js";
+import { CommonRules } from "@apexlang/core/rules/mod.js";
+import { AbstractVisitor, Context, Writer } from "@apexlang/core/ast/mod.js";
 
 const source = `
 namespace "mandelbrot"
@@ -47,9 +47,9 @@ if (errors.length > 0) {
 
 ```html
 <script type="module">
-import { parse, validate } from 'https://cdn.jsdelivr.net/npm/@apexlang/core/dist/index.js';
-import { CommonRules } from 'https://cdn.jsdelivr.net/npm/@apexlang/core/dist/rules/index.js';
-import { Context, Writer, AbstractVisitor } from 'https://cdn.jsdelivr.net/npm/@apexlang/core/dist/ast/index.js';
+import { parse, validate } from 'https://cdn.jsdelivr.net/npm/@apexlang/core/dist/mod.js';
+import { CommonRules } from 'https://cdn.jsdelivr.net/npm/@apexlang/core/dist/rules/mod.js';
+import { Context, Writer, AbstractVisitor } from 'https://cdn.jsdelivr.net/npm/@apexlang/core/dist/ast/mod.js';
 
 const source = `
 namespace "mandelbrot"

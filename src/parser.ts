@@ -57,6 +57,7 @@ import {
   Type,
   TypeDefinition,
   UnionDefinition,
+  UnionMemberDefinition,
   Value,
 } from "./ast/mod.ts";
 
@@ -261,7 +262,7 @@ class Parser {
                   name,
                   unionDef.description,
                   unionDef.annotations,
-                  unionDef.types,
+                  unionDef.members,
                 );
                 renamedUnion.imported = true;
                 defs.push(renamedUnion);
@@ -395,7 +396,7 @@ class Parser {
       case TokenKind.BRACKET_L:
         this._lexer.advance();
         ttype = this.parseType();
-        /* falls through */
+      /* falls through */
       case TokenKind.BRACKET_R:
         this._lexer.advance();
         ttype = new ListType(this.loc(start), ttype!);
@@ -405,7 +406,7 @@ class Parser {
         keyType = this.parseType();
         this.expectToken(TokenKind.COLON);
         valueType = this.parseType();
-        /* falls through */
+      /* falls through */
       case TokenKind.BRACE_R:
         this._lexer.advance();
         ttype = new MapType(this.loc(start), keyType!, valueType!);
@@ -492,8 +493,8 @@ class Parser {
           case "false":
             return new BooleanValue(this.loc(token), false);
           case "null":
-            // TODO
-            /* falls through */
+          // TODO
+          /* falls through */
           default:
             return new EnumValue(this.loc(token), token.value);
         }
@@ -962,11 +963,21 @@ class Parser {
    *   - NamedType
    *   - UnionMemberTypes | NamedType
    */
-  parseUnionMembers(): Array<Type> {
+  parseUnionMembers(): Array<UnionMemberDefinition> {
     const types = [];
     do {
+      const start = this._lexer.token;
+      const description = this.parseDescription();
       const member = this.parseType();
-      types.push(member);
+      const annotations = this.parseAnnotations();
+      types.push(
+        new UnionMemberDefinition(
+          this.loc(start),
+          description,
+          member,
+          annotations,
+        ),
+      );
     } while (this.expectOptionalToken(TokenKind.PIPE));
     return types;
   }

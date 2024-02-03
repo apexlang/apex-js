@@ -370,6 +370,9 @@ export interface Visitor {
 
   visitUnionsBefore(context: Context): void;
   visitUnion(context: Context): void;
+  visitUnionMembersBefore(context: Context): void;
+  visitUnionMember(context: Context): void;
+  visitUnionMembersAfter(context: Context): void;
   visitUnionsAfter(context: Context): void;
 
   visitAnnotationsBefore(context: Context): void;
@@ -769,6 +772,24 @@ export abstract class AbstractVisitor implements Visitor {
   }
   public triggerUnion(context: Context): void {
     this.triggerCallbacks(context, "Union");
+  }
+  public visitUnionMembersBefore(context: Context): void {
+    this.triggerUnionValuesBefore(context);
+  }
+  public triggerUnionValuesBefore(context: Context): void {
+    this.triggerCallbacks(context, "UnionMembersBefore");
+  }
+  public visitUnionMember(context: Context): void {
+    this.triggerEnumValue(context);
+  }
+  public triggerUnionValue(context: Context): void {
+    this.triggerCallbacks(context, "UnionValue");
+  }
+  public visitUnionMembersAfter(context: Context): void {
+    this.triggerEnumValuesAfter(context);
+  }
+  public triggerUnionValuesAfter(context: Context): void {
+    this.triggerCallbacks(context, "UnionMembersAfter");
   }
   public visitUnionsAfter(context: Context): void {
     this.triggerUnionsAfter(context);

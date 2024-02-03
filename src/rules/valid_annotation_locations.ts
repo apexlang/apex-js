@@ -1,4 +1,3 @@
-// deno-lint-ignore-file no-unused-vars
 /*
 Copyright 2022 The Apex Authors.
 
@@ -15,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { AbstractVisitor, Annotation, Context, Kind } from "../ast/mod.ts";
+import { AbstractVisitor, Annotation, Context } from "../ast/mod.ts";
 import { validationError } from "../error/mod.ts";
 
 export class ValidAnnotationLocations extends AbstractVisitor {
@@ -106,8 +105,7 @@ export class ValidAnnotationLocations extends AbstractVisitor {
       return;
     }
 
-    dirRequiresLoop:
-    for (const req of dir.requires) {
+    dirRequiresLoop: for (const req of dir.requires) {
       let found = false;
       for (const loc of req.locations) {
         switch (loc.value) {

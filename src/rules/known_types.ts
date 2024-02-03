@@ -99,12 +99,12 @@ export class KnownTypes extends AbstractVisitor {
 
   visitUnion(context: Context): void {
     const union = context.union!;
-    union.types.forEach((t) => {
+    union.members.forEach((t) => {
       this.checkType(
         context,
         `union "${union.name.value}"`,
         `${union.name.value}`,
-        t,
+        t.type,
       );
     });
   }
