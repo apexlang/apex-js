@@ -11,13 +11,13 @@
   "bugs": {
     "url": "https://www.github.com/apexlang/apex-js/issues"
   },
-  "exports": [
-    "./src/mod.ts",
-    "./src/ast/mod.ts",
-    "./src/error/mod.ts",
-    "./src/rules/mod.ts",
-    "./src/model/mod.ts"
-  ],
+  "exports": {
+    ".": "./src/mod.ts",
+    "./ast": "./src/ast/mod.ts",
+    "./error": "./src/error/mod.ts",
+    "./rules": "./src/rules/mod.ts",
+    "./model": "./src/model/mod.ts"
+  },
   "publish": {
     "include": ["LICENSE", "README.md", "src/**/*.ts"],
     "exclude": ["src/tests"]
