@@ -76,7 +76,7 @@ export class Void extends Base {
   }
 }
 
-export const VoidValue = new Void();
+export const VoidValue: Void = new Void();
 
 export interface Named {
   readonly name: string;
