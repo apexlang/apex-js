@@ -20,7 +20,7 @@ import { validationError } from "../error/mod.ts";
 export class UniqueFunctionNames extends AbstractVisitor {
   private operationNames: Set<string> = new Set<string>();
 
-  visitFunction(context: Context): void {
+  public override visitFunction(context: Context): void {
     const oper = context.operation!;
     const operName = oper.name.value;
     if (this.operationNames.has(operName)) {

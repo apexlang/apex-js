@@ -50,7 +50,7 @@ const integerBuiltInTypeNames = new Set([
 const floatBuiltInTypeNames = new Set(["f32", "f64"]);
 
 export class ValidAnnotationArguments extends AbstractVisitor {
-  visitAnnotation(context: Context): void {
+  public override visitAnnotation(context: Context): void {
     const a = context.annotation!;
 
     const foundArgNames = new Set<string>();

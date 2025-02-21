@@ -21,11 +21,11 @@ export class UniqueOperationNames extends AbstractVisitor {
   private parentName = "";
   private operationNames: Set<string> = new Set<string>();
 
-  visitInterfaceBefore(context: Context): void {
+  public override visitInterfaceBefore(context: Context): void {
     this.parentName = `interface "${context.interface!.name.value}"`;
     this.operationNames = new Set<string>();
   }
-  visitOperation(context: Context): void {
+  public override visitOperation(context: Context): void {
     const oper = context.operation!;
     const operName = oper.name.value;
     if (this.operationNames.has(operName)) {

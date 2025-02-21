@@ -21,7 +21,7 @@ import { validationError } from "../error/mod.ts";
 export class SingleNamespaceDefined extends AbstractVisitor {
   private found = false;
 
-  visitNamespace(context: Context): void {
+  public override visitNamespace(context: Context): void {
     if (this.found) {
       const namespace = context.namespace;
       context.reportError(

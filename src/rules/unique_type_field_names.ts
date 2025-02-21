@@ -21,12 +21,12 @@ export class UniqueTypeFieldNames extends AbstractVisitor {
   private parentName = "";
   private names: Set<string> = new Set<string>();
 
-  visitTypeBefore(context: Context): void {
+  public override visitTypeBefore(context: Context): void {
     this.parentName = context.type!.name.value;
     this.names = new Set<string>();
   }
 
-  visitTypeField(context: Context): void {
+  public override visitTypeField(context: Context): void {
     const field = context.field!;
     const fieldName = field.name.value;
     if (this.names.has(fieldName)) {

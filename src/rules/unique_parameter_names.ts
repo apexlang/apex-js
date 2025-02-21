@@ -21,18 +21,18 @@ export class UniqueParameterNames extends AbstractVisitor {
   private parentName = "";
   private paramNames: Set<string> = new Set<string>();
 
-  visitFunctionBefore(context: Context): void {
+  public override visitFunctionBefore(context: Context): void {
     this.parentName = `func "${context.operation!.name.value}"`;
     this.paramNames = new Set<string>();
   }
 
-  visitOperationBefore(context: Context): void {
+  public override visitOperationBefore(context: Context): void {
     this.parentName = `operation "${context.operation!.name.value}"`;
     this.parentName = context.operation!.name.value;
     this.paramNames = new Set<string>();
   }
 
-  visitParameter(context: Context): void {
+  public override visitParameter(context: Context): void {
     const param = context.parameter!;
     const paramName = param.name.value;
     if (this.paramNames.has(paramName)) {

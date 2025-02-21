@@ -91,7 +91,6 @@ function isFunction(item: unknown): item is Function {
   return typeof item === "function";
 }
 
-// deno-lint-ignore ban-types
 export function isPrototype<T extends object>(value: unknown): value is T {
   return typeof value === "object";
 }

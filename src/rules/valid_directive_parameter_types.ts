@@ -30,7 +30,7 @@ import { validationError } from "../error/mod.ts";
 const validTypes = new Set([Kind.TypeDefinition, Kind.EnumDefinition]);
 
 export class ValidDirectiveParameterTypes extends AbstractVisitor {
-  visitDirectiveParameter(context: Context): void {
+  public override visitDirectiveParameter(context: Context): void {
     const dir = context.directive!;
     const param = context.parameter!;
     this.check(context, dir, param.type);

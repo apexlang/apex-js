@@ -46,16 +46,16 @@ const builtInTypeNames = new Set([
 ]);
 
 export class KnownTypes extends AbstractVisitor {
-  visitAlias(context: Context): void {
+  public override visitAlias(context: Context): void {
     const alias = context.alias!;
     this.checkType(context, `alias`, alias.name.value, alias.type);
   }
 
-  visitFunctionAfter(context: Context): void {
+  public override visitFunctionAfter(context: Context): void {
     this.handleOperation(context);
   }
 
-  visitOperationAfter(context: Context): void {
+  public override visitOperationAfter(context: Context): void {
     this.handleOperation(context);
   }
 
@@ -75,7 +75,7 @@ export class KnownTypes extends AbstractVisitor {
       oper.type, // return type
     );
   }
-  visitParameter(context: Context): void {
+  public override visitParameter(context: Context): void {
     const oper = context.operation!;
     const param = context.parameter!;
     this.checkType(
@@ -86,7 +86,7 @@ export class KnownTypes extends AbstractVisitor {
     );
   }
 
-  visitTypeField(context: Context): void {
+  public override visitTypeField(context: Context): void {
     const type = context.type!;
     const field = context.field!;
     this.checkType(
@@ -97,7 +97,7 @@ export class KnownTypes extends AbstractVisitor {
     );
   }
 
-  visitUnion(context: Context): void {
+  public override visitUnion(context: Context): void {
     const union = context.union!;
     union.members.forEach((t) => {
       this.checkType(
@@ -109,7 +109,7 @@ export class KnownTypes extends AbstractVisitor {
     });
   }
 
-  visitDirectiveParameter(context: Context): void {
+  public override visitDirectiveParameter(context: Context): void {
     const directive = context.directive!;
     const param = context.parameter!;
     this.checkType(

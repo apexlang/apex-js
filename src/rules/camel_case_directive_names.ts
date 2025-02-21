@@ -19,7 +19,7 @@ import { validationError } from "../error/mod.ts";
 import { camelCase } from "./case.ts";
 
 export class CamelCaseDirectiveNames extends AbstractVisitor {
-  visitDirective(context: Context): void {
+  public override visitDirective(context: Context): void {
     const directive = context.directive!;
     const name = directive.name.value;
     if (name != camelCase(name)) {

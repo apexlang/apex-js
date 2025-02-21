@@ -21,11 +21,11 @@ export class UniqueEnumValueIndexes extends AbstractVisitor {
   private parentName = "";
   private values: Set<number> = new Set<number>();
 
-  visitEnum(context: Context): void {
+  public override visitEnum(context: Context): void {
     this.parentName = context.enum!.name.value;
     this.values = new Set<number>();
   }
-  visitEnumValue(context: Context): void {
+  public override visitEnumValue(context: Context): void {
     const enumValue = context.enumValue!;
     const value = enumValue.index.value;
     if (this.values.has(value)) {
