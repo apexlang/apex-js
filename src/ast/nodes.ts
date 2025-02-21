@@ -81,7 +81,7 @@ export class Annotation extends AbstractNode {
     return obj as T;
   }
 
-  public accept(context: Context, visitor: Visitor): void {
+  public override accept(context: Context, visitor: Visitor): void {
     visitor.visitAnnotation(context);
   }
 }

@@ -28,7 +28,7 @@ export class Document extends AbstractNode {
     this.definitions = definitions;
   }
 
-  public accept(context: Context, visitor: Visitor): void {
+  public override accept(context: Context, visitor: Visitor): void {
     context = new Context(context.config, this, context);
     visitor.visitDocumentBefore(context);
 

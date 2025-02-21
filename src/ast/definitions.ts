@@ -65,7 +65,7 @@ export class NamespaceDefinition extends AbstractNode implements Annotated {
     return getAnnotation(name, this.annotations, callback);
   }
 
-  public accept(context: Context, visitor: Visitor): void {
+  public override accept(context: Context, visitor: Visitor): void {
     visitor.visitNamespace(context);
     visitAnnotations(context, visitor, this.annotations);
   }
@@ -98,7 +98,7 @@ export class AliasDefinition extends AbstractNode implements Annotated {
     return getAnnotation(name, this.annotations, callback);
   }
 
-  public accept(context: Context, visitor: Visitor): void {
+  public override accept(context: Context, visitor: Visitor): void {
     visitor.visitAlias(context);
     visitAnnotations(context, visitor, this.annotations);
   }
@@ -134,7 +134,7 @@ export class ImportDefinition extends AbstractNode implements Annotated {
     return getAnnotation(name, this.annotations, callback);
   }
 
-  public accept(context: Context, visitor: Visitor): void {
+  public override accept(context: Context, visitor: Visitor): void {
     visitor.visitImport(context);
     visitAnnotations(context, visitor, this.annotations);
   }
@@ -170,7 +170,7 @@ export class TypeDefinition extends AbstractNode implements Annotated {
     return getAnnotation(name, this.annotations, callback);
   }
 
-  public accept(context: Context, visitor: Visitor): void {
+  public override accept(context: Context, visitor: Visitor): void {
     visitor.visitTypeBefore(context);
     visitor.visitType(context);
 
@@ -231,7 +231,7 @@ export class FieldDefinition extends ValuedDefinition {
     super(Kind.FieldDefinition, loc, name, desc, type, defaultVal, annotations);
   }
 
-  public accept(context: Context, visitor: Visitor): void {
+  public override accept(context: Context, visitor: Visitor): void {
     visitor.visitTypeField(context);
     visitAnnotations(context, visitor, this.annotations);
   }
@@ -265,7 +265,7 @@ export class InterfaceDefinition extends AbstractNode
     return getAnnotation(name, this.annotations, callback);
   }
 
-  public accept(context: Context, visitor: Visitor): void {
+  public override accept(context: Context, visitor: Visitor): void {
     visitor.visitInterfaceBefore(context);
     visitor.visitInterface(context);
 
@@ -336,7 +336,7 @@ export class OperationDefinition extends AbstractNode implements Annotated {
     return getAnnotation(name, this.annotations, callback);
   }
 
-  public accept(context: Context, visitor: Visitor): void {
+  public override accept(context: Context, visitor: Visitor): void {
     if (context.interface != undefined) {
       visitor.visitOperationBefore(context);
       visitor.visitOperation(context);
@@ -384,7 +384,7 @@ export class ParameterDefinition extends ValuedDefinition {
     );
   }
 
-  public accept(context: Context, visitor: Visitor): void {
+  public override accept(context: Context, visitor: Visitor): void {
     if (context.operation != undefined) {
       visitor.visitParameter(context);
     } else if (context.directive != undefined) {
@@ -422,7 +422,7 @@ export class UnionDefinition extends AbstractNode
     return getAnnotation(name, this.annotations, callback);
   }
 
-  public accept(context: Context, visitor: Visitor): void {
+  public override accept(context: Context, visitor: Visitor): void {
     visitor.visitUnion(context);
     visitAnnotations(context, visitor, this.annotations);
   }
@@ -454,7 +454,7 @@ export class UnionMemberDefinition extends AbstractNode
     return getAnnotation(name, this.annotations, callback);
   }
 
-  public accept(context: Context, visitor: Visitor): void {
+  public override accept(context: Context, visitor: Visitor): void {
     visitor.visitUnionMember(context);
     visitAnnotations(context, visitor, this.annotations);
   }
@@ -488,7 +488,7 @@ export class EnumDefinition extends AbstractNode
     return getAnnotation(name, this.annotations, callback);
   }
 
-  public accept(context: Context, visitor: Visitor): void {
+  public override accept(context: Context, visitor: Visitor): void {
     visitor.visitEnumBefore(context);
     visitor.visitEnum(context);
 
@@ -536,7 +536,7 @@ export class EnumValueDefinition extends AbstractNode
     return getAnnotation(name, this.annotations, callback);
   }
 
-  public accept(context: Context, visitor: Visitor): void {
+  public override accept(context: Context, visitor: Visitor): void {
     visitor.visitEnumValue(context);
     visitAnnotations(context, visitor, this.annotations);
   }
@@ -574,7 +574,7 @@ export class DirectiveDefinition extends AbstractNode implements Definition {
     return false;
   }
 
-  public accept(context: Context, visitor: Visitor): void {
+  public override accept(context: Context, visitor: Visitor): void {
     visitor.visitDirectiveBefore(context);
     visitor.visitDirective(context);
 

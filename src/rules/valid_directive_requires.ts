@@ -18,7 +18,7 @@ import { AbstractVisitor, Context } from "../ast/mod.ts";
 import { validationError } from "../error/mod.ts";
 
 export class ValidDirectiveRequires extends AbstractVisitor {
-  visitDirective(context: Context): void {
+  public override visitDirective(context: Context): void {
     const dir = context.directive!;
     const dirName = dir.name.value;
 

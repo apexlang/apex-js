@@ -31,7 +31,7 @@ const validLocationNames = new Set([
 ]);
 
 export class ValidDirectiveLocations extends AbstractVisitor {
-  visitDirective(context: Context): void {
+  public override visitDirective(context: Context): void {
     const dir = context.directive!;
     const dirName = dir.name.value;
     const locationNames = new Set<string>();

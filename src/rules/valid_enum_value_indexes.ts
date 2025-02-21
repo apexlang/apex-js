@@ -20,10 +20,10 @@ import { validationError } from "../error/mod.ts";
 export class ValidEnumValueIndexes extends AbstractVisitor {
   private parentName = "";
 
-  visitEnum(context: Context): void {
+  public override visitEnum(context: Context): void {
     this.parentName = context.enum!.name.value;
   }
-  visitEnumValue(context: Context): void {
+  public override visitEnumValue(context: Context): void {
     const enumValue = context.enumValue!;
     const value = enumValue.index.value;
     if (isNaN(value) || value < 0) {

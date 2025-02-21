@@ -20,7 +20,7 @@ import { validationError } from "../error/mod.ts";
 export class UniqueDirectiveNames extends AbstractVisitor {
   private names: Set<string> = new Set<string>();
 
-  visitDirective(context: Context): void {
+  public override visitDirective(context: Context): void {
     const dir = context.directive!;
     const dirName = dir.name.value;
     if (this.names.has(dirName)) {

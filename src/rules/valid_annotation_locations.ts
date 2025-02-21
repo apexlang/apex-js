@@ -18,52 +18,52 @@ import { AbstractVisitor, Annotation, Context } from "../ast/mod.ts";
 import { validationError } from "../error/mod.ts";
 
 export class ValidAnnotationLocations extends AbstractVisitor {
-  visitNamespace(context: Context): void {
+  public override visitNamespace(context: Context): void {
     const def = context.namespace!;
     this.check(context, def.annotations, "NAMESPACE");
   }
 
-  visitInterface(context: Context): void {
+  public override visitInterface(context: Context): void {
     const def = context.interface!;
     this.check(context, def.annotations, "INTERFACE");
   }
 
-  visitOperation(context: Context): void {
+  public override visitOperation(context: Context): void {
     const def = context.operation!;
     this.check(context, def.annotations, "OPERATION");
   }
 
-  visitParameter(context: Context): void {
+  public override visitParameter(context: Context): void {
     const def = context.parameter!;
     this.check(context, def.annotations, "PARAMETER");
   }
 
-  visitType(context: Context): void {
+  public override visitType(context: Context): void {
     const def = context.type!;
     this.check(context, def.annotations, "TYPE");
   }
 
-  visitTypeField(context: Context): void {
+  public override visitTypeField(context: Context): void {
     const def = context.field!;
     this.check(context, def.annotations, "FIELD");
   }
 
-  visitEnum(context: Context): void {
+  public override visitEnum(context: Context): void {
     const def = context.enum!;
     this.check(context, def.annotations, "ENUM");
   }
 
-  visitEnumValue(context: Context): void {
+  public override visitEnumValue(context: Context): void {
     const def = context.enumValue!;
     this.check(context, def.annotations, "ENUM_VALUE");
   }
 
-  visitUnion(context: Context): void {
+  public override visitUnion(context: Context): void {
     const def = context.union!;
     this.check(context, def.annotations, "UNION");
   }
 
-  visitAlias(context: Context): void {
+  public override visitAlias(context: Context): void {
     const alias = context.alias!;
     this.check(context, alias.annotations, "ALIAS");
   }

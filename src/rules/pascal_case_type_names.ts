@@ -20,7 +20,7 @@ import { validationError } from "../error/mod.ts";
 const pascalMatcher = /[A-Z][A-Za-z0-9]*/;
 
 export class PascalCaseTypeNames extends AbstractVisitor {
-  visitAlias(context: Context): void {
+  public override visitAlias(context: Context): void {
     const alias = context.alias!;
     const name = alias.name.value;
     if (!pascalMatcher.test(name)) {
@@ -30,7 +30,7 @@ export class PascalCaseTypeNames extends AbstractVisitor {
     }
   }
 
-  visitType(context: Context): void {
+  public override visitType(context: Context): void {
     const type = context.type!;
     const name = type.name.value;
     if (!pascalMatcher.test(name)) {
@@ -40,7 +40,7 @@ export class PascalCaseTypeNames extends AbstractVisitor {
     }
   }
 
-  visitEnum(context: Context): void {
+  public override visitEnum(context: Context): void {
     const enumDef = context.enum!;
     const name = enumDef.name.value;
     if (!pascalMatcher.test(name)) {
@@ -50,7 +50,7 @@ export class PascalCaseTypeNames extends AbstractVisitor {
     }
   }
 
-  visitUnion(context: Context): void {
+  public override visitUnion(context: Context): void {
     const union = context.union!;
     const name = union.name.value;
     if (!pascalMatcher.test(name)) {

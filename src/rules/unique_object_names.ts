@@ -20,22 +20,22 @@ import { validationError } from "../error/mod.ts";
 export class UniqueObjectNames extends AbstractVisitor {
   private typeNames: Set<string> = new Set<string>();
 
-  visitNamespace(_context: Context): void {
+  public override visitNamespace(_context: Context): void {
     this.typeNames = new Set<string>();
   }
-  visitInterface(context: Context): void {
+  public override visitInterface(context: Context): void {
     this.check(context, context.interface!.name.value, context.interface!.name);
   }
-  visitType(context: Context): void {
+  public override visitType(context: Context): void {
     this.check(context, context.type!.name.value, context.type!.name);
   }
-  visitUnion(context: Context): void {
+  public override visitUnion(context: Context): void {
     this.check(context, context.union!.name.value, context.union!.name);
   }
-  visitEnum(context: Context): void {
+  public override visitEnum(context: Context): void {
     this.check(context, context.enum!.name.value, context.enum!.name);
   }
-  visitAlias(context: Context): void {
+  public override visitAlias(context: Context): void {
     this.check(context, context.alias!.name.value, context.alias!.name);
   }
   private check(context: Context, name: string, node: Node): void {

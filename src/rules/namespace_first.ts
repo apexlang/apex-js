@@ -18,7 +18,7 @@ import { AbstractVisitor, Context, Kind } from "../ast/mod.ts";
 import { validationError } from "../error/mod.ts";
 
 export class NamespaceFirst extends AbstractVisitor {
-  visitNamespace(context: Context): void {
+  public override visitNamespace(context: Context): void {
     let firstNonImportPos = 0;
     const definitions = context.document!.definitions;
     for (let i = 0; i < definitions.length; i++) {

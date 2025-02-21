@@ -1159,295 +1159,295 @@ export class MultiVisitor extends AbstractVisitor {
     this.visitors.push(...visitors);
   }
 
-  public visitNamespaceBefore(context: Context): void {
+  public override visitNamespaceBefore(context: Context): void {
     this.visitors.map((visitor) => {
       visitor.visitNamespaceBefore(context);
     });
   }
-  public visitNamespace(context: Context): void {
+  public override visitNamespace(context: Context): void {
     this.visitors.map((visitor) => {
       visitor.visitNamespace(context);
     });
   }
-  public visitNamespaceAfter(context: Context): void {
+  public override visitNamespaceAfter(context: Context): void {
     this.visitors.map((visitor) => {
       visitor.visitNamespaceAfter(context);
     });
   }
-  public visitImportsBefore(context: Context): void {
+  public override visitImportsBefore(context: Context): void {
     this.visitors.map((visitor) => {
       visitor.visitImportsBefore(context);
     });
   }
-  public visitImport(context: Context): void {
+  public override visitImport(context: Context): void {
     this.visitors.map((visitor) => {
       visitor.visitImport(context);
     });
   }
-  public visitImportsAfter(context: Context): void {
+  public override visitImportsAfter(context: Context): void {
     this.visitors.map((visitor) => {
       visitor.visitImportsAfter(context);
     });
   }
 
-  public visitDirectivesBefore(context: Context): void {
+  public override visitDirectivesBefore(context: Context): void {
     this.visitors.map((visitor) => {
       visitor.visitDirectivesBefore(context);
     });
   }
-  public visitDirectiveBefore(context: Context): void {
+  public override visitDirectiveBefore(context: Context): void {
     this.visitors.map((visitor) => {
       visitor.visitDirectiveBefore(context);
     });
   }
-  public visitDirective(context: Context): void {
+  public override visitDirective(context: Context): void {
     this.visitors.map((visitor) => {
       visitor.visitDirective(context);
     });
   }
-  public visitDirectiveParametersBefore(context: Context): void {
+  public override visitDirectiveParametersBefore(context: Context): void {
     this.visitors.map((visitor) => {
       visitor.visitDirectiveParametersBefore(context);
     });
   }
-  public visitDirectiveParameter(context: Context): void {
+  public override visitDirectiveParameter(context: Context): void {
     this.visitors.map((visitor) => {
       visitor.visitDirectiveParameter(context);
     });
   }
-  public visitDirectiveParametersAfter(context: Context): void {
+  public override visitDirectiveParametersAfter(context: Context): void {
     this.visitors.map((visitor) => {
       visitor.visitDirectiveParametersAfter(context);
     });
   }
-  public visitDirectiveAfter(context: Context): void {
+  public override visitDirectiveAfter(context: Context): void {
     this.visitors.map((visitor) => {
       visitor.visitDirectiveAfter(context);
     });
   }
-  public visitDirectivesAfter(context: Context): void {
+  public override visitDirectivesAfter(context: Context): void {
     this.visitors.map((visitor) => {
       visitor.visitDirectivesAfter(context);
     });
   }
 
-  public visitAliasesBefore(context: Context): void {
+  public override visitAliasesBefore(context: Context): void {
     this.visitors.map((visitor) => {
       visitor.visitAliasesBefore(context);
     });
   }
-  public visitAliasBefore(context: Context): void {
+  public override visitAliasBefore(context: Context): void {
     this.visitors.map((visitor) => {
       visitor.visitAliasBefore(context);
     });
   }
-  public visitAlias(context: Context): void {
+  public override visitAlias(context: Context): void {
     this.visitors.map((visitor) => {
       visitor.visitAlias(context);
     });
   }
-  public visitAliasAfter(context: Context): void {
+  public override visitAliasAfter(context: Context): void {
     this.visitors.map((visitor) => {
       visitor.visitAliasAfter(context);
     });
   }
-  public visitAliasesAfter(context: Context): void {
+  public override visitAliasesAfter(context: Context): void {
     this.visitors.map((visitor) => {
       visitor.visitAliasesAfter(context);
     });
   }
 
-  public visitAllOperationsBefore(context: Context): void {
+  public override visitAllOperationsBefore(context: Context): void {
     this.visitors.map((visitor) => {
       visitor.visitAllOperationsBefore(context);
     });
   }
-  public visitInterfacesBefore(context: Context): void {
+  public override visitInterfacesBefore(context: Context): void {
     this.visitors.map((visitor) => {
       visitor.visitInterfacesBefore(context);
     });
   }
-  public visitInterfaceBefore(context: Context): void {
+  public override visitInterfaceBefore(context: Context): void {
     this.visitors.map((visitor) => {
       visitor.visitInterfaceBefore(context);
     });
   }
-  public visitInterface(context: Context): void {
+  public override visitInterface(context: Context): void {
     this.visitors.map((visitor) => {
       visitor.visitInterface(context);
     });
   }
-  public visitOperationsBefore(context: Context): void {
+  public override visitOperationsBefore(context: Context): void {
     this.visitors.map((visitor) => {
       visitor.visitOperationsBefore(context);
     });
   }
-  public visitOperationBefore(context: Context): void {
+  public override visitOperationBefore(context: Context): void {
     this.visitors.map((visitor) => {
       visitor.visitOperationBefore(context);
     });
   }
-  public visitOperation(context: Context): void {
+  public override visitOperation(context: Context): void {
     this.visitors.map((visitor) => {
       visitor.visitOperation(context);
     });
   }
-  public visitParametersBefore(context: Context): void {
+  public override visitParametersBefore(context: Context): void {
     this.visitors.map((visitor) => {
       visitor.visitParametersBefore(context);
     });
   }
-  public visitParameter(context: Context): void {
+  public override visitParameter(context: Context): void {
     this.visitors.map((visitor) => {
       visitor.visitParameter(context);
     });
   }
-  public visitParametersAfter(context: Context): void {
+  public override visitParametersAfter(context: Context): void {
     this.visitors.map((visitor) => {
       visitor.visitParametersAfter(context);
     });
   }
-  public visitOperationAfter(context: Context): void {
+  public override visitOperationAfter(context: Context): void {
     this.visitors.map((visitor) => {
       visitor.visitOperationAfter(context);
     });
   }
-  public visitOperationsAfter(context: Context): void {
+  public override visitOperationsAfter(context: Context): void {
     this.visitors.map((visitor) => {
       visitor.visitOperationsAfter(context);
     });
   }
-  public visitInterfaceAfter(context: Context): void {
+  public override visitInterfaceAfter(context: Context): void {
     this.visitors.map((visitor) => {
       visitor.visitInterfaceAfter(context);
     });
   }
-  public visitInterfacesAfter(context: Context): void {
+  public override visitInterfacesAfter(context: Context): void {
     this.visitors.map((visitor) => {
       visitor.visitInterfacesAfter(context);
     });
   }
-  public visitAllOperationsAfter(context: Context): void {
+  public override visitAllOperationsAfter(context: Context): void {
     this.visitors.map((visitor) => {
       visitor.visitAllOperationsAfter(context);
     });
   }
 
-  public visitTypesBefore(context: Context): void {
+  public override visitTypesBefore(context: Context): void {
     this.visitors.map((visitor) => {
       visitor.visitTypesBefore(context);
     });
   }
-  public visitTypeBefore(context: Context): void {
+  public override visitTypeBefore(context: Context): void {
     this.visitors.map((visitor) => {
       visitor.visitTypeBefore(context);
     });
   }
-  public visitType(context: Context): void {
+  public override visitType(context: Context): void {
     this.visitors.map((visitor) => {
       visitor.visitType(context);
     });
   }
-  public visitTypeFieldsBefore(context: Context): void {
+  public override visitTypeFieldsBefore(context: Context): void {
     this.visitors.map((visitor) => {
       visitor.visitTypeFieldsBefore(context);
     });
   }
-  public visitTypeField(context: Context): void {
+  public override visitTypeField(context: Context): void {
     this.visitors.map((visitor) => {
       visitor.visitTypeField(context);
     });
   }
-  public visitTypeFieldsAfter(context: Context): void {
+  public override visitTypeFieldsAfter(context: Context): void {
     this.visitors.map((visitor) => {
       visitor.visitTypeFieldsAfter(context);
     });
   }
-  public visitTypeAfter(context: Context): void {
+  public override visitTypeAfter(context: Context): void {
     this.visitors.map((visitor) => {
       visitor.visitTypeAfter(context);
     });
   }
-  public visitTypesAfter(context: Context): void {
+  public override visitTypesAfter(context: Context): void {
     this.visitors.map((visitor) => {
       visitor.visitTypesAfter(context);
     });
   }
 
-  public visitEnumsBefore(context: Context): void {
+  public override visitEnumsBefore(context: Context): void {
     this.visitors.map((visitor) => {
       visitor.visitEnumsAfter(context);
     });
   }
-  public visitEnum(context: Context): void {
+  public override visitEnum(context: Context): void {
     this.visitors.map((visitor) => {
       visitor.visitEnum(context);
     });
   }
-  public visitEnumValuesBefore(context: Context): void {
+  public override visitEnumValuesBefore(context: Context): void {
     this.visitors.map((visitor) => {
       visitor.visitEnumValuesBefore(context);
     });
   }
-  public visitEnumValue(context: Context): void {
+  public override visitEnumValue(context: Context): void {
     this.visitors.map((visitor) => {
       visitor.visitEnumValue(context);
     });
   }
-  public visitEnumValuesAfter(context: Context): void {
+  public override visitEnumValuesAfter(context: Context): void {
     this.visitors.map((visitor) => {
       visitor.visitEnumValuesAfter(context);
     });
   }
-  public visitEnumsAfter(context: Context): void {
+  public override visitEnumsAfter(context: Context): void {
     this.visitors.map((visitor) => {
       visitor.visitEnumsAfter(context);
     });
   }
 
-  public visitUnionsBefore(context: Context): void {
+  public override visitUnionsBefore(context: Context): void {
     this.visitors.map((visitor) => {
       visitor.visitUnionsBefore(context);
     });
   }
-  public visitUnion(context: Context): void {
+  public override visitUnion(context: Context): void {
     this.visitors.map((visitor) => {
       visitor.visitUnion(context);
     });
   }
 
-  public visitUnionsAfter(context: Context): void {
+  public override visitUnionsAfter(context: Context): void {
     this.visitors.map((visitor) => {
       visitor.visitUnionsAfter(context);
     });
   }
 
-  public visitAnnotationsBefore(context: Context): void {
+  public override visitAnnotationsBefore(context: Context): void {
     this.visitors.map((visitor) => {
       visitor.visitAnnotationsBefore(context);
     });
   }
-  public visitAnnotation(context: Context): void {
+  public override visitAnnotation(context: Context): void {
     this.visitors.map((visitor) => {
       visitor.visitAnnotation(context);
     });
   }
-  public visitAnnotationArgumentsBefore(context: Context): void {
+  public override visitAnnotationArgumentsBefore(context: Context): void {
     this.visitors.map((visitor) => {
       visitor.visitAnnotationArgumentsBefore(context);
     });
   }
-  public visitAnnotationArgument(context: Context): void {
+  public override visitAnnotationArgument(context: Context): void {
     this.visitors.map((visitor) => {
       visitor.visitAnnotationArgument(context);
     });
   }
-  public visitAnnotationArgumentsAfter(context: Context): void {
+  public override visitAnnotationArgumentsAfter(context: Context): void {
     this.visitors.map((visitor) => {
       visitor.visitAnnotationArgumentsAfter(context);
     });
   }
-  public visitAnnotationsAfter(context: Context): void {
+  public override visitAnnotationsAfter(context: Context): void {
     this.visitors.map((visitor) => {
       visitor.visitAnnotationsAfter(context);
     });
