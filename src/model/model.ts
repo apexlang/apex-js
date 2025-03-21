@@ -67,6 +67,7 @@ export enum PrimitiveName {
   Bool = "bool",
   Bytes = "bytes",
   Any = "any",
+  Raw = "raw",
   Value = "value",
 }
 
@@ -108,6 +109,7 @@ export const primitives: { [name: string]: Primitive } = {
   bool: new Primitive(PrimitiveName.Bool),
   bytes: new Primitive(PrimitiveName.Bytes),
   any: new Primitive(PrimitiveName.Any),
+  raw: new Primitive(PrimitiveName.Raw),
   value: new Primitive(PrimitiveName.Value),
 };
 
