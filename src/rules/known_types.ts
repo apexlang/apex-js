@@ -42,6 +42,7 @@ const builtInTypeNames = new Set([
   "datetime",
   "bytes",
   "any",
+  "raw",
   "value",
 ]);
 

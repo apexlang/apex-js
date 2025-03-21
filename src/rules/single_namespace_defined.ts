@@ -15,7 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { AbstractVisitor, Context, Node } from "../ast/mod.ts";
+import { AbstractVisitor, Context } from "../ast/mod.ts";
 import { validationError } from "../error/mod.ts";
 
 export class SingleNamespaceDefined extends AbstractVisitor {
