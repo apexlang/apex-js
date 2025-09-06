@@ -50,6 +50,7 @@ export enum Kind {
   ParameterDefinition = "ParameterDefinition",
   TypeDefinition = "TypeDefinition",
   FieldDefinition = "FieldDefinition",
+  SpreadDefinition = "SpreadDefinition",
   UnionDefinition = "UnionDefinition",
   UnionMemberDefinition = "UnionMembersDefinition",
   EnumDefinition = "EnumDefinition",

@@ -23,7 +23,7 @@ export class NamespaceFirst extends AbstractVisitor {
     const definitions = context.document!.definitions;
     for (let i = 0; i < definitions.length; i++) {
       const def = definitions[i];
-      if (!def.imported && !def.isKind(Kind.ImportDefinition)) {
+      if (!def.isKind(Kind.ImportDefinition)) {
         firstNonImportPos = i;
         break;
       }

@@ -34,6 +34,7 @@ import { ValidDirectiveRequires } from "./valid_directive_requires.ts";
 import { ValidDirectiveLocations } from "./valid_directive_locations.ts";
 import { ValidAnnotationArguments } from "./valid_annotation_arguments.ts";
 import { ValidAnnotationLocations } from "./valid_annotation_locations.ts";
+import { ValidImportAliases } from "./valid_import_aliases.ts";
 
 export interface ValidationRule {
   new (): Visitor;
@@ -59,4 +60,5 @@ export const CommonRules: Array<ValidationRule> = [
   ValidDirectiveLocations,
   ValidAnnotationArguments,
   ValidAnnotationLocations,
+  ValidImportAliases,
 ];

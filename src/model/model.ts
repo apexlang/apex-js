@@ -27,6 +27,7 @@ import {
   NamespaceDefinition,
   OperationDefinition,
   ParameterDefinition,
+  SpreadDefinition,
   TypeDefinition,
   UnionDefinition,
   UnionMemberDefinition,
@@ -36,6 +37,7 @@ import {
 import { Kind } from "./kinds.ts";
 import { Context, Visitor } from "./visitor.ts";
 import {
+  Kind as ASTKind,
   ListType as ASTListType,
   MapType as ASTMapType,
   Optional as ASTOptional,
@@ -313,7 +315,9 @@ export class Type extends Annotated implements Named {
   readonly node: TypeDefinition;
   readonly name: string;
   readonly description?: string;
-  readonly fields: Field[];
+  readonly fields: FieldOrSpread[];
+  readonly isTemplate: boolean;
+  readonly templateArgs: string[];
 
   constructor(
     tr: TypeResolver,
@@ -327,7 +331,15 @@ export class Type extends Annotated implements Named {
     if (register) {
       register(this);
     }
-    this.fields = node.fields.map((v) => new Field(tr, v));
+    this.fields = node.fields.map((v) => {
+      if (v.kind === ASTKind.SpreadDefinition) {
+        return new Spread(tr, v as SpreadDefinition);
+      }
+
+      return new Field(tr, v as FieldDefinition);
+    });
+    this.isTemplate = node.isTemplate;
+    this.templateArgs = node.templateArgs.map((v) => v.value);
   }
 
   public accept(context: Context, visitor: Visitor): void {
@@ -337,7 +349,20 @@ export class Type extends Annotated implements Named {
     context = context.clone({ fields: this.fields });
     visitor.visitTypeFieldsBefore(context);
     context.fields!.map((field, index) => {
-      field.accept(context.clone({ field: field, fieldIndex: index }), visitor);
+      switch (field.kind) {
+        case Kind.Field:
+          field.accept(
+            context.clone({ field: field as Field, fieldIndex: index }),
+            visitor,
+          );
+          break;
+        case Kind.Spread:
+          field.accept(
+            context.clone({ spread: field as Spread, fieldIndex: index }),
+            visitor,
+          );
+          break;
+      }
     });
     visitor.visitTypeFieldsAfter(context);
     visitor.visitTypeAfter(context);
@@ -359,6 +384,8 @@ export abstract class Valued extends Annotated implements Named {
   }
 }
 
+export type FieldOrSpread = Field | Spread;
+
 export class Field extends Valued {
   readonly node: FieldDefinition;
 
@@ -372,11 +399,30 @@ export class Field extends Valued {
   }
 }
 
+export class Spread extends Annotated {
+  readonly node: SpreadDefinition;
+  readonly description?: string;
+  readonly type: AnyType;
+
+  constructor(tr: TypeResolver, node: SpreadDefinition) {
+    super(Kind.Spread, node.annotations);
+    this.node = node;
+    this.description = node.description?.value;
+    this.type = tr(node.type);
+  }
+
+  public accept(context: Context, visitor: Visitor): void {
+    visitor.visitTypeField(context);
+  }
+}
+
 export class Interface extends Annotated implements Named {
   readonly node: InterfaceDefinition;
   readonly name: string;
   readonly description?: string;
   readonly operations: Operation[];
+  readonly isTemplate: boolean;
+  readonly templateArgs: string[];
 
   constructor(
     tr: TypeResolver,
@@ -391,6 +437,8 @@ export class Interface extends Annotated implements Named {
       register(this);
     }
     this.operations = node.operations.map((v) => new Operation(tr, v));
+    this.isTemplate = node.isTemplate;
+    this.templateArgs = node.templateArgs.map((v) => v.value);
   }
 
   public accept(context: Context, visitor: Visitor): void {

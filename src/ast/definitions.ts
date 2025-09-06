@@ -16,13 +16,7 @@ limitations under the License.
 
 import { Kind } from "./kinds.ts";
 import { IntValue, StringValue, Value } from "./values.ts";
-import {
-  AbstractNode,
-  Annotation,
-  DirectiveRequire,
-  ImportName,
-  Name,
-} from "./nodes.ts";
+import { AbstractNode, Annotation, DirectiveRequire, Name } from "./nodes.ts";
 import { Named, Type } from "./types.ts";
 import { Location } from "./location.ts";
 import { Context, Visitor } from "./visitor.ts";
@@ -31,7 +25,6 @@ export interface Definition {
   getKind(): Kind;
   isKind(kind: Kind): boolean;
   getLoc(): Location | undefined;
-  imported: boolean;
 }
 
 export interface Annotated {
@@ -106,24 +99,21 @@ export class AliasDefinition extends AbstractNode implements Annotated {
 
 export class ImportDefinition extends AbstractNode implements Annotated {
   description?: StringValue;
-  all: boolean;
-  names: ImportName[];
-  from: StringValue;
+  namespace: StringValue;
+  as: Name;
   annotations?: Annotation[];
 
   constructor(
     loc: Location | undefined,
     description: StringValue | undefined,
-    all: boolean,
-    names: ImportName[],
-    from: StringValue,
+    namespace: StringValue,
+    as: Name,
     annotations?: Annotation[],
   ) {
     super(Kind.ImportDefinition, loc);
     this.description = description;
-    this.all = all;
-    this.names = names;
-    this.from = from;
+    this.namespace = namespace;
+    this.as = as;
     this.annotations = annotations || [];
   }
 
@@ -140,23 +130,31 @@ export class ImportDefinition extends AbstractNode implements Annotated {
   }
 }
 
+export type FieldOrSpreadDefinition = FieldDefinition | SpreadDefinition;
+
 export class TypeDefinition extends AbstractNode implements Annotated {
   name: Name;
+  isTemplate: boolean;
+  templateArgs: Name[];
   description?: StringValue;
   interfaces: Named[];
   annotations: Annotation[];
-  fields: FieldDefinition[];
+  fields: FieldOrSpreadDefinition[];
 
   constructor(
     loc: Location | undefined,
     name: Name,
+    templateArgs: Name[],
     desc: StringValue | undefined,
     interfaces: Named[],
     annotations: Annotation[],
-    fields: FieldDefinition[],
+    fields: FieldOrSpreadDefinition[],
   ) {
     super(Kind.TypeDefinition, loc);
+    templateArgs = templateArgs || [];
     this.name = name;
+    this.isTemplate = templateArgs.length > 0;
+    this.templateArgs = templateArgs;
     this.description = desc;
     this.interfaces = interfaces;
     this.annotations = annotations;
@@ -177,7 +175,26 @@ export class TypeDefinition extends AbstractNode implements Annotated {
     context = context.clone({ fields: context.type!.fields });
     visitor.visitTypeFieldsBefore(context);
     context.fields!.map((field, index) => {
-      field.accept(context.clone({ field: field, fieldIndex: index }), visitor);
+      switch (field.kind) {
+        case Kind.FieldDefinition:
+          field.accept(
+            context.clone({
+              field: field as FieldDefinition,
+              fieldIndex: index,
+            }),
+            visitor,
+          );
+          break;
+        case Kind.SpreadDefinition:
+          field.accept(
+            context.clone({
+              spread: field as SpreadDefinition,
+              fieldIndex: index,
+            }),
+            visitor,
+          );
+          break;
+      }
     });
     visitor.visitTypeFieldsAfter(context);
 
@@ -228,7 +245,15 @@ export class FieldDefinition extends ValuedDefinition {
     defaultVal: Value | undefined,
     annotations: Annotation[],
   ) {
-    super(Kind.FieldDefinition, loc, name, desc, type, defaultVal, annotations);
+    super(
+      Kind.FieldDefinition,
+      loc,
+      name,
+      desc,
+      type,
+      defaultVal,
+      annotations,
+    );
   }
 
   public override accept(context: Context, visitor: Visitor): void {
@@ -237,25 +262,59 @@ export class FieldDefinition extends ValuedDefinition {
   }
 }
 
+export class SpreadDefinition extends AbstractNode {
+  description?: StringValue;
+  type: Named;
+  annotations: Annotation[];
+  constructor(
+    loc: Location | undefined,
+    description: StringValue | undefined,
+    type: Named,
+    annotations: Annotation[],
+  ) {
+    super(
+      Kind.SpreadDefinition,
+      loc,
+    );
+    this.description = description;
+    this.type = type;
+    this.annotations = annotations;
+  }
+
+  public override accept(context: Context, visitor: Visitor): void {
+    visitor.visitTypeSpread(context);
+    visitAnnotations(context, visitor, this.annotations);
+  }
+}
+
 export class InterfaceDefinition extends AbstractNode
   implements Definition, Annotated {
   name: Name;
+  isTemplate: boolean;
+  templateArgs: Name[];
   description?: StringValue;
   operations: OperationDefinition[];
   annotations: Annotation[];
+  extendsTypes: Named[];
 
   constructor(
     loc: Location | undefined,
     name: Name,
+    templateArgs?: Name[],
     desc?: StringValue,
     op?: OperationDefinition[],
     annotations?: Annotation[],
+    extendsTypes?: Named[],
   ) {
+    templateArgs = templateArgs || [];
     super(Kind.InterfaceDefinition, loc);
     this.name = name;
+    this.isTemplate = templateArgs.length > 0;
+    this.templateArgs = templateArgs;
     this.description = desc;
     this.operations = op || [];
     this.annotations = annotations || [];
+    this.extendsTypes = extendsTypes || [];
   }
 
   annotation(

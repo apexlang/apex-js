@@ -20,6 +20,7 @@ import {
   EnumDefinition,
   EnumValueDefinition,
   FieldDefinition,
+  FieldOrSpreadDefinition,
   ImportDefinition,
   InterfaceDefinition,
   NamespaceDefinition,
@@ -33,6 +34,7 @@ import { Annotation, Name } from "./nodes.ts";
 import autoBind from "../auto-bind.ts";
 import { ApexError } from "../error/mod.ts";
 import { Kind } from "./kinds.ts";
+import { SpreadDefinition } from "./mod.ts";
 
 export class Writer {
   private code = "";
@@ -61,8 +63,9 @@ interface NamedParameters {
   parameters?: ParameterDefinition[];
   parameter?: ParameterDefinition;
   parameterIndex?: number;
-  fields?: FieldDefinition[];
+  fields?: FieldOrSpreadDefinition[];
   field?: FieldDefinition;
+  spread?: SpreadDefinition;
   fieldIndex?: number;
   enumDef?: EnumDefinition;
   enumValues?: EnumValueDefinition[];
@@ -120,8 +123,9 @@ export class Context {
   parameters?: ParameterDefinition[];
   parameter?: ParameterDefinition;
   parameterIndex?: number;
-  fields?: FieldDefinition[];
+  fields?: FieldOrSpreadDefinition[];
   field?: FieldDefinition;
+  spread?: SpreadDefinition;
   fieldIndex?: number;
   enum?: EnumDefinition;
   enumValues?: EnumValueDefinition[];
@@ -201,6 +205,7 @@ export class Context {
     parameterIndex,
     fields,
     field,
+    spread,
     fieldIndex,
     enumDef,
     enumValues,
@@ -224,6 +229,7 @@ export class Context {
     context.parameterIndex = parameterIndex || this.parameterIndex;
     context.fields = fields || this.fields;
     context.field = field || this.field;
+    context.spread = spread || this.spread;
     context.fieldIndex = fieldIndex || this.fieldIndex;
     context.enum = enumDef || this.enum;
     context.enumValues = enumValues || this.enumValues;
@@ -355,6 +361,7 @@ export interface Visitor {
   visitType(context: Context): void;
   visitTypeFieldsBefore(context: Context): void;
   visitTypeField(context: Context): void;
+  visitTypeSpread(context: Context): void;
   visitTypeFieldsAfter(context: Context): void;
   visitTypeAfter(context: Context): void;
   visitTypesAfter(context: Context): void;
@@ -692,6 +699,12 @@ export abstract class AbstractVisitor implements Visitor {
   }
   public triggerTypeField(context: Context): void {
     this.triggerCallbacks(context, "TypeField");
+  }
+  public visitTypeSpread(context: Context): void {
+    this.triggerTypeSpread(context);
+  }
+  public triggerTypeSpread(context: Context): void {
+    this.triggerCallbacks(context, "TypeSpread");
   }
   public visitTypeFieldsAfter(context: Context): void {
     this.triggerTypeFieldsAfter(context);
@@ -1099,6 +1112,11 @@ export class MultiVisitor extends AbstractVisitor {
   public override visitTypeField(context: Context): void {
     this.visitors.map((visitor) => {
       visitor.visitTypeField(context);
+    });
+  }
+  public override visitTypeSpread(context: Context): void {
+    this.visitors.map((visitor) => {
+      visitor.visitTypeSpread(context);
     });
   }
   public override visitTypeFieldsAfter(context: Context): void {

@@ -107,7 +107,10 @@ export function isPunctuatorTokenKind(kind: TokenKind): boolean {
     kind === TokenKind.BRACKET_R ||
     kind === TokenKind.BRACE_L ||
     kind === TokenKind.PIPE ||
-    kind === TokenKind.BRACE_R
+    kind === TokenKind.BRACE_R ||
+    kind === TokenKind.LESS_THAN ||
+    kind === TokenKind.GREATER_THAN ||
+    kind === TokenKind.COMMA
   );
 }
 
@@ -156,18 +159,27 @@ function readToken(lexer: Lexer, prev: Token): Token {
     // *
     case 42:
       return new Token(TokenKind.STAR, pos, pos + 1, prev);
+    // ,
+    case 44:
+      return new Token(TokenKind.COMMA, pos, pos + 1, prev);
     // .
     case 46:
       if (body.charCodeAt(pos + 1) === 46 && body.charCodeAt(pos + 2) === 46) {
         return new Token(TokenKind.SPREAD, pos, pos + 3, prev);
       }
-      break;
+      return new Token(TokenKind.DOT, pos, pos + 1, prev);
     // :
     case 58:
       return new Token(TokenKind.COLON, pos, pos + 1, prev);
+    // <
+    case 60:
+      return new Token(TokenKind.LESS_THAN, pos, pos + 1, prev);
     // =
     case 61:
       return new Token(TokenKind.EQUALS, pos, pos + 1, prev);
+    // <
+    case 62:
+      return new Token(TokenKind.GREATER_THAN, pos, pos + 1, prev);
     // ?
     case 63:
       return new Token(TokenKind.QUESTION, pos, pos + 1, prev);
@@ -281,8 +293,8 @@ function positionAfterWhitespace(
   let position = startPosition;
   while (position < bodyLength) {
     const code = body.charCodeAt(position);
-    // tab | space | comma | BOM
-    if (code === 9 || code === 32 || code === 44 || code === 0xfeff) {
+    // tab | space | BOM
+    if (code === 9 || code === 32 || code === 0xfeff) {
       ++position;
     } else if (code === 10) {
       // new line

@@ -24,10 +24,19 @@ export interface Type extends Node {
 
 export class Named extends AbstractNode implements Type {
   name: Name;
+  importAlias: Name | undefined;
+  templateParams: Named[];
 
-  constructor(loc: Location | undefined, name: Name) {
+  constructor(
+    loc: Location | undefined,
+    name: Name,
+    importAlias?: Name,
+    templateParams?: Named[],
+  ) {
     super(Kind.Named, loc);
     this.name = name;
+    this.importAlias = importAlias;
+    this.templateParams = templateParams || [];
   }
 
   public string(): string {

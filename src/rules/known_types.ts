@@ -144,8 +144,17 @@ export class KnownTypes extends AbstractVisitor {
             );
           }
         } else {
+          // Check for match with template arguments
+          const templateArgs = context.type?.templateArgs ||
+            context.interface?.templateArgs || [];
+          for (const arg of templateArgs) {
+            if (arg.value == name) {
+              return;
+            }
+          }
+
           // Check against defined types
-          if (!context.allTypes.has(name)) {
+          if (!named.importAlias && !context.allTypes.has(name)) {
             context.reportError(
               validationError(
                 named,

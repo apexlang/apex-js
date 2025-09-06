@@ -31,6 +31,7 @@ import {
   EnumValue,
   EnumValueDefinition,
   FieldDefinition,
+  FieldOrSpreadDefinition,
   FloatValue,
   ImportDefinition,
   ImportName,
@@ -51,6 +52,7 @@ import {
   Optional,
   ParameterDefinition,
   Source,
+  SpreadDefinition,
   Stream,
   StringValue,
   Token,
@@ -61,7 +63,7 @@ import {
   Value,
 } from "./ast/mod.ts";
 
-type parseFunction = () => Node;
+type parseFunction<T extends Node> = () => T;
 /**
  * Configuration options to control parser behavior
  */
@@ -149,16 +151,6 @@ class Parser {
     return new Name(this.loc(token), token.value);
   }
 
-  parseImportName(): ImportName {
-    const start = this._lexer.token;
-    const name = this.parseName();
-    let alias: Name | undefined;
-    if (this.expectOptionalKeyword("as")) {
-      alias = this.parseName();
-    }
-    return new ImportName(this.loc(start), name, alias);
-  }
-
   // Implements the parsing rules in the Document section.
 
   /**
@@ -176,14 +168,16 @@ class Parser {
         const imp = def as ImportDefinition;
         let importSource = "";
         try {
-          importSource = this._resolver!(imp.from.value, "");
+          importSource = this._resolver!(imp.namespace.value, "");
         } catch (e) {
-          throw importError(imp.from, `could not load ${imp.from.value}: ` + e);
+          throw importError(
+            imp.namespace,
+            `could not load ${imp.namespace.value}: ` + e,
+          );
         }
         const importDoc = parse(importSource, this._resolver, this._options);
-        if (imp.all) {
+        /*if (imp.all) {
           importDoc.definitions.map((def) => {
-            def.imported = true;
             defs.push(def);
           });
         } else {
@@ -237,8 +231,9 @@ class Parser {
                   type.interfaces,
                   type.annotations,
                   type.fields,
+                  type.isTemplate,
+                  type.templateArgs,
                 );
-                renamedType.imported = true;
                 defs.push(renamedType);
                 break;
               }
@@ -251,7 +246,6 @@ class Parser {
                   enumDef.annotations,
                   enumDef.values,
                 );
-                renamedEnum.imported = true;
                 defs.push(renamedEnum);
                 break;
               }
@@ -264,7 +258,6 @@ class Parser {
                   unionDef.annotations,
                   unionDef.members,
                 );
-                renamedUnion.imported = true;
                 defs.push(renamedUnion);
                 break;
               }
@@ -278,7 +271,6 @@ class Parser {
                   directive.locations,
                   directive.requires,
                 );
-                renamedDirective.imported = true;
                 defs.push(renamedDirective);
                 break;
               }
@@ -291,13 +283,12 @@ class Parser {
                   alias.type,
                   alias.annotations,
                 );
-                renamedAlias.imported = true;
                 defs.push(renamedAlias);
                 break;
               }
             }
           });
-        }
+        }*/
       }
       defs.push(def);
     } while (!this.expectOptionalToken(TokenKind.EOF));
@@ -591,7 +582,21 @@ class Parser {
    */
   parseNamed(): Named {
     const start = this._lexer.token;
-    return new Named(this.loc(start), this.parseName());
+    let importAlias: Name | undefined;
+    let name = this.parseName();
+    if (this.expectOptionalToken(TokenKind.DOT)) {
+      importAlias = name;
+      name = this.parseName();
+    }
+    const templateParams = this.peek(TokenKind.LESS_THAN)
+      ? this.reverse(
+        TokenKind.LESS_THAN,
+        this.parseNamed,
+        TokenKind.GREATER_THAN,
+        false,
+      )
+      : [];
+    return new Named(this.loc(start), name, importAlias, templateParams);
   }
 
   // Implements the parsing rules in the Type Definition section.
@@ -678,32 +683,17 @@ class Parser {
     const start = this._lexer.token;
     const description = this.parseDescription();
     this.expectKeyword("import");
-    let all = false;
-    let names: ImportName[] = [];
 
-    if (this.peek(TokenKind.STAR)) {
-      this._lexer.advance();
-      all = true;
-    } else if (this.peek(TokenKind.BRACE_L)) {
-      names = this.many(
-        TokenKind.BRACE_L,
-        this.parseImportName,
-        TokenKind.BRACE_R,
-      );
-    } else {
-      throw this.unexpected();
-    }
-
-    this.expectKeyword("from");
-
-    const from = this.parseStringLiteral();
+    const namespace = this.parseStringLiteral();
+    this.expectKeyword("as");
+    const as = this.parseName();
     const annotations = this.parseAnnotations();
+
     return new ImportDefinition(
       this.loc(start),
       description,
-      all,
-      names,
-      from,
+      namespace,
+      as,
       annotations,
     );
   }
@@ -761,37 +751,39 @@ class Parser {
     const description = this.parseDescription();
     this.expectKeyword("type");
     const name = this.parseName();
-    const interfaces = this.parseImplementsInterfaces();
+    const templateArgs = this.peek(TokenKind.LESS_THAN)
+      ? this.reverse(
+        TokenKind.LESS_THAN,
+        this.parseName,
+        TokenKind.GREATER_THAN,
+        false,
+      )
+      : [];
+    const extendsTypes = this.parseExtends();
     const annotations = this.parseAnnotations();
     const iFields = this.reverse(
       TokenKind.BRACE_L,
-      this.parseFieldDefinition,
+      this.parseFieldOrSpreadDefinition,
       TokenKind.BRACE_R,
       false,
     );
     return new TypeDefinition(
       this.loc(start),
       name,
+      templateArgs,
       description,
-      interfaces,
+      extendsTypes,
       annotations,
-      iFields as Array<FieldDefinition>,
+      iFields,
     );
   }
 
-  /**
-   * ImplementsInterfaces :
-   *   - implements `&`? NamedType
-   *   - ImplementsInterfaces & NamedType
-   */
-  parseImplementsInterfaces(): Array<Named> {
+  parseExtends(): Array<Named> {
     const types = [];
-    if (this.expectOptionalKeyword("implements")) {
-      // Optional leading ampersand
-      this.expectOptionalToken(TokenKind.AMP);
+    if (this.expectOptionalKeyword("extends")) {
       do {
         types.push(this.parseNamed());
-      } while (this.expectOptionalToken(TokenKind.AMP));
+      } while (this.expectOptionalToken(TokenKind.COMMA));
     }
     return types;
   }
@@ -800,9 +792,21 @@ class Parser {
    * FieldDefinition :
    *   - Description? Name ArgumentsDefinition? : Type Annotations[Const]?
    */
-  parseFieldDefinition(): FieldDefinition {
+  parseFieldOrSpreadDefinition(): FieldOrSpreadDefinition {
     const start = this._lexer.token;
     const description = this.parseDescription();
+    if (this.expectOptionalToken(TokenKind.SPREAD)) {
+      const type = this.parseNamed();
+      const annotations = this.parseAnnotations();
+
+      return new SpreadDefinition(
+        this.loc(start),
+        description,
+        type,
+        annotations,
+      );
+    }
+
     const name = this.parseName();
     this.expectToken(TokenKind.COLON);
     const type = this.parseType();
@@ -883,12 +887,12 @@ class Parser {
     );
   }
 
-  reverse(
+  reverse<T extends Node>(
     openKind: number,
-    parseFn: parseFunction,
+    parseFn: parseFunction<T>,
     closeKind: number,
     _zinteger: boolean,
-  ): Array<Node> {
+  ): Array<T> {
     this.expectToken(openKind);
     const nodeArr = [];
     while (true) {
@@ -896,11 +900,9 @@ class Parser {
         break;
       } else {
         nodeArr.push(parseFn());
+        this.expectOptionalToken(TokenKind.COMMA);
       }
     }
-    // if (zinteger && NodeList.length == 0) {
-    //   null; // TODO
-    // }
     return nodeArr;
   }
 
@@ -921,6 +923,15 @@ class Parser {
     const description = this.parseDescription();
     this.expectKeyword("interface");
     const name = this.parseName();
+    const templateArgs = this.peek(TokenKind.LESS_THAN)
+      ? this.reverse(
+        TokenKind.LESS_THAN,
+        this.parseName,
+        TokenKind.GREATER_THAN,
+        false,
+      )
+      : [];
+    const extendsTypes = this.parseExtends();
     const annotations = this.parseAnnotations();
     const iOperations = this.reverse(
       TokenKind.BRACE_L,
@@ -931,9 +942,11 @@ class Parser {
     return new InterfaceDefinition(
       this.loc(start),
       name,
+      templateArgs,
       description,
-      iOperations as OperationDefinition[],
+      iOperations,
       annotations,
+      extendsTypes,
     );
   }
 

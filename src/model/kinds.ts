@@ -24,6 +24,7 @@ export enum Kind {
   Parameter = "Parameter",
   Type = "Type",
   Field = "Field",
+  Spread = "Spread",
   Union = "Union",
   Enum = "Enum",
   EnumValue = "EnumValue",
